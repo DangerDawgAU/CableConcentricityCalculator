@@ -1,0 +1,343 @@
+{
+  "assemblyId": "SAMPLE002",
+  "partNumber": "19C-20AWG-DB",
+  "revision": "A",
+  "name": "19-Conductor 20AWG Double-Braid Shielded Cable",
+  "projectReference": "AEROSPACE-001",
+  "designedBy": "Cable Designer",
+  "designDate": "2024-01-15T10:00:00",
+  "layers": [
+    {
+      "layerNumber": 0,
+      "cables": [
+        {
+          "cableId": "center",
+          "partNumber": "M22759/16-20-9",
+          "manufacturer": "Raychem",
+          "name": "20 AWG White Wire",
+          "type": "SingleCore",
+          "cores": [
+            {
+              "coreId": "1",
+              "conductorDiameter": 0.812,
+              "insulationThickness": 0.25,
+              "insulationColor": "White",
+              "gauge": "20",
+              "conductorMaterial": "Silver Plated Copper"
+            }
+          ],
+          "jacketThickness": 0.25,
+          "jacketColor": "White",
+          "hasShield": false,
+          "shieldType": "None",
+          "isFiller": false
+        }
+      ],
+      "twistDirection": "None",
+      "layLength": 0,
+      "fillerCount": 0,
+      "notes": "Center conductor - White"
+    },
+    {
+      "layerNumber": 1,
+      "cables": [
+        {
+          "cableId": "l1-1",
+          "partNumber": "M22759/16-20-0",
+          "name": "20 AWG Black Wire",
+          "type": "SingleCore",
+          "cores": [{ "coreId": "1", "conductorDiameter": 0.812, "insulationThickness": 0.25, "insulationColor": "Black", "gauge": "20", "conductorMaterial": "Silver Plated Copper" }],
+          "jacketThickness": 0.25,
+          "jacketColor": "Black",
+          "hasShield": false,
+          "isFiller": false
+        },
+        {
+          "cableId": "l1-2",
+          "partNumber": "M22759/16-20-2",
+          "name": "20 AWG Red Wire",
+          "type": "SingleCore",
+          "cores": [{ "coreId": "1", "conductorDiameter": 0.812, "insulationThickness": 0.25, "insulationColor": "Red", "gauge": "20", "conductorMaterial": "Silver Plated Copper" }],
+          "jacketThickness": 0.25,
+          "jacketColor": "Red",
+          "hasShield": false,
+          "isFiller": false
+        },
+        {
+          "cableId": "l1-3",
+          "partNumber": "M22759/16-20-5",
+          "name": "20 AWG Green Wire",
+          "type": "SingleCore",
+          "cores": [{ "coreId": "1", "conductorDiameter": 0.812, "insulationThickness": 0.25, "insulationColor": "Green", "gauge": "20", "conductorMaterial": "Silver Plated Copper" }],
+          "jacketThickness": 0.25,
+          "jacketColor": "Green",
+          "hasShield": false,
+          "isFiller": false
+        },
+        {
+          "cableId": "l1-4",
+          "partNumber": "M22759/16-20-6",
+          "name": "20 AWG Blue Wire",
+          "type": "SingleCore",
+          "cores": [{ "coreId": "1", "conductorDiameter": 0.812, "insulationThickness": 0.25, "insulationColor": "Blue", "gauge": "20", "conductorMaterial": "Silver Plated Copper" }],
+          "jacketThickness": 0.25,
+          "jacketColor": "Blue",
+          "hasShield": false,
+          "isFiller": false
+        },
+        {
+          "cableId": "l1-5",
+          "partNumber": "M22759/16-20-4",
+          "name": "20 AWG Yellow Wire",
+          "type": "SingleCore",
+          "cores": [{ "coreId": "1", "conductorDiameter": 0.812, "insulationThickness": 0.25, "insulationColor": "Yellow", "gauge": "20", "conductorMaterial": "Silver Plated Copper" }],
+          "jacketThickness": 0.25,
+          "jacketColor": "Yellow",
+          "hasShield": false,
+          "isFiller": false
+        },
+        {
+          "cableId": "l1-6",
+          "partNumber": "M22759/16-20-3",
+          "name": "20 AWG Orange Wire",
+          "type": "SingleCore",
+          "cores": [{ "coreId": "1", "conductorDiameter": 0.812, "insulationThickness": 0.25, "insulationColor": "Orange", "gauge": "20", "conductorMaterial": "Silver Plated Copper" }],
+          "jacketThickness": 0.25,
+          "jacketColor": "Orange",
+          "hasShield": false,
+          "isFiller": false
+        }
+      ],
+      "twistDirection": "RightHand",
+      "layLength": 30,
+      "fillerCount": 0,
+      "notes": "Layer 1 - 6 conductors (RH twist)"
+    },
+    {
+      "layerNumber": 2,
+      "cables": [
+        {
+          "cableId": "l2-1",
+          "partNumber": "M22759/16-20-1",
+          "name": "20 AWG Brown Wire",
+          "type": "SingleCore",
+          "cores": [{ "coreId": "1", "conductorDiameter": 0.812, "insulationThickness": 0.25, "insulationColor": "Brown", "gauge": "20", "conductorMaterial": "Silver Plated Copper" }],
+          "jacketThickness": 0.25,
+          "jacketColor": "Brown",
+          "hasShield": false,
+          "isFiller": false
+        },
+        {
+          "cableId": "l2-2",
+          "partNumber": "M22759/16-20-7",
+          "name": "20 AWG Violet Wire",
+          "type": "SingleCore",
+          "cores": [{ "coreId": "1", "conductorDiameter": 0.812, "insulationThickness": 0.25, "insulationColor": "Violet", "gauge": "20", "conductorMaterial": "Silver Plated Copper" }],
+          "jacketThickness": 0.25,
+          "jacketColor": "Violet",
+          "hasShield": false,
+          "isFiller": false
+        },
+        {
+          "cableId": "l2-3",
+          "partNumber": "M22759/16-20-8",
+          "name": "20 AWG Gray Wire",
+          "type": "SingleCore",
+          "cores": [{ "coreId": "1", "conductorDiameter": 0.812, "insulationThickness": 0.25, "insulationColor": "Gray", "gauge": "20", "conductorMaterial": "Silver Plated Copper" }],
+          "jacketThickness": 0.25,
+          "jacketColor": "Gray",
+          "hasShield": false,
+          "isFiller": false
+        },
+        {
+          "cableId": "l2-4",
+          "partNumber": "M22759/16-20-9W",
+          "name": "20 AWG White Wire",
+          "type": "SingleCore",
+          "cores": [{ "coreId": "1", "conductorDiameter": 0.812, "insulationThickness": 0.25, "insulationColor": "White", "gauge": "20", "conductorMaterial": "Silver Plated Copper" }],
+          "jacketThickness": 0.25,
+          "jacketColor": "White",
+          "hasShield": false,
+          "isFiller": false
+        },
+        {
+          "cableId": "l2-5",
+          "partNumber": "M22759/16-20-0B",
+          "name": "20 AWG Black Wire",
+          "type": "SingleCore",
+          "cores": [{ "coreId": "1", "conductorDiameter": 0.812, "insulationThickness": 0.25, "insulationColor": "Black", "gauge": "20", "conductorMaterial": "Silver Plated Copper" }],
+          "jacketThickness": 0.25,
+          "jacketColor": "Black",
+          "hasShield": false,
+          "isFiller": false
+        },
+        {
+          "cableId": "l2-6",
+          "partNumber": "M22759/16-20-2R",
+          "name": "20 AWG Red Wire",
+          "type": "SingleCore",
+          "cores": [{ "coreId": "1", "conductorDiameter": 0.812, "insulationThickness": 0.25, "insulationColor": "Red", "gauge": "20", "conductorMaterial": "Silver Plated Copper" }],
+          "jacketThickness": 0.25,
+          "jacketColor": "Red",
+          "hasShield": false,
+          "isFiller": false
+        },
+        {
+          "cableId": "l2-7",
+          "partNumber": "M22759/16-20-5G",
+          "name": "20 AWG Green Wire",
+          "type": "SingleCore",
+          "cores": [{ "coreId": "1", "conductorDiameter": 0.812, "insulationThickness": 0.25, "insulationColor": "Green", "gauge": "20", "conductorMaterial": "Silver Plated Copper" }],
+          "jacketThickness": 0.25,
+          "jacketColor": "Green",
+          "hasShield": false,
+          "isFiller": false
+        },
+        {
+          "cableId": "l2-8",
+          "partNumber": "M22759/16-20-6B",
+          "name": "20 AWG Blue Wire",
+          "type": "SingleCore",
+          "cores": [{ "coreId": "1", "conductorDiameter": 0.812, "insulationThickness": 0.25, "insulationColor": "Blue", "gauge": "20", "conductorMaterial": "Silver Plated Copper" }],
+          "jacketThickness": 0.25,
+          "jacketColor": "Blue",
+          "hasShield": false,
+          "isFiller": false
+        },
+        {
+          "cableId": "l2-9",
+          "partNumber": "M22759/16-20-4Y",
+          "name": "20 AWG Yellow Wire",
+          "type": "SingleCore",
+          "cores": [{ "coreId": "1", "conductorDiameter": 0.812, "insulationThickness": 0.25, "insulationColor": "Yellow", "gauge": "20", "conductorMaterial": "Silver Plated Copper" }],
+          "jacketThickness": 0.25,
+          "jacketColor": "Yellow",
+          "hasShield": false,
+          "isFiller": false
+        },
+        {
+          "cableId": "l2-10",
+          "partNumber": "M22759/16-20-3O",
+          "name": "20 AWG Orange Wire",
+          "type": "SingleCore",
+          "cores": [{ "coreId": "1", "conductorDiameter": 0.812, "insulationThickness": 0.25, "insulationColor": "Orange", "gauge": "20", "conductorMaterial": "Silver Plated Copper" }],
+          "jacketThickness": 0.25,
+          "jacketColor": "Orange",
+          "hasShield": false,
+          "isFiller": false
+        },
+        {
+          "cableId": "l2-11",
+          "partNumber": "M22759/16-20-1BR",
+          "name": "20 AWG Brown Wire",
+          "type": "SingleCore",
+          "cores": [{ "coreId": "1", "conductorDiameter": 0.812, "insulationThickness": 0.25, "insulationColor": "Brown", "gauge": "20", "conductorMaterial": "Silver Plated Copper" }],
+          "jacketThickness": 0.25,
+          "jacketColor": "Brown",
+          "hasShield": false,
+          "isFiller": false
+        },
+        {
+          "cableId": "l2-12",
+          "partNumber": "M22759/16-20-7V",
+          "name": "20 AWG Violet Wire",
+          "type": "SingleCore",
+          "cores": [{ "coreId": "1", "conductorDiameter": 0.812, "insulationThickness": 0.25, "insulationColor": "Violet", "gauge": "20", "conductorMaterial": "Silver Plated Copper" }],
+          "jacketThickness": 0.25,
+          "jacketColor": "Violet",
+          "hasShield": false,
+          "isFiller": false
+        }
+      ],
+      "twistDirection": "LeftHand",
+      "layLength": 40,
+      "fillerCount": 0,
+      "tapeWrap": {
+        "material": "PTFE",
+        "thickness": 0.05,
+        "width": 12.7,
+        "overlapPercent": 50,
+        "color": "White",
+        "partNumber": "PTFE-TAPE-12"
+      },
+      "notes": "Layer 2 - 12 conductors (LH twist)"
+    }
+  ],
+  "heatShrinks": [
+    {
+      "id": "hs001",
+      "partNumber": "DR-25-18",
+      "manufacturer": "Raychem",
+      "name": "DR-25 18mm Heat Shrink",
+      "material": "Polyolefin",
+      "suppliedInnerDiameter": 18.0,
+      "recoveredInnerDiameter": 9.0,
+      "shrinkRatio": "2:1",
+      "recoveredWallThickness": 1.0,
+      "color": "Black",
+      "hasAdhesiveLining": false,
+      "adhesiveThickness": 0,
+      "temperatureRating": 135,
+      "recoveryTemperature": 120,
+      "cutLength": 50,
+      "position": 0,
+      "appliedOverLayer": -1,
+      "notes": "Termination heat shrink"
+    }
+  ],
+  "overBraids": [
+    {
+      "id": "ob001",
+      "partNumber": "TC-1/4",
+      "manufacturer": "Alpha Wire",
+      "name": "Tinned Copper Braid 1/4\" - Inner",
+      "type": "ExpandableSleeving",
+      "material": "Tinned Copper",
+      "coveragePercent": 85,
+      "nominalInnerDiameter": 6.4,
+      "minInnerDiameter": 3.2,
+      "maxInnerDiameter": 12.7,
+      "wallThickness": 0.4,
+      "isShielding": true,
+      "color": "Silver",
+      "appliedOverLayer": 2,
+      "notes": "Inner shield braid"
+    },
+    {
+      "id": "ob002",
+      "partNumber": "TC-3/8",
+      "manufacturer": "Alpha Wire",
+      "name": "Tinned Copper Braid 3/8\" - Outer",
+      "type": "ExpandableSleeving",
+      "material": "Tinned Copper",
+      "coveragePercent": 90,
+      "nominalInnerDiameter": 9.5,
+      "minInnerDiameter": 4.8,
+      "maxInnerDiameter": 19.0,
+      "wallThickness": 0.5,
+      "isShielding": true,
+      "color": "Silver",
+      "appliedOverLayer": -1,
+      "notes": "Outer shield braid"
+    }
+  ],
+  "outerJacket": {
+    "partNumber": "FEP-JACKET-12",
+    "name": "FEP Outer Jacket",
+    "manufacturer": "Zeus",
+    "material": "FEP",
+    "wallThickness": 0.5,
+    "color": "Gray",
+    "isPrintable": true,
+    "printText": "19C-20AWG-DB"
+  },
+  "length": 2000,
+  "notes": "19-conductor aerospace-grade cable with double braid shielding. Suitable for high-EMI environments.",
+  "temperatureRating": 200,
+  "voltageRating": 600,
+  "applicableStandards": [
+    "MIL-DTL-27500",
+    "SAE AS22759",
+    "MIL-STD-461"
+  ]
+}
