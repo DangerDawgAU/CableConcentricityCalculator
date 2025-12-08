@@ -15,7 +15,7 @@ This guide explains how to set up the development environment and build the Cabl
    - Recommended extensions:
      - C# Dev Kit (Microsoft)
      - .NET Install Tool (Microsoft)
-     - EditorConfig for VS Code
+     - Avalonia for VS Code (for GUI development)
 
 3. **Git** (optional, for version control)
    - Download from: https://git-scm.com/
@@ -24,7 +24,7 @@ This guide explains how to set up the development environment and build the Cabl
 
 - Windows 10/11, macOS, or Linux
 - 4GB RAM minimum (8GB recommended)
-- 500MB disk space
+- 1GB disk space
 
 ## Initial Setup
 
@@ -49,27 +49,62 @@ Or open VS Code and use `File > Open Folder` to select the project directory.
 
 ### 3. Restore NuGet Packages
 
-Open a terminal in VS Code (`` Ctrl+` ``) or PowerShell and run:
-
 ```powershell
 dotnet restore
 ```
 
-This downloads all required NuGet packages:
-- QuestPDF (PDF generation)
-- SkiaSharp (Graphics/visualization)
-- Spectre.Console (Console UI)
-- System.Text.Json (JSON serialization)
+This downloads all required NuGet packages for both projects.
+
+## Project Structure
+
+```
+CableConcentricityCalculator/
+├── CableConcentricityCalculator.sln        # Solution file
+├── readme.md                                # User documentation
+├── buildme.md                               # This file
+├── Samples/                                 # Sample configuration files
+│   ├── sample-7-conductor.json
+│   └── sample-19-conductor.json
+├── .vscode/                                 # VS Code configuration
+│   ├── launch.json
+│   └── tasks.json
+├── CableConcentricityCalculator/            # Console application
+│   ├── CableConcentricityCalculator.csproj
+│   ├── Program.cs                           # Console entry point
+│   ├── Models/                              # Data models (shared)
+│   ├── Services/                            # Business logic
+│   ├── Visualization/                       # Cross-section rendering
+│   └── Reports/                             # PDF generation
+└── CableConcentricityCalculator.Gui/        # GUI application
+    ├── CableConcentricityCalculator.Gui.csproj
+    ├── Program.cs                           # GUI entry point
+    ├── App.axaml                            # Application definition
+    ├── Views/                               # UI views (XAML)
+    │   └── MainWindow.axaml
+    ├── ViewModels/                          # MVVM view models
+    ├── Converters/                          # Value converters
+    └── Styles/                              # Application styles
+```
 
 ## Building the Application
 
-### Debug Build
+### Build All Projects
 
 ```powershell
 dotnet build
 ```
 
-Output location: `CableConcentricityCalculator/bin/Debug/net9.0/`
+### Build GUI Only
+
+```powershell
+dotnet build CableConcentricityCalculator.Gui
+```
+
+### Build Console Only
+
+```powershell
+dotnet build CableConcentricityCalculator
+```
 
 ### Release Build
 
@@ -77,185 +112,85 @@ Output location: `CableConcentricityCalculator/bin/Debug/net9.0/`
 dotnet build -c Release
 ```
 
-Output location: `CableConcentricityCalculator/bin/Release/net9.0/`
+## Running the Applications
 
-### Build and Run
+### Run GUI Application
 
 ```powershell
-dotnet run --project CableConcentricityCalculator
+dotnet run --project CableConcentricityCalculator.Gui
 ```
 
-### Run with Arguments
+### Run Console Application
 
 ```powershell
+# Interactive mode
+dotnet run --project CableConcentricityCalculator
+
 # Demo mode
 dotnet run --project CableConcentricityCalculator -- --demo
 
 # Load a configuration
 dotnet run --project CableConcentricityCalculator -- --load Samples/sample-7-conductor.json
-
-# Show help
-dotnet run --project CableConcentricityCalculator -- --help
 ```
 
 ## Publishing
 
-### Self-Contained Executable (Windows)
+### GUI Application
+
+#### Windows (Self-Contained)
 
 ```powershell
-dotnet publish -c Release -r win-x64 --self-contained true -o ./publish/win-x64
+dotnet publish CableConcentricityCalculator.Gui -c Release -r win-x64 --self-contained true -o ./publish/gui-win-x64
 ```
 
-### Self-Contained Executable (Linux)
+#### Linux (Self-Contained)
 
 ```powershell
-dotnet publish -c Release -r linux-x64 --self-contained true -o ./publish/linux-x64
+dotnet publish CableConcentricityCalculator.Gui -c Release -r linux-x64 --self-contained true -o ./publish/gui-linux-x64
 ```
 
-### Self-Contained Executable (macOS)
+#### macOS (Self-Contained)
 
 ```powershell
-dotnet publish -c Release -r osx-x64 --self-contained true -o ./publish/osx-x64
+dotnet publish CableConcentricityCalculator.Gui -c Release -r osx-x64 --self-contained true -o ./publish/gui-osx-x64
 ```
 
-### Framework-Dependent (requires .NET runtime on target)
+### Console Application
+
+#### Windows
 
 ```powershell
-dotnet publish -c Release -o ./publish/framework-dependent
+dotnet publish CableConcentricityCalculator -c Release -r win-x64 --self-contained true -o ./publish/console-win-x64
 ```
 
-### Single-File Executable
+#### Single-File Executable
 
 ```powershell
-dotnet publish -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -o ./publish/single-file
-```
-
-## Project Structure
-
-```
-CableConcentricityCalculator/
-├── CableConcentricityCalculator.sln    # Solution file
-├── readme.md                            # User documentation
-├── buildme.md                           # This file
-├── Samples/                             # Sample configuration files
-│   ├── sample-7-conductor.json
-│   └── sample-19-conductor.json
-└── CableConcentricityCalculator/        # Main project
-    ├── CableConcentricityCalculator.csproj
-    ├── Program.cs                       # Entry point & console UI
-    ├── Models/                          # Data models
-    │   ├── Cable.cs                     # Cable & CableType
-    │   ├── CableCore.cs                 # Individual core definition
-    │   ├── CableLayer.cs                # Layer & twist configuration
-    │   ├── CableAssembly.cs             # Complete assembly model
-    │   ├── HeatShrink.cs                # Heat shrink tubing
-    │   └── OverBraid.cs                 # Over-braid shielding
-    ├── Services/                        # Business logic
-    │   ├── ConcentricityCalculator.cs   # Geometry calculations
-    │   └── ConfigurationService.cs      # JSON save/load
-    ├── Visualization/                   # Graphics
-    │   └── CableVisualizer.cs           # Cross-section rendering
-    └── Reports/                         # Document generation
-        └── PdfReportGenerator.cs        # PDF report creation
+dotnet publish CableConcentricityCalculator.Gui -c Release -r win-x64 --self-contained true -p:PublishSingleFile=true -o ./publish/gui-single
 ```
 
 ## VS Code Configuration
 
-### Recommended settings.json
+The project includes pre-configured VS Code settings:
 
-Create or update `.vscode/settings.json`:
+### Launch Configurations (F5)
 
-```json
-{
-    "editor.formatOnSave": true,
-    "editor.defaultFormatter": "ms-dotnettools.csharp",
-    "omnisharp.enableRoslynAnalyzers": true,
-    "omnisharp.enableEditorConfigSupport": true,
-    "dotnet.defaultSolution": "CableConcentricityCalculator.sln"
-}
-```
+- **Launch GUI** - Runs the graphical application
+- **Launch Console (Interactive)** - Runs console in interactive mode
+- **Launch Console (Demo)** - Runs console with demo assembly
 
-### Launch Configuration
+### Build Tasks (Ctrl+Shift+B)
 
-Create `.vscode/launch.json`:
-
-```json
-{
-    "version": "0.2.0",
-    "configurations": [
-        {
-            "name": "Launch (Interactive)",
-            "type": "coreclr",
-            "request": "launch",
-            "preLaunchTask": "build",
-            "program": "${workspaceFolder}/CableConcentricityCalculator/bin/Debug/net9.0/CableConcentricityCalculator.dll",
-            "args": [],
-            "cwd": "${workspaceFolder}",
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "Launch (Demo)",
-            "type": "coreclr",
-            "request": "launch",
-            "preLaunchTask": "build",
-            "program": "${workspaceFolder}/CableConcentricityCalculator/bin/Debug/net9.0/CableConcentricityCalculator.dll",
-            "args": ["--demo"],
-            "cwd": "${workspaceFolder}",
-            "console": "integratedTerminal"
-        }
-    ]
-}
-```
-
-### Tasks Configuration
-
-Create `.vscode/tasks.json`:
-
-```json
-{
-    "version": "2.0.0",
-    "tasks": [
-        {
-            "label": "build",
-            "command": "dotnet",
-            "type": "process",
-            "args": [
-                "build",
-                "${workspaceFolder}/CableConcentricityCalculator.sln",
-                "/property:GenerateFullPaths=true",
-                "/consoleloggerparameters:NoSummary"
-            ],
-            "problemMatcher": "$msCompile",
-            "group": {
-                "kind": "build",
-                "isDefault": true
-            }
-        },
-        {
-            "label": "publish",
-            "command": "dotnet",
-            "type": "process",
-            "args": [
-                "publish",
-                "${workspaceFolder}/CableConcentricityCalculator.sln",
-                "-c", "Release"
-            ],
-            "problemMatcher": "$msCompile"
-        },
-        {
-            "label": "clean",
-            "command": "dotnet",
-            "type": "process",
-            "args": ["clean"],
-            "problemMatcher": "$msCompile"
-        }
-    ]
-}
-```
+- **build-gui** - Build GUI project (default)
+- **build** - Build entire solution
+- **build-release** - Build in Release mode
+- **run-gui** - Build and run GUI
+- **publish-gui-win** - Publish for Windows
+- **publish-gui-linux** - Publish for Linux
 
 ## Dependencies
 
-### NuGet Packages
+### Console Application
 
 | Package | Version | Purpose |
 |---------|---------|---------|
@@ -264,70 +199,120 @@ Create `.vscode/tasks.json`:
 | Spectre.Console | 0.49.1 | Rich console UI |
 | System.Text.Json | 9.0.0 | JSON serialization |
 
-### Native Dependencies
+### GUI Application
 
-SkiaSharp requires native libraries which are automatically included:
-- Windows: `libSkiaSharp.dll`
-- Linux: `libSkiaSharp.so`
-- macOS: `libSkiaSharp.dylib`
+| Package | Version | Purpose |
+|---------|---------|---------|
+| Avalonia | 11.2.1 | Cross-platform UI framework |
+| Avalonia.Desktop | 11.2.1 | Desktop platform support |
+| Avalonia.Themes.Fluent | 11.2.1 | Fluent design theme |
+| Avalonia.ReactiveUI | 11.2.1 | Reactive extensions |
+| CommunityToolkit.Mvvm | 8.3.2 | MVVM toolkit |
+
+## Architecture
+
+### MVVM Pattern (GUI)
+
+The GUI follows the Model-View-ViewModel pattern:
+
+- **Models** - Shared with console app (`CableAssembly`, `Cable`, etc.)
+- **Views** - XAML UI definitions (`MainWindow.axaml`)
+- **ViewModels** - UI logic and state (`MainWindowViewModel.cs`)
+- **Converters** - Value transformations for bindings
+
+### Shared Components
+
+Both applications share:
+- Data models (`CableConcentricityCalculator.Models`)
+- Calculation engine (`ConcentricityCalculator`)
+- Visualization (`CableVisualizer`)
+- PDF generation (`PdfReportGenerator`)
+- Configuration handling (`ConfigurationService`)
 
 ## Troubleshooting
 
-### SkiaSharp native library not found
+### Avalonia/GUI Issues
 
-**Linux:** Install required dependencies:
+**Linux - Missing dependencies:**
 ```bash
-sudo apt-get install libfontconfig1
+sudo apt-get install libfontconfig1 libice6 libsm6 libx11-6 libxext6
 ```
 
-**macOS:** The native library should be automatically included.
-
-**Windows:** Ensure Visual C++ Redistributable is installed.
-
-### QuestPDF license warning
-
-The application uses QuestPDF Community License. This is set in code:
-```csharp
-QuestPDF.Settings.License = LicenseType.Community;
+**macOS - App not opening:**
+Ensure you have the correct runtime:
+```bash
+dotnet --list-runtimes
 ```
 
-For commercial use, obtain a professional license from https://www.questpdf.com/
+### SkiaSharp Issues
 
-### Build errors after package updates
+**Missing native library:**
+- Windows: Install Visual C++ Redistributable
+- Linux: `sudo apt-get install libfontconfig1`
+- macOS: Native library included automatically
+
+### Build Errors
 
 ```powershell
+# Clean and rebuild
 dotnet clean
 dotnet restore
 dotnet build
 ```
 
-### "Cannot find project" error
+### QuestPDF License
 
-Ensure you're in the solution root directory:
-```powershell
-cd CableConcentricityCalculator
-dotnet build CableConcentricityCalculator.sln
+The application uses QuestPDF Community License:
+```csharp
+QuestPDF.Settings.License = LicenseType.Community;
 ```
+
+## Extending the Application
+
+### Adding New Views (GUI)
+
+1. Create XAML file in `Views/` folder
+2. Create corresponding ViewModel in `ViewModels/`
+3. Register in navigation if needed
+
+### Adding New Cable Types
+
+1. Add enum value to `CableType` in `Models/Cable.cs`
+2. Update visualization in `CableVisualizer.cs`
+3. Update GUI cable library in `MainWindowViewModel.cs`
+
+### Adding Custom Cable Libraries
+
+1. Create JSON file with cable definitions
+2. Extend `ConfigurationService.LoadCableLibrary()`
+3. Update GUI dropdown binding
+
+### Adding Report Sections
+
+1. Create compose method in `PdfReportGenerator.cs`
+2. Call from `ComposeContent` method
+3. Follow QuestPDF fluent API patterns
 
 ## Testing
 
 ### Manual Testing
 
-1. Run demo mode and verify PDF output:
+1. **GUI Testing:**
+   ```powershell
+   dotnet run --project CableConcentricityCalculator.Gui
+   ```
+   - Create new assembly
+   - Add layers and cables
+   - Export PDF and image
+   - Save/load configurations
+
+2. **Console Testing:**
    ```powershell
    dotnet run --project CableConcentricityCalculator -- --demo
    ```
-
-2. Open generated files in `output/` directory
-
-3. Test loading sample configurations:
-   ```powershell
-   dotnet run --project CableConcentricityCalculator -- --load Samples/sample-7-conductor.json
-   ```
+   - Verify PDF output in `output/` directory
 
 ### Adding Unit Tests
-
-To add unit tests, create a test project:
 
 ```powershell
 dotnet new xunit -n CableConcentricityCalculator.Tests
@@ -335,40 +320,21 @@ dotnet sln add CableConcentricityCalculator.Tests
 dotnet add CableConcentricityCalculator.Tests reference CableConcentricityCalculator
 ```
 
-## Extending the Application
-
-### Adding New Cable Types
-
-1. Add enum value to `CableType` in `Models/Cable.cs`
-2. Update `CoreBundleDiameter` calculation if needed
-3. Add visualization support in `CableVisualizer.cs`
-
-### Adding New Report Sections
-
-1. Create new compose method in `PdfReportGenerator.cs`
-2. Call it from `ComposeContent` method
-3. Follow QuestPDF fluent API patterns
-
-### Adding Custom Cable Libraries
-
-1. Extend `ConfigurationService.CreateSampleCableLibrary()`
-2. Or load from external JSON file
-
 ## Performance Notes
 
-- PDF generation is optimized for documents up to ~50 pages
-- Cross-section rendering is resolution-independent
-- Large assemblies (100+ cables) may take a few seconds to render
+- GUI updates cross-section in real-time (debounced)
+- PDF generation optimized for documents up to ~50 pages
+- Large assemblies (100+ cables) render in 1-2 seconds
 
 ## Contributing
 
 1. Fork the repository
 2. Create a feature branch
-3. Make changes following existing code style
-4. Test thoroughly
+3. Follow existing code style
+4. Test both GUI and console applications
 5. Submit pull request
 
 ## License
 
-QuestPDF Community License applies to PDF generation features.
-Application code is provided as-is for internal use.
+- QuestPDF Community License for PDF generation
+- Avalonia MIT License for GUI framework

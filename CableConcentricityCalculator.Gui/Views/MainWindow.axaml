@@ -1,0 +1,448 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        xmlns:vm="using:CableConcentricityCalculator.Gui.ViewModels"
+        xmlns:models="clr-namespace:CableConcentricityCalculator.Models;assembly=CableConcentricityCalculator"
+        xmlns:controls="using:CableConcentricityCalculator.Gui.Controls"
+        x:Class="CableConcentricityCalculator.Gui.Views.MainWindow"
+        x:DataType="vm:MainWindowViewModel"
+        Title="Cable Concentricity Calculator"
+        Width="1400" Height="900"
+        MinWidth="1200" MinHeight="700"
+        WindowStartupLocation="CenterScreen">
+
+    <Window.KeyBindings>
+        <KeyBinding Gesture="Ctrl+N" Command="{Binding NewAssemblyCommand}"/>
+        <KeyBinding Gesture="Ctrl+O" Command="{Binding LoadAssemblyCommand}"/>
+        <KeyBinding Gesture="Ctrl+S" Command="{Binding SaveAssemblyCommand}"/>
+        <KeyBinding Gesture="Ctrl+Shift+S" Command="{Binding SaveAssemblyAsCommand}"/>
+        <KeyBinding Gesture="Ctrl+E" Command="{Binding ExportPdfCommand}"/>
+    </Window.KeyBindings>
+
+    <DockPanel>
+        <!-- Menu Bar -->
+        <Menu DockPanel.Dock="Top">
+            <MenuItem Header="_File">
+                <MenuItem Header="_New" Command="{Binding NewAssemblyCommand}" InputGesture="Ctrl+N"/>
+                <MenuItem Header="_Open..." Command="{Binding LoadAssemblyCommand}" InputGesture="Ctrl+O"/>
+                <Separator/>
+                <MenuItem Header="_Save" Command="{Binding SaveAssemblyCommand}" InputGesture="Ctrl+S"/>
+                <MenuItem Header="Save _As..." Command="{Binding SaveAssemblyAsCommand}" InputGesture="Ctrl+Shift+S"/>
+                <Separator/>
+                <MenuItem Header="Export _PDF..." Command="{Binding ExportPdfCommand}" InputGesture="Ctrl+E"/>
+                <MenuItem Header="Export _Image..." Command="{Binding ExportImageCommand}"/>
+                <Separator/>
+                <MenuItem Header="E_xit" Click="OnExitClick"/>
+            </MenuItem>
+            <MenuItem Header="_Edit">
+                <MenuItem Header="Add _Layer" Command="{Binding AddLayerCommand}"/>
+                <MenuItem Header="_Remove Layer" Command="{Binding RemoveLayerCommand}"/>
+                <Separator/>
+                <MenuItem Header="_Optimize Fillers" Command="{Binding OptimizeFillersCommand}"/>
+                <MenuItem Header="_Validate Assembly" Command="{Binding ValidateAssemblyCommand}"/>
+            </MenuItem>
+            <MenuItem Header="_Tools">
+                <MenuItem Header="Load _Demo Assembly" Command="{Binding LoadDemoAssemblyCommand}"/>
+            </MenuItem>
+            <MenuItem Header="_Help">
+                <MenuItem Header="_About" Click="OnAboutClick"/>
+            </MenuItem>
+        </Menu>
+
+        <!-- Toolbar -->
+        <Border DockPanel.Dock="Top" Background="#F8F8F8" BorderBrush="#E0E0E0" BorderThickness="0,0,0,1" Padding="8,4">
+            <StackPanel Orientation="Horizontal" Spacing="4">
+                <Button Command="{Binding NewAssemblyCommand}" ToolTip.Tip="New Assembly (Ctrl+N)" Classes="icon-button">
+                    <TextBlock Text="New" FontSize="12"/>
+                </Button>
+                <Button Command="{Binding LoadAssemblyCommand}" ToolTip.Tip="Open (Ctrl+O)" Classes="icon-button">
+                    <TextBlock Text="Open" FontSize="12"/>
+                </Button>
+                <Button Command="{Binding SaveAssemblyCommand}" ToolTip.Tip="Save (Ctrl+S)" Classes="icon-button">
+                    <TextBlock Text="Save" FontSize="12"/>
+                </Button>
+                <Separator Width="1" Background="#D0D0D0" Margin="8,4"/>
+                <Button Command="{Binding ExportPdfCommand}" ToolTip.Tip="Export PDF (Ctrl+E)" Classes="icon-button">
+                    <TextBlock Text="PDF" FontSize="12"/>
+                </Button>
+                <Button Command="{Binding ExportImageCommand}" ToolTip.Tip="Export Image" Classes="icon-button">
+                    <TextBlock Text="Image" FontSize="12"/>
+                </Button>
+                <Separator Width="1" Background="#D0D0D0" Margin="8,4"/>
+                <Button Command="{Binding AddLayerCommand}" ToolTip.Tip="Add Layer" Classes="icon-button">
+                    <TextBlock Text="+ Layer" FontSize="12"/>
+                </Button>
+                <Button Command="{Binding OptimizeFillersCommand}" ToolTip.Tip="Optimize Fillers" Classes="icon-button">
+                    <TextBlock Text="Optimize" FontSize="12"/>
+                </Button>
+                <Button Command="{Binding ValidateAssemblyCommand}" ToolTip.Tip="Validate Assembly" Classes="icon-button">
+                    <TextBlock Text="Validate" FontSize="12"/>
+                </Button>
+                <Separator Width="1" Background="#D0D0D0" Margin="8,4"/>
+                <Button Command="{Binding LoadDemoAssemblyCommand}" ToolTip.Tip="Load Demo" Classes="icon-button">
+                    <TextBlock Text="Demo" FontSize="12" Foreground="#0078D4"/>
+                </Button>
+            </StackPanel>
+        </Border>
+
+        <!-- Status Bar -->
+        <Border DockPanel.Dock="Bottom" Classes="statusbar">
+            <Grid ColumnDefinitions="*,Auto,Auto">
+                <TextBlock Text="{Binding StatusMessage}" VerticalAlignment="Center"/>
+                <TextBlock Grid.Column="1" Margin="20,0">
+                    <TextBlock.Text>
+                        <MultiBinding StringFormat="OD: {0:F2} mm | Conductors: {1}">
+                            <Binding Path="Assembly.OverallDiameter"/>
+                            <Binding Path="Assembly.TotalConductorCount"/>
+                        </MultiBinding>
+                    </TextBlock.Text>
+                </TextBlock>
+                <TextBlock Grid.Column="2" Text="{Binding HasUnsavedChanges, Converter={StaticResource BoolToModifiedConverter}}"
+                           Foreground="#FF6600" FontWeight="SemiBold"/>
+            </Grid>
+        </Border>
+
+        <!-- Main Content -->
+        <Grid ColumnDefinitions="320,*,300">
+            <!-- Left Panel: Layers and Cables -->
+            <Border Grid.Column="0" Background="#F5F5F5" BorderBrush="#E0E0E0" BorderThickness="0,0,1,0">
+                <Grid RowDefinitions="Auto,*,Auto,*">
+                    <!-- Layers Section -->
+                    <Border Grid.Row="0" Background="#0078D4" Padding="12,8">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <TextBlock Text="LAYERS" Foreground="White" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                            <StackPanel Grid.Column="1" Orientation="Horizontal" Spacing="4">
+                                <Button Command="{Binding AddLayerCommand}" Background="Transparent" Foreground="White" Padding="8,4">
+                                    <TextBlock Text="+" FontSize="16" FontWeight="Bold"/>
+                                </Button>
+                                <Button Command="{Binding RemoveLayerCommand}" Background="Transparent" Foreground="White" Padding="8,4"
+                                        IsEnabled="{Binding SelectedLayer, Converter={x:Static ObjectConverters.IsNotNull}}">
+                                    <TextBlock Text="-" FontSize="16" FontWeight="Bold"/>
+                                </Button>
+                            </StackPanel>
+                        </Grid>
+                    </Border>
+
+                    <ListBox Grid.Row="1" ItemsSource="{Binding Assembly.Layers}"
+                             SelectedItem="{Binding SelectedLayer}"
+                             Background="Transparent" Margin="8">
+                        <ListBox.ItemTemplate>
+                            <DataTemplate x:DataType="models:CableLayer">
+                                <Border Classes="layer-item">
+                                    <Grid RowDefinitions="Auto,Auto,Auto">
+                                        <TextBlock FontWeight="SemiBold" FontSize="13">
+                                            <TextBlock.Text>
+                                                <MultiBinding StringFormat="Layer {0}">
+                                                    <Binding Path="LayerNumber"/>
+                                                </MultiBinding>
+                                            </TextBlock.Text>
+                                        </TextBlock>
+                                        <TextBlock Grid.Row="1" FontSize="11" Foreground="#666">
+                                            <TextBlock.Text>
+                                                <MultiBinding StringFormat="{}{0} cable(s)">
+                                                    <Binding Path="Cables.Count"/>
+                                                </MultiBinding>
+                                            </TextBlock.Text>
+                                        </TextBlock>
+                                        <StackPanel Grid.Row="2" Orientation="Horizontal" Spacing="8" Margin="0,4,0,0">
+                                            <TextBlock FontSize="10" Foreground="#888">
+                                                <TextBlock.Text>
+                                                    <Binding Path="TwistDirection" StringFormat="Twist: {0}"/>
+                                                </TextBlock.Text>
+                                            </TextBlock>
+                                            <TextBlock FontSize="10" Foreground="#888"
+                                                       IsVisible="{Binding FillerCount, Converter={StaticResource GreaterThanZeroConverter}}">
+                                                <TextBlock.Text>
+                                                    <MultiBinding StringFormat="+{0} fillers">
+                                                        <Binding Path="FillerCount"/>
+                                                    </MultiBinding>
+                                                </TextBlock.Text>
+                                            </TextBlock>
+                                        </StackPanel>
+                                    </Grid>
+                                </Border>
+                            </DataTemplate>
+                        </ListBox.ItemTemplate>
+                    </ListBox>
+
+                    <!-- Cables in Layer Section -->
+                    <Border Grid.Row="2" Background="#0078D4" Padding="12,8">
+                        <Grid ColumnDefinitions="*,Auto">
+                            <TextBlock Text="CABLES IN LAYER" Foreground="White" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                            <Button Grid.Column="1" Command="{Binding RemoveCableCommand}" Background="Transparent" Foreground="White" Padding="8,4"
+                                    IsEnabled="{Binding SelectedCable, Converter={x:Static ObjectConverters.IsNotNull}}">
+                                <TextBlock Text="-" FontSize="16" FontWeight="Bold"/>
+                            </Button>
+                        </Grid>
+                    </Border>
+
+                    <Grid Grid.Row="3" RowDefinitions="*,Auto">
+                        <ListBox ItemsSource="{Binding SelectedLayer.Cables}"
+                                 SelectedItem="{Binding SelectedCable}"
+                                 Background="Transparent" Margin="8"
+                                 IsEnabled="{Binding SelectedLayer, Converter={x:Static ObjectConverters.IsNotNull}}">
+                            <ListBox.ItemTemplate>
+                                <DataTemplate x:DataType="models:Cable">
+                                    <Grid ColumnDefinitions="Auto,*">
+                                        <Ellipse Width="14" Height="14" Margin="0,0,8,0"
+                                                 Stroke="#333" StrokeThickness="1">
+                                            <Ellipse.Fill>
+                                                <SolidColorBrush Color="{Binding JacketColor, Converter={StaticResource ColorNameConverter}}"/>
+                                            </Ellipse.Fill>
+                                        </Ellipse>
+                                        <StackPanel Grid.Column="1">
+                                            <TextBlock Text="{Binding PartNumber}" FontSize="11" FontWeight="SemiBold"/>
+                                            <TextBlock Text="{Binding Name}" FontSize="10" Foreground="#666"/>
+                                        </StackPanel>
+                                    </Grid>
+                                </DataTemplate>
+                            </ListBox.ItemTemplate>
+                        </ListBox>
+
+                        <!-- Add Cable Panel -->
+                        <Border Grid.Row="1" Background="#F0F0F0" Padding="8" Margin="8,0,8,8" CornerRadius="4"
+                                IsEnabled="{Binding SelectedLayer, Converter={x:Static ObjectConverters.IsNotNull}}">
+                            <StackPanel Spacing="4">
+                                <TextBlock Text="Add from Library:" FontSize="11" Foreground="#666"/>
+                                <ComboBox ItemsSource="{Binding CableLibrary}"
+                                          SelectedItem="{Binding SelectedLibraryCable}"
+                                          HorizontalAlignment="Stretch">
+                                    <ComboBox.ItemTemplate>
+                                        <DataTemplate x:DataType="vm:CableLibraryItem">
+                                            <TextBlock Text="{Binding DisplayName}" FontSize="11"/>
+                                        </DataTemplate>
+                                    </ComboBox.ItemTemplate>
+                                </ComboBox>
+                                <StackPanel Orientation="Horizontal" Spacing="4" HorizontalAlignment="Right">
+                                    <Button Content="Add 1" Command="{Binding AddCableFromLibraryCommand}"
+                                            Classes="secondary" Padding="8,4" FontSize="11"/>
+                                    <Button Content="+6" Command="{Binding AddMultipleCablesCommand}"
+                                            CommandParameter="6" Classes="secondary" Padding="8,4" FontSize="11"/>
+                                    <Button Content="+12" Command="{Binding AddMultipleCablesCommand}"
+                                            CommandParameter="12" Classes="secondary" Padding="8,4" FontSize="11"/>
+                                </StackPanel>
+                            </StackPanel>
+                        </Border>
+                    </Grid>
+                </Grid>
+            </Border>
+
+            <!-- Center Panel: Cross-Section View -->
+            <Grid Grid.Column="1" RowDefinitions="*,Auto">
+                <Border Background="White" Margin="16" CornerRadius="8"
+                        BorderBrush="#E0E0E0" BorderThickness="1"
+                        BoxShadow="0 2 8 0 #20000000">
+                    <Grid>
+                        <Image Source="{Binding CrossSectionImage, Converter={StaticResource ByteArrayToImageConverter}}"
+                               Stretch="Uniform" Margin="16"/>
+                        <TextBlock Text="Add layers and cables to see cross-section"
+                                   HorizontalAlignment="Center" VerticalAlignment="Center"
+                                   Foreground="#999" FontSize="14"
+                                   IsVisible="{Binding Assembly.Layers.Count, Converter={StaticResource ZeroConverter}}"/>
+                    </Grid>
+                </Border>
+
+                <!-- Validation Messages -->
+                <Border Grid.Row="1" Background="#FFF3CD" Margin="16,0,16,16" Padding="12" CornerRadius="4"
+                        IsVisible="{Binding ValidationMessages.Count, Converter={StaticResource GreaterThanZeroConverter}}">
+                    <StackPanel>
+                        <TextBlock Text="Validation Issues:" FontWeight="SemiBold" Foreground="#856404" Margin="0,0,0,4"/>
+                        <ItemsControl ItemsSource="{Binding ValidationMessages}">
+                            <ItemsControl.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding}" Foreground="#856404" FontSize="11" TextWrapping="Wrap"/>
+                                </DataTemplate>
+                            </ItemsControl.ItemTemplate>
+                        </ItemsControl>
+                    </StackPanel>
+                </Border>
+            </Grid>
+
+            <!-- Right Panel: Properties -->
+            <Border Grid.Column="2" Background="#F5F5F5" BorderBrush="#E0E0E0" BorderThickness="1,0,0,0">
+                <ScrollViewer>
+                    <StackPanel Margin="12" Spacing="12">
+                        <!-- Assembly Properties -->
+                        <Border Classes="panel">
+                            <StackPanel>
+                                <TextBlock Text="ASSEMBLY PROPERTIES" Classes="panel-title"/>
+                                <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto" ColumnDefinitions="Auto,*" RowSpacing="8" ColumnSpacing="8">
+                                    <TextBlock Grid.Row="0" Text="Part Number:" Classes="label" VerticalAlignment="Center"/>
+                                    <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding Assembly.PartNumber}"
+                                             TextChanged="OnPropertyChanged"/>
+
+                                    <TextBlock Grid.Row="1" Text="Revision:" Classes="label" VerticalAlignment="Center"/>
+                                    <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding Assembly.Revision}"
+                                             TextChanged="OnPropertyChanged"/>
+
+                                    <TextBlock Grid.Row="2" Text="Name:" Classes="label" VerticalAlignment="Center"/>
+                                    <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding Assembly.Name}"
+                                             TextChanged="OnPropertyChanged"/>
+
+                                    <TextBlock Grid.Row="3" Text="Designer:" Classes="label" VerticalAlignment="Center"/>
+                                    <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding Assembly.DesignedBy}"/>
+
+                                    <TextBlock Grid.Row="4" Text="Temp Rating:" Classes="label" VerticalAlignment="Center"/>
+                                    <NumericUpDown Grid.Row="4" Grid.Column="1" Value="{Binding Assembly.TemperatureRating}"
+                                                   Minimum="0" Maximum="500" FormatString="0 °C"/>
+
+                                    <TextBlock Grid.Row="5" Text="Voltage:" Classes="label" VerticalAlignment="Center"/>
+                                    <NumericUpDown Grid.Row="5" Grid.Column="1" Value="{Binding Assembly.VoltageRating}"
+                                                   Minimum="0" Maximum="10000" FormatString="0 V"/>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Dimensions (Read-only) -->
+                        <Border Classes="panel">
+                            <StackPanel>
+                                <TextBlock Text="DIMENSIONS" Classes="panel-title"/>
+                                <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto" ColumnDefinitions="*,Auto" RowSpacing="6">
+                                    <TextBlock Grid.Row="0" Text="Overall Diameter:" Classes="label"/>
+                                    <TextBlock Grid.Row="0" Grid.Column="1" Classes="value">
+                                        <TextBlock.Text>
+                                            <Binding Path="Assembly.OverallDiameter" StringFormat="{}{0:F2} mm"/>
+                                        </TextBlock.Text>
+                                    </TextBlock>
+
+                                    <TextBlock Grid.Row="1" Text="Core Bundle:" Classes="label"/>
+                                    <TextBlock Grid.Row="1" Grid.Column="1" Classes="value">
+                                        <TextBlock.Text>
+                                            <Binding Path="Assembly.CoreBundleDiameter" StringFormat="{}{0:F2} mm"/>
+                                        </TextBlock.Text>
+                                    </TextBlock>
+
+                                    <TextBlock Grid.Row="2" Text="Total Cables:" Classes="label"/>
+                                    <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding Assembly.TotalCableCount}" Classes="value"/>
+
+                                    <TextBlock Grid.Row="3" Text="Total Conductors:" Classes="label"/>
+                                    <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding Assembly.TotalConductorCount}" Classes="value"/>
+
+                                    <TextBlock Grid.Row="4" Text="Total Fillers:" Classes="label"/>
+                                    <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding Assembly.TotalFillerCount}" Classes="value"/>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Layer Properties -->
+                        <Border Classes="panel" IsEnabled="{Binding SelectedLayer, Converter={x:Static ObjectConverters.IsNotNull}}">
+                            <StackPanel>
+                                <TextBlock Text="LAYER PROPERTIES" Classes="panel-title"/>
+                                <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto" ColumnDefinitions="Auto,*" RowSpacing="8" ColumnSpacing="8">
+                                    <TextBlock Grid.Row="0" Text="Twist Direction:" Classes="label" VerticalAlignment="Center"/>
+                                    <ComboBox Grid.Row="0" Grid.Column="1"
+                                              ItemsSource="{Binding Source={x:Static models:TwistDirection.None}, Converter={StaticResource EnumValuesConverter}}"
+                                              SelectedItem="{Binding SelectedLayer.TwistDirection}"
+                                              SelectionChanged="OnLayerPropertyChanged"/>
+
+                                    <TextBlock Grid.Row="1" Text="Lay Length:" Classes="label" VerticalAlignment="Center"/>
+                                    <NumericUpDown Grid.Row="1" Grid.Column="1" Value="{Binding SelectedLayer.LayLength}"
+                                                   Minimum="0" Maximum="500" FormatString="0 mm"
+                                                   ValueChanged="OnLayerPropertyChanged"/>
+
+                                    <TextBlock Grid.Row="2" Text="Filler Count:" Classes="label" VerticalAlignment="Center"/>
+                                    <NumericUpDown Grid.Row="2" Grid.Column="1" Value="{Binding SelectedLayer.FillerCount}"
+                                                   Minimum="0" Maximum="100" FormatString="0"
+                                                   ValueChanged="OnLayerPropertyChanged"/>
+
+                                    <TextBlock Grid.Row="3" Text="Filler Diameter:" Classes="label" VerticalAlignment="Center"/>
+                                    <NumericUpDown Grid.Row="3" Grid.Column="1" Value="{Binding SelectedLayer.FillerDiameter}"
+                                                   Minimum="0" Maximum="20" FormatString="0.00 mm" Increment="0.1"
+                                                   ValueChanged="OnLayerPropertyChanged"/>
+
+                                    <TextBlock Grid.Row="4" Text="Filler Material:" Classes="label" VerticalAlignment="Center"/>
+                                    <TextBox Grid.Row="4" Grid.Column="1" Text="{Binding SelectedLayer.FillerMaterial}"
+                                             TextChanged="OnLayerPropertyChanged"/>
+                                </Grid>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Heat Shrinks -->
+                        <Border Classes="panel">
+                            <StackPanel>
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <TextBlock Text="HEAT SHRINKS" Classes="panel-title"/>
+                                    <Button Grid.Column="1" Content="+" Command="{Binding AddHeatShrinkCommand}"
+                                            Classes="secondary" Padding="6,2" FontSize="12"/>
+                                </Grid>
+                                <ItemsControl ItemsSource="{Binding Assembly.HeatShrinks}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="models:HeatShrink">
+                                            <Border Background="#F8F8F8" Padding="8" CornerRadius="4" Margin="0,4">
+                                                <Grid ColumnDefinitions="*,Auto">
+                                                    <StackPanel>
+                                                        <TextBlock Text="{Binding PartNumber}" FontWeight="SemiBold" FontSize="11"/>
+                                                        <TextBlock FontSize="10" Foreground="#666">
+                                                            <TextBlock.Text>
+                                                                <MultiBinding StringFormat="{}{0}, {1}">
+                                                                    <Binding Path="Material"/>
+                                                                    <Binding Path="ShrinkRatio"/>
+                                                                </MultiBinding>
+                                                            </TextBlock.Text>
+                                                        </TextBlock>
+                                                    </StackPanel>
+                                                    <Button Grid.Column="1" Content="X"
+                                                            Command="{Binding $parent[ItemsControl].((vm:MainWindowViewModel)DataContext).RemoveHeatShrinkCommand}"
+                                                            CommandParameter="{Binding}"
+                                                            Classes="danger" Padding="4,2" FontSize="10"/>
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                                <TextBlock Text="No heat shrinks" FontSize="11" Foreground="#999" Margin="0,4"
+                                           IsVisible="{Binding !Assembly.HeatShrinks.Count}"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Over-Braids -->
+                        <Border Classes="panel">
+                            <StackPanel>
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <TextBlock Text="OVER-BRAIDS" Classes="panel-title"/>
+                                    <Button Grid.Column="1" Content="+" Command="{Binding AddOverBraidCommand}"
+                                            Classes="secondary" Padding="6,2" FontSize="12"/>
+                                </Grid>
+                                <ItemsControl ItemsSource="{Binding Assembly.OverBraids}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="models:OverBraid">
+                                            <Border Background="#F8F8F8" Padding="8" CornerRadius="4" Margin="0,4">
+                                                <Grid ColumnDefinitions="*,Auto">
+                                                    <StackPanel>
+                                                        <TextBlock Text="{Binding PartNumber}" FontWeight="SemiBold" FontSize="11"/>
+                                                        <TextBlock FontSize="10" Foreground="#666">
+                                                            <TextBlock.Text>
+                                                                <MultiBinding StringFormat="{}{0}, {1}% coverage">
+                                                                    <Binding Path="Material"/>
+                                                                    <Binding Path="CoveragePercent"/>
+                                                                </MultiBinding>
+                                                            </TextBlock.Text>
+                                                        </TextBlock>
+                                                    </StackPanel>
+                                                    <Button Grid.Column="1" Content="X"
+                                                            Command="{Binding $parent[ItemsControl].((vm:MainWindowViewModel)DataContext).RemoveOverBraidCommand}"
+                                                            CommandParameter="{Binding}"
+                                                            Classes="danger" Padding="4,2" FontSize="10"/>
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                                <TextBlock Text="No over-braids" FontSize="11" Foreground="#999" Margin="0,4"
+                                           IsVisible="{Binding !Assembly.OverBraids.Count}"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Notes -->
+                        <Border Classes="panel">
+                            <StackPanel>
+                                <TextBlock Text="NOTES" Classes="panel-title"/>
+                                <TextBox Text="{Binding Assembly.Notes}" AcceptsReturn="True"
+                                         Height="80" TextWrapping="Wrap"/>
+                            </StackPanel>
+                        </Border>
+                    </StackPanel>
+                </ScrollViewer>
+            </Border>
+        </Grid>
+    </DockPanel>
+</Window>

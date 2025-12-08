@@ -2,7 +2,18 @@
     "version": "0.2.0",
     "configurations": [
         {
-            "name": "Launch (Interactive)",
+            "name": "Launch GUI",
+            "type": "coreclr",
+            "request": "launch",
+            "preLaunchTask": "build-gui",
+            "program": "${workspaceFolder}/CableConcentricityCalculator.Gui/bin/Debug/net9.0/CableConcentricityCalculator.Gui.dll",
+            "args": [],
+            "cwd": "${workspaceFolder}",
+            "console": "internalConsole",
+            "stopAtEntry": false
+        },
+        {
+            "name": "Launch Console (Interactive)",
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
@@ -12,22 +23,12 @@
             "console": "integratedTerminal"
         },
         {
-            "name": "Launch (Demo)",
+            "name": "Launch Console (Demo)",
             "type": "coreclr",
             "request": "launch",
             "preLaunchTask": "build",
             "program": "${workspaceFolder}/CableConcentricityCalculator/bin/Debug/net9.0/CableConcentricityCalculator.dll",
             "args": ["--demo"],
-            "cwd": "${workspaceFolder}",
-            "console": "integratedTerminal"
-        },
-        {
-            "name": "Launch (Load Sample)",
-            "type": "coreclr",
-            "request": "launch",
-            "preLaunchTask": "build",
-            "program": "${workspaceFolder}/CableConcentricityCalculator/bin/Debug/net9.0/CableConcentricityCalculator.dll",
-            "args": ["--load", "Samples/sample-7-conductor.json"],
             "cwd": "${workspaceFolder}",
             "console": "integratedTerminal"
         }
