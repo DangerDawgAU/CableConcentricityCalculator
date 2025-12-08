@@ -12,6 +12,19 @@
                 "/consoleloggerparameters:NoSummary"
             ],
             "problemMatcher": "$msCompile",
+            "group": "build"
+        },
+        {
+            "label": "build-gui",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "build",
+                "${workspaceFolder}/CableConcentricityCalculator.Gui/CableConcentricityCalculator.Gui.csproj",
+                "/property:GenerateFullPaths=true",
+                "/consoleloggerparameters:NoSummary"
+            ],
+            "problemMatcher": "$msCompile",
             "group": {
                 "kind": "build",
                 "isDefault": true
@@ -29,7 +42,49 @@
             "problemMatcher": "$msCompile"
         },
         {
-            "label": "publish-win",
+            "label": "publish-gui-win",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "publish",
+                "${workspaceFolder}/CableConcentricityCalculator.Gui/CableConcentricityCalculator.Gui.csproj",
+                "-c", "Release",
+                "-r", "win-x64",
+                "--self-contained", "true",
+                "-o", "./publish/gui-win-x64"
+            ],
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "publish-gui-linux",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "publish",
+                "${workspaceFolder}/CableConcentricityCalculator.Gui/CableConcentricityCalculator.Gui.csproj",
+                "-c", "Release",
+                "-r", "linux-x64",
+                "--self-contained", "true",
+                "-o", "./publish/gui-linux-x64"
+            ],
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "publish-gui-macos",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "publish",
+                "${workspaceFolder}/CableConcentricityCalculator.Gui/CableConcentricityCalculator.Gui.csproj",
+                "-c", "Release",
+                "-r", "osx-x64",
+                "--self-contained", "true",
+                "-o", "./publish/gui-osx-x64"
+            ],
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "publish-console-win",
             "command": "dotnet",
             "type": "process",
             "args": [
@@ -38,21 +93,7 @@
                 "-c", "Release",
                 "-r", "win-x64",
                 "--self-contained", "true",
-                "-o", "./publish/win-x64"
-            ],
-            "problemMatcher": "$msCompile"
-        },
-        {
-            "label": "publish-linux",
-            "command": "dotnet",
-            "type": "process",
-            "args": [
-                "publish",
-                "${workspaceFolder}/CableConcentricityCalculator/CableConcentricityCalculator.csproj",
-                "-c", "Release",
-                "-r", "linux-x64",
-                "--self-contained", "true",
-                "-o", "./publish/linux-x64"
+                "-o", "./publish/console-win-x64"
             ],
             "problemMatcher": "$msCompile"
         },
@@ -71,7 +112,17 @@
             "problemMatcher": "$msCompile"
         },
         {
-            "label": "run-demo",
+            "label": "run-gui",
+            "command": "dotnet",
+            "type": "process",
+            "args": [
+                "run",
+                "--project", "${workspaceFolder}/CableConcentricityCalculator.Gui"
+            ],
+            "problemMatcher": "$msCompile"
+        },
+        {
+            "label": "run-console-demo",
             "command": "dotnet",
             "type": "process",
             "args": [

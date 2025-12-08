@@ -1,0 +1,143 @@
+<Styles xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml">
+
+    <!-- Panel Styles -->
+    <Style Selector="Border.panel">
+        <Setter Property="Background" Value="#FAFAFA"/>
+        <Setter Property="BorderBrush" Value="#E0E0E0"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="CornerRadius" Value="8"/>
+        <Setter Property="Padding" Value="12"/>
+    </Style>
+
+    <Style Selector="Border.header">
+        <Setter Property="Background" Value="#0078D4"/>
+        <Setter Property="Padding" Value="16,12"/>
+    </Style>
+
+    <Style Selector="TextBlock.header-title">
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="FontSize" Value="20"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+    </Style>
+
+    <Style Selector="TextBlock.panel-title">
+        <Setter Property="FontSize" Value="14"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="Margin" Value="0,0,0,12"/>
+        <Setter Property="Foreground" Value="#333333"/>
+    </Style>
+
+    <Style Selector="TextBlock.label">
+        <Setter Property="FontSize" Value="12"/>
+        <Setter Property="Foreground" Value="#666666"/>
+        <Setter Property="Margin" Value="0,0,0,4"/>
+    </Style>
+
+    <Style Selector="TextBlock.value">
+        <Setter Property="FontSize" Value="13"/>
+        <Setter Property="FontWeight" Value="SemiBold"/>
+        <Setter Property="Foreground" Value="#333333"/>
+    </Style>
+
+    <!-- Button Styles -->
+    <Style Selector="Button.primary">
+        <Setter Property="Background" Value="#0078D4"/>
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="Padding" Value="16,8"/>
+        <Setter Property="CornerRadius" Value="4"/>
+    </Style>
+
+    <Style Selector="Button.secondary">
+        <Setter Property="Background" Value="#F0F0F0"/>
+        <Setter Property="Foreground" Value="#333333"/>
+        <Setter Property="Padding" Value="12,6"/>
+        <Setter Property="CornerRadius" Value="4"/>
+    </Style>
+
+    <Style Selector="Button.success">
+        <Setter Property="Background" Value="#28A745"/>
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="Padding" Value="16,8"/>
+        <Setter Property="CornerRadius" Value="4"/>
+    </Style>
+
+    <Style Selector="Button.danger">
+        <Setter Property="Background" Value="#DC3545"/>
+        <Setter Property="Foreground" Value="White"/>
+        <Setter Property="Padding" Value="12,6"/>
+        <Setter Property="CornerRadius" Value="4"/>
+    </Style>
+
+    <Style Selector="Button.icon-button">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Padding" Value="8"/>
+        <Setter Property="CornerRadius" Value="4"/>
+    </Style>
+
+    <!-- Input Styles -->
+    <Style Selector="TextBox">
+        <Setter Property="Padding" Value="8,6"/>
+        <Setter Property="CornerRadius" Value="4"/>
+    </Style>
+
+    <Style Selector="ComboBox">
+        <Setter Property="Padding" Value="8,6"/>
+        <Setter Property="CornerRadius" Value="4"/>
+    </Style>
+
+    <Style Selector="NumericUpDown">
+        <Setter Property="Padding" Value="8,6"/>
+    </Style>
+
+    <!-- ListBox Styles -->
+    <Style Selector="ListBox.layer-list">
+        <Setter Property="Background" Value="White"/>
+        <Setter Property="BorderBrush" Value="#E0E0E0"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="CornerRadius" Value="4"/>
+    </Style>
+
+    <Style Selector="ListBoxItem">
+        <Setter Property="Padding" Value="12,8"/>
+    </Style>
+
+    <!-- Status bar -->
+    <Style Selector="Border.statusbar">
+        <Setter Property="Background" Value="#F5F5F5"/>
+        <Setter Property="BorderBrush" Value="#E0E0E0"/>
+        <Setter Property="BorderThickness" Value="0,1,0,0"/>
+        <Setter Property="Padding" Value="12,6"/>
+    </Style>
+
+    <!-- Cable color indicators -->
+    <Style Selector="Ellipse.color-indicator">
+        <Setter Property="Width" Value="16"/>
+        <Setter Property="Height" Value="16"/>
+        <Setter Property="Stroke" Value="#333333"/>
+        <Setter Property="StrokeThickness" Value="1"/>
+    </Style>
+
+    <!-- Layer item -->
+    <Style Selector="Border.layer-item">
+        <Setter Property="Background" Value="White"/>
+        <Setter Property="BorderBrush" Value="#E8E8E8"/>
+        <Setter Property="BorderThickness" Value="1"/>
+        <Setter Property="CornerRadius" Value="6"/>
+        <Setter Property="Padding" Value="12"/>
+        <Setter Property="Margin" Value="0,0,0,8"/>
+    </Style>
+
+    <Style Selector="Border.layer-item:pointerover">
+        <Setter Property="BorderBrush" Value="#0078D4"/>
+        <Setter Property="Background" Value="#F8FBFF"/>
+    </Style>
+
+    <!-- Separator -->
+    <Style Selector="Separator">
+        <Setter Property="Background" Value="#E0E0E0"/>
+        <Setter Property="Height" Value="1"/>
+        <Setter Property="Margin" Value="0,8"/>
+    </Style>
+
+</Styles>

@@ -2,13 +2,17 @@
 
 A comprehensive C# application for designing and visualizing concentrically twisted cable harness assemblies. This tool helps engineers understand cable layups, calculate dimensions, and generate professional PDF reports for cable assembly manufacturing.
 
+**Available in two versions:**
+- **GUI Application** - Cross-platform graphical interface (Windows, macOS, Linux)
+- **Console Application** - Command-line interface for scripting and automation
+
 ## Features
 
 - **Concentric Cable Design**: Design cables with multiple layers of conductors twisted concentrically
 - **Multi-Core Support**: Handle single-core and multi-core cables with configurable core counts
 - **Flexible Configuration**: Define conductor diameters, insulation, shielding, and jacket properties
 - **Filler Wire Calculation**: Automatic calculation of filler wires needed for proper concentricity
-- **Visual Cross-Section**: Generate visual cross-section diagrams of your cable assembly
+- **Visual Cross-Section**: Real-time visual cross-section diagrams of your cable assembly
 - **PDF Report Generation**: Create professional PDF reports with all assembly specifications
 - **Heat Shrink Support**: Define heat shrink tubing with shrink ratios and wall thicknesses
 - **Over-Braid Configuration**: Add EMI shielding braids with coverage specifications
@@ -17,39 +21,90 @@ A comprehensive C# application for designing and visualizing concentrically twis
 
 ## Quick Start
 
-### Run Demo Mode
+### GUI Application (Recommended)
 
-To see the application in action with a sample cable assembly:
+Launch the graphical interface:
+
+```powershell
+dotnet run --project CableConcentricityCalculator.Gui
+```
+
+The GUI provides:
+- Visual cable layup editor with real-time cross-section preview
+- Drag-and-drop cable management
+- Point-and-click layer configuration
+- One-click PDF and image export
+- Built-in cable library browser
+
+### Console Application
+
+#### Demo Mode
+
+To see a sample cable assembly:
 
 ```powershell
 dotnet run --project CableConcentricityCalculator -- --demo
 ```
 
-This generates:
-- A sample 19-conductor cable configuration
-- Cross-section visualization (PNG)
-- Complete PDF report
-- JSON configuration file
-
-### Interactive Mode
-
-Launch the interactive designer:
+#### Interactive Console Mode
 
 ```powershell
 dotnet run --project CableConcentricityCalculator
 ```
 
-### Load Existing Design
-
-Process a saved cable design and generate a report:
+#### Load Existing Design
 
 ```powershell
-dotnet run --project CableConcentricityCalculator -- --load Samples/sample-7-conductor.json output/report.pdf
+dotnet run --project CableConcentricityCalculator -- --load Samples/sample-7-conductor.json
 ```
 
-## Interactive Mode Guide
+## GUI Application Guide
 
-The interactive mode provides a menu-driven interface for cable design:
+### Main Interface
+
+The GUI is divided into three panels:
+
+1. **Left Panel - Layers & Cables**
+   - View and manage cable layers
+   - Add/remove cables from selected layer
+   - Quick-add buttons for common quantities (1, 6, 12 cables)
+
+2. **Center Panel - Cross-Section View**
+   - Real-time visualization of your cable assembly
+   - Updates automatically as you make changes
+   - Shows validation warnings if present
+
+3. **Right Panel - Properties**
+   - Assembly properties (part number, name, ratings)
+   - Calculated dimensions (overall diameter, conductor count)
+   - Layer properties (twist direction, lay length, fillers)
+   - Heat shrink and over-braid management
+   - Notes field
+
+### Workflow
+
+1. **Create New Assembly**: File → New or Ctrl+N
+2. **Add First Layer**: Click "+ Layer" button
+3. **Add Cables**: Select cable from library dropdown, click "Add 1" or "+6"/"+12"
+4. **Configure Layer**: Set twist direction, lay length, fillers in right panel
+5. **Add More Layers**: Repeat for each concentric layer
+6. **Add Shielding**: Click "+" in Over-Braids section
+7. **Validate**: Click "Validate" to check assembly
+8. **Export**: File → Export PDF or Export Image
+
+### Keyboard Shortcuts
+
+| Shortcut | Action |
+|----------|--------|
+| Ctrl+N | New Assembly |
+| Ctrl+O | Open Assembly |
+| Ctrl+S | Save Assembly |
+| Ctrl+Shift+S | Save As |
+| Ctrl+E | Export PDF |
+
+## Console Interactive Mode Guide
+
+The console mode provides a menu-driven interface:
 
 ### Creating a New Assembly
 
@@ -60,54 +115,22 @@ The interactive mode provides a menu-driven interface for cable design:
 
 ### Adding Cables
 
-You can add cables from the built-in library or define custom cables:
-
 **From Library:**
 - Select cable types from MIL-SPEC wire library
 - Specify quantities for each cable type
-- Cables include pre-defined conductor, insulation, and jacket properties
 
 **Custom Cable:**
 - Define part number and name
 - Choose cable type (single-core, multi-core, coaxial, etc.)
 - Specify core properties (diameter, insulation, color)
 - Add shielding if needed
-- Set jacket properties
 
 ### Layer Configuration
-
-Each layer (except center) has configurable properties:
 
 - **Twist Direction**: Right-Hand (S), Left-Hand (Z), or None
 - **Lay Length**: Distance for one complete twist (mm)
 - **Fillers**: Add filler wires for proper concentricity
 - **Tape Wrap**: Optional PTFE or other tape wrapping
-
-### Adding Outer Components
-
-**Heat Shrink:**
-- Select from library or define custom
-- Specify shrink ratio and recovered dimensions
-- Set material and color
-
-**Over-Braid:**
-- Choose shielding or protective braid
-- Set coverage percentage
-- Define wall thickness
-
-**Outer Jacket:**
-- Set material and wall thickness
-- Specify color and printing options
-
-### Validation and Optimization
-
-- **Validate Assembly**: Check for geometric feasibility
-- **Optimize Fillers**: Automatically calculate filler requirements
-
-### Generating Output
-
-- **Generate PDF Report**: Creates comprehensive specification document
-- **Save Assembly**: Export to JSON for later use
 
 ## Cable Assembly Structure
 
@@ -141,7 +164,7 @@ Max Cables = π × (Inner Diameter + Cable Diameter) / Cable Diameter
 
 ## Configuration File Format
 
-Cable assemblies are stored as JSON files. Example structure:
+Cable assemblies are stored as JSON files:
 
 ```json
 {
@@ -224,7 +247,7 @@ The application generates files in the `output/` directory:
 5. **Validate Often**: Check assembly validity after each change
 6. **Standard Lay Lengths**: Typical lay lengths are 6-12× cable diameter
 
-## Command Line Reference
+## Command Line Reference (Console App)
 
 ```
 CableConcentricityCalculator [options]
@@ -239,7 +262,7 @@ Options:
 ## Troubleshooting
 
 ### "Assembly has no layers"
-Create at least one layer with cables using the interactive mode.
+Create at least one layer with cables using "Add Layer".
 
 ### "Cannot fit X cables in layer"
 The layer is overfilled. Either:
@@ -249,11 +272,17 @@ The layer is overfilled. Either:
 
 ### "Layer leaves gaps"
 Add filler wires to achieve proper concentricity:
-- Use "Optimize fillers" option
-- Or manually add fillers in layer configuration
+- Use "Optimize Fillers" button/option
+- Or manually set filler count in layer properties
 
 ### PDF generation fails
 Ensure the output directory exists and is writable.
+
+### GUI not launching
+Ensure .NET 9 runtime is installed. Try:
+```powershell
+dotnet --list-runtimes
+```
 
 ## License
 

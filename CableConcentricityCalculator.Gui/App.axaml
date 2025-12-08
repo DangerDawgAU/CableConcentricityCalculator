@@ -1,0 +1,18 @@
+<Application xmlns="https://github.com/avaloniaui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:converters="using:CableConcentricityCalculator.Gui.Converters"
+             x:Class="CableConcentricityCalculator.Gui.App"
+             RequestedThemeVariant="Light">
+    <Application.Resources>
+        <converters:BoolToModifiedConverter x:Key="BoolToModifiedConverter"/>
+        <converters:GreaterThanZeroConverter x:Key="GreaterThanZeroConverter"/>
+        <converters:ZeroConverter x:Key="ZeroConverter"/>
+        <converters:ByteArrayToImageConverter x:Key="ByteArrayToImageConverter"/>
+        <converters:ColorNameConverter x:Key="ColorNameConverter"/>
+        <converters:EnumValuesConverter x:Key="EnumValuesConverter"/>
+    </Application.Resources>
+    <Application.Styles>
+        <FluentTheme />
+        <StyleInclude Source="avares://CableConcentricityCalculator.Gui/Styles/AppStyles.axaml"/>
+    </Application.Styles>
+</Application>
