@@ -1,0 +1,243 @@
+{
+  "assemblyId": "SAMPLE001",
+  "partNumber": "7C-22AWG-SH",
+  "revision": "A",
+  "name": "7-Conductor 22AWG Shielded Cable",
+  "projectReference": "SAMPLE",
+  "designedBy": "Cable Designer",
+  "designDate": "2024-01-15T10:00:00",
+  "layers": [
+    {
+      "layerNumber": 0,
+      "cables": [
+        {
+          "cableId": "c001",
+          "partNumber": "M22759/16-22-0",
+          "manufacturer": "Raychem",
+          "name": "22 AWG White Wire",
+          "type": "SingleCore",
+          "cores": [
+            {
+              "coreId": "1",
+              "conductorDiameter": 0.644,
+              "insulationThickness": 0.2,
+              "insulationColor": "White",
+              "gauge": "22",
+              "conductorMaterial": "Silver Plated Copper"
+            }
+          ],
+          "jacketThickness": 0.2,
+          "jacketColor": "White",
+          "hasShield": false,
+          "shieldType": "None",
+          "shieldThickness": 0,
+          "shieldCoverage": 0,
+          "hasDrainWire": false,
+          "drainWireDiameter": 0,
+          "isFiller": false
+        }
+      ],
+      "twistDirection": "None",
+      "layLength": 0,
+      "fillerCount": 0,
+      "fillerDiameter": 0,
+      "fillerMaterial": "Nylon",
+      "fillerColor": "Natural",
+      "notes": "Center conductor"
+    },
+    {
+      "layerNumber": 1,
+      "cables": [
+        {
+          "cableId": "c002",
+          "partNumber": "M22759/16-22-0",
+          "manufacturer": "Raychem",
+          "name": "22 AWG Black Wire",
+          "type": "SingleCore",
+          "cores": [
+            {
+              "coreId": "1",
+              "conductorDiameter": 0.644,
+              "insulationThickness": 0.2,
+              "insulationColor": "Black",
+              "gauge": "22",
+              "conductorMaterial": "Silver Plated Copper"
+            }
+          ],
+          "jacketThickness": 0.2,
+          "jacketColor": "Black",
+          "hasShield": false,
+          "shieldType": "None",
+          "isFiller": false
+        },
+        {
+          "cableId": "c003",
+          "partNumber": "M22759/16-22-2",
+          "manufacturer": "Raychem",
+          "name": "22 AWG Red Wire",
+          "type": "SingleCore",
+          "cores": [
+            {
+              "coreId": "1",
+              "conductorDiameter": 0.644,
+              "insulationThickness": 0.2,
+              "insulationColor": "Red",
+              "gauge": "22",
+              "conductorMaterial": "Silver Plated Copper"
+            }
+          ],
+          "jacketThickness": 0.2,
+          "jacketColor": "Red",
+          "hasShield": false,
+          "shieldType": "None",
+          "isFiller": false
+        },
+        {
+          "cableId": "c004",
+          "partNumber": "M22759/16-22-5",
+          "manufacturer": "Raychem",
+          "name": "22 AWG Green Wire",
+          "type": "SingleCore",
+          "cores": [
+            {
+              "coreId": "1",
+              "conductorDiameter": 0.644,
+              "insulationThickness": 0.2,
+              "insulationColor": "Green",
+              "gauge": "22",
+              "conductorMaterial": "Silver Plated Copper"
+            }
+          ],
+          "jacketThickness": 0.2,
+          "jacketColor": "Green",
+          "hasShield": false,
+          "shieldType": "None",
+          "isFiller": false
+        },
+        {
+          "cableId": "c005",
+          "partNumber": "M22759/16-22-6",
+          "manufacturer": "Raychem",
+          "name": "22 AWG Blue Wire",
+          "type": "SingleCore",
+          "cores": [
+            {
+              "coreId": "1",
+              "conductorDiameter": 0.644,
+              "insulationThickness": 0.2,
+              "insulationColor": "Blue",
+              "gauge": "22",
+              "conductorMaterial": "Silver Plated Copper"
+            }
+          ],
+          "jacketThickness": 0.2,
+          "jacketColor": "Blue",
+          "hasShield": false,
+          "shieldType": "None",
+          "isFiller": false
+        },
+        {
+          "cableId": "c006",
+          "partNumber": "M22759/16-22-4",
+          "manufacturer": "Raychem",
+          "name": "22 AWG Yellow Wire",
+          "type": "SingleCore",
+          "cores": [
+            {
+              "coreId": "1",
+              "conductorDiameter": 0.644,
+              "insulationThickness": 0.2,
+              "insulationColor": "Yellow",
+              "gauge": "22",
+              "conductorMaterial": "Silver Plated Copper"
+            }
+          ],
+          "jacketThickness": 0.2,
+          "jacketColor": "Yellow",
+          "hasShield": false,
+          "shieldType": "None",
+          "isFiller": false
+        },
+        {
+          "cableId": "c007",
+          "partNumber": "M22759/16-22-3",
+          "manufacturer": "Raychem",
+          "name": "22 AWG Orange Wire",
+          "type": "SingleCore",
+          "cores": [
+            {
+              "coreId": "1",
+              "conductorDiameter": 0.644,
+              "insulationThickness": 0.2,
+              "insulationColor": "Orange",
+              "gauge": "22",
+              "conductorMaterial": "Silver Plated Copper"
+            }
+          ],
+          "jacketThickness": 0.2,
+          "jacketColor": "Orange",
+          "hasShield": false,
+          "shieldType": "None",
+          "isFiller": false
+        }
+      ],
+      "twistDirection": "RightHand",
+      "layLength": 25,
+      "fillerCount": 0,
+      "fillerDiameter": 0,
+      "fillerMaterial": "Nylon",
+      "fillerColor": "Natural",
+      "tapeWrap": {
+        "material": "PTFE",
+        "thickness": 0.05,
+        "width": 12.7,
+        "overlapPercent": 50,
+        "color": "White",
+        "partNumber": "PTFE-TAPE-12"
+      },
+      "notes": "First layer - 6 conductors around center"
+    }
+  ],
+  "heatShrinks": [],
+  "overBraids": [
+    {
+      "id": "ob001",
+      "partNumber": "TC-1/8",
+      "manufacturer": "Alpha Wire",
+      "name": "Tinned Copper Braid 1/8\"",
+      "type": "ExpandableSleeving",
+      "material": "Tinned Copper",
+      "coveragePercent": 85,
+      "nominalInnerDiameter": 3.2,
+      "minInnerDiameter": 1.6,
+      "maxInnerDiameter": 6.4,
+      "wallThickness": 0.5,
+      "carrierCount": 16,
+      "endsPerCarrier": 6,
+      "wireDiameter": 0.1,
+      "color": "Silver",
+      "isShielding": true,
+      "picksPerInch": 12,
+      "appliedOverLayer": -1,
+      "notes": "EMI shielding braid"
+    }
+  ],
+  "outerJacket": {
+    "partNumber": "PVC-3.5",
+    "name": "PVC Outer Jacket",
+    "manufacturer": "Generic",
+    "material": "PVC",
+    "wallThickness": 0.4,
+    "color": "Black",
+    "isPrintable": true,
+    "printText": ""
+  },
+  "length": 1000,
+  "notes": "Standard 7-conductor shielded cable with concentric construction",
+  "temperatureRating": 105,
+  "voltageRating": 300,
+  "applicableStandards": [
+    "MIL-DTL-27500",
+    "SAE AS22759"
+  ]
+}
