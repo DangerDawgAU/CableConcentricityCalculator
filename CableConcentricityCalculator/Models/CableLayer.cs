@@ -62,6 +62,17 @@ public class CableLayer
         Cables.Count > 0 ? Cables.Max(c => c.OuterDiameter) : 0;
 
     /// <summary>
+    /// Total number of conductors in this layer
+    /// </summary>
+    public int TotalConductorCount =>
+        Cables.Where(c => !c.IsFiller).Sum(c => c.Cores.Count);
+
+    /// <summary>
+    /// Layer diameter contribution (diameter of this layer's elements)
+    /// </summary>
+    public double LayerDiameter => MaxCableDiameter > 0 ? MaxCableDiameter : FillerDiameter;
+
+    /// <summary>
     /// Total number of elements (cables + fillers) in this layer
     /// </summary>
     public int TotalElements => Cables.Count + FillerCount;
