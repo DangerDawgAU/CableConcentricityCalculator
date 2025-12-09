@@ -56,6 +56,11 @@ public class CableAssembly
     public List<OverBraid> OverBraids { get; set; } = new();
 
     /// <summary>
+    /// Diagram annotations and balloons
+    /// </summary>
+    public List<Annotation> Annotations { get; set; } = new();
+
+    /// <summary>
     /// Outer jacket (if applicable)
     /// </summary>
     public OuterJacket? OuterJacket { get; set; }
