@@ -265,27 +265,27 @@
                         <Border Classes="panel">
                             <StackPanel>
                                 <TextBlock Text="ASSEMBLY PROPERTIES" Classes="panel-title"/>
-                                <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto" ColumnDefinitions="Auto,*" RowSpacing="8" ColumnSpacing="8">
-                                    <TextBlock Grid.Row="0" Text="Part Number:" Classes="label" VerticalAlignment="Center"/>
+                                <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto,Auto" ColumnDefinitions="Auto,*">
+                                    <TextBlock Grid.Row="0" Text="Part Number:" Classes="label" VerticalAlignment="Center" Margin="0,0,8,8"/>
                                     <TextBox Grid.Row="0" Grid.Column="1" Text="{Binding Assembly.PartNumber}"
-                                             TextChanged="OnPropertyChanged"/>
+                                             TextChanged="OnPropertyChanged" Margin="0,0,0,8"/>
 
-                                    <TextBlock Grid.Row="1" Text="Revision:" Classes="label" VerticalAlignment="Center"/>
+                                    <TextBlock Grid.Row="1" Text="Revision:" Classes="label" VerticalAlignment="Center" Margin="0,0,8,8"/>
                                     <TextBox Grid.Row="1" Grid.Column="1" Text="{Binding Assembly.Revision}"
-                                             TextChanged="OnPropertyChanged"/>
+                                             TextChanged="OnPropertyChanged" Margin="0,0,0,8"/>
 
-                                    <TextBlock Grid.Row="2" Text="Name:" Classes="label" VerticalAlignment="Center"/>
+                                    <TextBlock Grid.Row="2" Text="Name:" Classes="label" VerticalAlignment="Center" Margin="0,0,8,8"/>
                                     <TextBox Grid.Row="2" Grid.Column="1" Text="{Binding Assembly.Name}"
-                                             TextChanged="OnPropertyChanged"/>
+                                             TextChanged="OnPropertyChanged" Margin="0,0,0,8"/>
 
-                                    <TextBlock Grid.Row="3" Text="Designer:" Classes="label" VerticalAlignment="Center"/>
-                                    <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding Assembly.DesignedBy}"/>
+                                    <TextBlock Grid.Row="3" Text="Designer:" Classes="label" VerticalAlignment="Center" Margin="0,0,8,8"/>
+                                    <TextBox Grid.Row="3" Grid.Column="1" Text="{Binding Assembly.DesignedBy}" Margin="0,0,0,8"/>
 
-                                    <TextBlock Grid.Row="4" Text="Temp Rating:" Classes="label" VerticalAlignment="Center"/>
+                                    <TextBlock Grid.Row="4" Text="Temp Rating:" Classes="label" VerticalAlignment="Center" Margin="0,0,8,8"/>
                                     <NumericUpDown Grid.Row="4" Grid.Column="1" Value="{Binding Assembly.TemperatureRating}"
-                                                   Minimum="0" Maximum="500" FormatString="0 °C"/>
+                                                   Minimum="0" Maximum="500" FormatString="0 °C" Margin="0,0,0,8"/>
 
-                                    <TextBlock Grid.Row="5" Text="Voltage:" Classes="label" VerticalAlignment="Center"/>
+                                    <TextBlock Grid.Row="5" Text="Voltage:" Classes="label" VerticalAlignment="Center" Margin="0,0,8,0"/>
                                     <NumericUpDown Grid.Row="5" Grid.Column="1" Value="{Binding Assembly.VoltageRating}"
                                                    Minimum="0" Maximum="10000" FormatString="0 V"/>
                                 </Grid>
@@ -296,26 +296,26 @@
                         <Border Classes="panel">
                             <StackPanel>
                                 <TextBlock Text="DIMENSIONS" Classes="panel-title"/>
-                                <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto" ColumnDefinitions="*,Auto" RowSpacing="6">
-                                    <TextBlock Grid.Row="0" Text="Overall Diameter:" Classes="label"/>
-                                    <TextBlock Grid.Row="0" Grid.Column="1" Classes="value">
+                                <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto" ColumnDefinitions="*,Auto">
+                                    <TextBlock Grid.Row="0" Text="Overall Diameter:" Classes="label" Margin="0,0,0,6"/>
+                                    <TextBlock Grid.Row="0" Grid.Column="1" Classes="value" Margin="0,0,0,6">
                                         <TextBlock.Text>
                                             <Binding Path="Assembly.OverallDiameter" StringFormat="{}{0:F2} mm"/>
                                         </TextBlock.Text>
                                     </TextBlock>
 
-                                    <TextBlock Grid.Row="1" Text="Core Bundle:" Classes="label"/>
-                                    <TextBlock Grid.Row="1" Grid.Column="1" Classes="value">
+                                    <TextBlock Grid.Row="1" Text="Core Bundle:" Classes="label" Margin="0,0,0,6"/>
+                                    <TextBlock Grid.Row="1" Grid.Column="1" Classes="value" Margin="0,0,0,6">
                                         <TextBlock.Text>
                                             <Binding Path="Assembly.CoreBundleDiameter" StringFormat="{}{0:F2} mm"/>
                                         </TextBlock.Text>
                                     </TextBlock>
 
-                                    <TextBlock Grid.Row="2" Text="Total Cables:" Classes="label"/>
-                                    <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding Assembly.TotalCableCount}" Classes="value"/>
+                                    <TextBlock Grid.Row="2" Text="Total Cables:" Classes="label" Margin="0,0,0,6"/>
+                                    <TextBlock Grid.Row="2" Grid.Column="1" Text="{Binding Assembly.TotalCableCount}" Classes="value" Margin="0,0,0,6"/>
 
-                                    <TextBlock Grid.Row="3" Text="Total Conductors:" Classes="label"/>
-                                    <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding Assembly.TotalConductorCount}" Classes="value"/>
+                                    <TextBlock Grid.Row="3" Text="Total Conductors:" Classes="label" Margin="0,0,0,6"/>
+                                    <TextBlock Grid.Row="3" Grid.Column="1" Text="{Binding Assembly.TotalConductorCount}" Classes="value" Margin="0,0,0,6"/>
 
                                     <TextBlock Grid.Row="4" Text="Total Fillers:" Classes="label"/>
                                     <TextBlock Grid.Row="4" Grid.Column="1" Text="{Binding Assembly.TotalFillerCount}" Classes="value"/>
@@ -327,29 +327,29 @@
                         <Border Classes="panel" IsEnabled="{Binding SelectedLayer, Converter={x:Static ObjectConverters.IsNotNull}}">
                             <StackPanel>
                                 <TextBlock Text="LAYER PROPERTIES" Classes="panel-title"/>
-                                <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto" ColumnDefinitions="Auto,*" RowSpacing="8" ColumnSpacing="8">
-                                    <TextBlock Grid.Row="0" Text="Twist Direction:" Classes="label" VerticalAlignment="Center"/>
+                                <Grid RowDefinitions="Auto,Auto,Auto,Auto,Auto" ColumnDefinitions="Auto,*">
+                                    <TextBlock Grid.Row="0" Text="Twist Direction:" Classes="label" VerticalAlignment="Center" Margin="0,0,8,8"/>
                                     <ComboBox Grid.Row="0" Grid.Column="1"
                                               ItemsSource="{Binding Source={x:Static models:TwistDirection.None}, Converter={StaticResource EnumValuesConverter}}"
                                               SelectedItem="{Binding SelectedLayer.TwistDirection}"
-                                              SelectionChanged="OnLayerPropertyChanged"/>
+                                              SelectionChanged="OnLayerPropertyChanged" Margin="0,0,0,8"/>
 
-                                    <TextBlock Grid.Row="1" Text="Lay Length:" Classes="label" VerticalAlignment="Center"/>
+                                    <TextBlock Grid.Row="1" Text="Lay Length:" Classes="label" VerticalAlignment="Center" Margin="0,0,8,8"/>
                                     <NumericUpDown Grid.Row="1" Grid.Column="1" Value="{Binding SelectedLayer.LayLength}"
                                                    Minimum="0" Maximum="500" FormatString="0 mm"
-                                                   ValueChanged="OnLayerPropertyChanged"/>
+                                                   ValueChanged="OnLayerPropertyChanged" Margin="0,0,0,8"/>
 
-                                    <TextBlock Grid.Row="2" Text="Filler Count:" Classes="label" VerticalAlignment="Center"/>
+                                    <TextBlock Grid.Row="2" Text="Filler Count:" Classes="label" VerticalAlignment="Center" Margin="0,0,8,8"/>
                                     <NumericUpDown Grid.Row="2" Grid.Column="1" Value="{Binding SelectedLayer.FillerCount}"
                                                    Minimum="0" Maximum="100" FormatString="0"
-                                                   ValueChanged="OnLayerPropertyChanged"/>
+                                                   ValueChanged="OnLayerPropertyChanged" Margin="0,0,0,8"/>
 
-                                    <TextBlock Grid.Row="3" Text="Filler Diameter:" Classes="label" VerticalAlignment="Center"/>
+                                    <TextBlock Grid.Row="3" Text="Filler Diameter:" Classes="label" VerticalAlignment="Center" Margin="0,0,8,8"/>
                                     <NumericUpDown Grid.Row="3" Grid.Column="1" Value="{Binding SelectedLayer.FillerDiameter}"
                                                    Minimum="0" Maximum="20" FormatString="0.00 mm" Increment="0.1"
-                                                   ValueChanged="OnLayerPropertyChanged"/>
+                                                   ValueChanged="OnLayerPropertyChanged" Margin="0,0,0,8"/>
 
-                                    <TextBlock Grid.Row="4" Text="Filler Material:" Classes="label" VerticalAlignment="Center"/>
+                                    <TextBlock Grid.Row="4" Text="Filler Material:" Classes="label" VerticalAlignment="Center" Margin="0,0,8,0"/>
                                     <TextBox Grid.Row="4" Grid.Column="1" Text="{Binding SelectedLayer.FillerMaterial}"
                                              TextChanged="OnLayerPropertyChanged"/>
                                 </Grid>

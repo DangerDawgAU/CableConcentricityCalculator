@@ -1,8 +1,11 @@
 using System;
+using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+using Avalonia.Controls;
+using Avalonia.Platform.Storage;
 using CableConcentricityCalculator.Models;
 using CableConcentricityCalculator.Reports;
 using CableConcentricityCalculator.Services;
@@ -101,27 +104,29 @@ public partial class MainWindowViewModel : ObservableObject
     {
         try
         {
-            var dialog = new Avalonia.Controls.OpenFileDialog
-            {
-                Title = "Open Cable Assembly",
-                Filters = new System.Collections.Generic.List<Avalonia.Controls.FileDialogFilter>
-                {
-                    new() { Name = "JSON Files", Extensions = { "json" } },
-                    new() { Name = "All Files", Extensions = { "*" } }
-                }
-            };
-
             var window = Avalonia.Application.Current?.ApplicationLifetime
                 is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop
                 ? desktop.MainWindow : null;
 
             if (window == null) return;
 
-            var result = await dialog.ShowAsync(window);
-            if (result?.Length > 0)
+            var storageProvider = window.StorageProvider;
+            var result = await storageProvider.OpenFilePickerAsync(new FilePickerOpenOptions
             {
-                Assembly = await ConfigurationService.LoadAssemblyAsync(result[0]);
-                CurrentFilePath = result[0];
+                Title = "Open Cable Assembly",
+                AllowMultiple = false,
+                FileTypeFilter = new List<FilePickerFileType>
+                {
+                    new("JSON Files") { Patterns = new[] { "*.json" } },
+                    new("All Files") { Patterns = new[] { "*" } }
+                }
+            });
+
+            if (result.Count > 0)
+            {
+                var filePath = result[0].Path.LocalPath;
+                Assembly = await ConfigurationService.LoadAssemblyAsync(filePath);
+                CurrentFilePath = filePath;
                 HasUnsavedChanges = false;
                 SelectedLayer = Assembly.Layers.FirstOrDefault();
                 StatusMessage = $"Loaded: {Assembly.PartNumber}";
@@ -159,30 +164,31 @@ public partial class MainWindowViewModel : ObservableObject
     {
         try
         {
-            var dialog = new Avalonia.Controls.SaveFileDialog
-            {
-                Title = "Save Cable Assembly",
-                DefaultExtension = "json",
-                Filters = new System.Collections.Generic.List<Avalonia.Controls.FileDialogFilter>
-                {
-                    new() { Name = "JSON Files", Extensions = { "json" } }
-                },
-                InitialFileName = $"{Assembly.PartNumber}.json"
-            };
-
             var window = Avalonia.Application.Current?.ApplicationLifetime
                 is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop
                 ? desktop.MainWindow : null;
 
             if (window == null) return;
 
-            var result = await dialog.ShowAsync(window);
-            if (!string.IsNullOrEmpty(result))
+            var storageProvider = window.StorageProvider;
+            var result = await storageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
             {
-                await ConfigurationService.SaveAssemblyAsync(Assembly, result);
-                CurrentFilePath = result;
+                Title = "Save Cable Assembly",
+                DefaultExtension = "json",
+                SuggestedFileName = $"{Assembly.PartNumber}.json",
+                FileTypeChoices = new List<FilePickerFileType>
+                {
+                    new("JSON Files") { Patterns = new[] { "*.json" } }
+                }
+            });
+
+            if (result != null)
+            {
+                var filePath = result.Path.LocalPath;
+                await ConfigurationService.SaveAssemblyAsync(Assembly, filePath);
+                CurrentFilePath = filePath;
                 HasUnsavedChanges = false;
-                StatusMessage = $"Saved: {result}";
+                StatusMessage = $"Saved: {filePath}";
             }
         }
         catch (Exception ex)
@@ -196,28 +202,29 @@ public partial class MainWindowViewModel : ObservableObject
     {
         try
         {
-            var dialog = new Avalonia.Controls.SaveFileDialog
-            {
-                Title = "Export PDF Report",
-                DefaultExtension = "pdf",
-                Filters = new System.Collections.Generic.List<Avalonia.Controls.FileDialogFilter>
-                {
-                    new() { Name = "PDF Files", Extensions = { "pdf" } }
-                },
-                InitialFileName = $"{Assembly.PartNumber}_Report.pdf"
-            };
-
             var window = Avalonia.Application.Current?.ApplicationLifetime
                 is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop
                 ? desktop.MainWindow : null;
 
             if (window == null) return;
 
-            var result = await dialog.ShowAsync(window);
-            if (!string.IsNullOrEmpty(result))
+            var storageProvider = window.StorageProvider;
+            var result = await storageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
             {
-                await Task.Run(() => PdfReportGenerator.GenerateReport(Assembly, result));
-                StatusMessage = $"PDF exported: {result}";
+                Title = "Export PDF Report",
+                DefaultExtension = "pdf",
+                SuggestedFileName = $"{Assembly.PartNumber}_Report.pdf",
+                FileTypeChoices = new List<FilePickerFileType>
+                {
+                    new("PDF Files") { Patterns = new[] { "*.pdf" } }
+                }
+            });
+
+            if (result != null)
+            {
+                var filePath = result.Path.LocalPath;
+                await Task.Run(() => PdfReportGenerator.GenerateReport(Assembly, filePath));
+                StatusMessage = $"PDF exported: {filePath}";
             }
         }
         catch (Exception ex)
@@ -231,29 +238,30 @@ public partial class MainWindowViewModel : ObservableObject
     {
         try
         {
-            var dialog = new Avalonia.Controls.SaveFileDialog
-            {
-                Title = "Export Cross-Section Image",
-                DefaultExtension = "png",
-                Filters = new System.Collections.Generic.List<Avalonia.Controls.FileDialogFilter>
-                {
-                    new() { Name = "PNG Images", Extensions = { "png" } }
-                },
-                InitialFileName = $"{Assembly.PartNumber}_CrossSection.png"
-            };
-
             var window = Avalonia.Application.Current?.ApplicationLifetime
                 is Avalonia.Controls.ApplicationLifetimes.IClassicDesktopStyleApplicationLifetime desktop
                 ? desktop.MainWindow : null;
 
             if (window == null) return;
 
-            var result = await dialog.ShowAsync(window);
-            if (!string.IsNullOrEmpty(result))
+            var storageProvider = window.StorageProvider;
+            var result = await storageProvider.SaveFilePickerAsync(new FilePickerSaveOptions
             {
+                Title = "Export Cross-Section Image",
+                DefaultExtension = "png",
+                SuggestedFileName = $"{Assembly.PartNumber}_CrossSection.png",
+                FileTypeChoices = new List<FilePickerFileType>
+                {
+                    new("PNG Images") { Patterns = new[] { "*.png" } }
+                }
+            });
+
+            if (result != null)
+            {
+                var filePath = result.Path.LocalPath;
                 var imageBytes = CableVisualizer.GenerateCrossSectionImage(Assembly, 1200, 1200);
-                await File.WriteAllBytesAsync(result, imageBytes);
-                StatusMessage = $"Image exported: {result}";
+                await File.WriteAllBytesAsync(filePath, imageBytes);
+                StatusMessage = $"Image exported: {filePath}";
             }
         }
         catch (Exception ex)
