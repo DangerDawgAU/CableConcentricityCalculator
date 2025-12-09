@@ -202,10 +202,16 @@
                         <Border Grid.Row="1" Background="#F0F0F0" Padding="8" Margin="8,0,8,8" CornerRadius="4"
                                 IsEnabled="{Binding SelectedLayer, Converter={x:Static ObjectConverters.IsNotNull}}">
                             <StackPanel Spacing="4">
-                                <TextBlock Text="Add from Library:" FontSize="11" Foreground="#666"/>
+                                <Grid ColumnDefinitions="Auto,*">
+                                    <TextBlock Text="Category:" FontSize="11" Foreground="#666" VerticalAlignment="Center" Margin="0,0,4,0"/>
+                                    <ComboBox Grid.Column="1" ItemsSource="{Binding CableCategories}"
+                                              SelectedItem="{Binding SelectedCableCategory}"
+                                              HorizontalAlignment="Stretch" FontSize="11"/>
+                                </Grid>
+                                <TextBlock Text="Cable:" FontSize="11" Foreground="#666" Margin="0,4,0,0"/>
                                 <ComboBox ItemsSource="{Binding CableLibrary}"
                                           SelectedItem="{Binding SelectedLibraryCable}"
-                                          HorizontalAlignment="Stretch">
+                                          HorizontalAlignment="Stretch" MaxDropDownHeight="300">
                                     <ComboBox.ItemTemplate>
                                         <DataTemplate x:DataType="vm:CableLibraryItem">
                                             <TextBlock Text="{Binding DisplayName}" FontSize="11"/>
@@ -220,6 +226,9 @@
                                     <Button Content="+12" Command="{Binding AddMultipleCablesCommand}"
                                             CommandParameter="12" Classes="secondary" Padding="8,4" FontSize="11"/>
                                 </StackPanel>
+                                <Separator Margin="0,4"/>
+                                <Button Content="Create Custom Cable..." Click="OnCustomCableClick"
+                                        HorizontalAlignment="Stretch" Padding="8,4" FontSize="11"/>
                             </StackPanel>
                         </Border>
                     </Grid>
@@ -227,22 +236,37 @@
             </Border>
 
             <!-- Center Panel: Cross-Section View -->
-            <Grid Grid.Column="1" RowDefinitions="*,Auto">
-                <Border Background="White" Margin="16" CornerRadius="8"
+            <Grid Grid.Column="1" RowDefinitions="*,Auto,Auto">
+                <Border Background="White" Margin="16,16,16,8" CornerRadius="8"
                         BorderBrush="#E0E0E0" BorderThickness="1"
                         BoxShadow="0 2 8 0 #20000000">
                     <Grid>
                         <Image Source="{Binding CrossSectionImage, Converter={StaticResource ByteArrayToImageConverter}}"
-                               Stretch="Uniform" Margin="16"/>
-                        <TextBlock Text="Add layers and cables to see cross-section"
+                               Stretch="Uniform" Margin="16"
+                               PointerPressed="OnImagePointerPressed"
+                               Cursor="Hand"/>
+                        <TextBlock Text="Add layers and cables to see cross-section&#x0a;Click to identify elements | Right-click for options"
                                    HorizontalAlignment="Center" VerticalAlignment="Center"
-                                   Foreground="#999" FontSize="14"
+                                   Foreground="#999" FontSize="14" TextAlignment="Center"
                                    IsVisible="{Binding Assembly.Layers.Count, Converter={StaticResource ZeroConverter}}"/>
                     </Grid>
                 </Border>
 
+                <!-- Element Info Panel -->
+                <Border Grid.Row="1" Background="#E3F2FD" Margin="16,0,16,8" Padding="12" CornerRadius="4"
+                        IsVisible="{Binding ShowElementInfo}">
+                    <Grid ColumnDefinitions="*,Auto">
+                        <StackPanel>
+                            <TextBlock Text="Selected Element:" FontWeight="SemiBold" Foreground="#1565C0" Margin="0,0,0,4"/>
+                            <TextBlock Text="{Binding SelectedElementInfo}" Foreground="#1976D2" FontSize="11" TextWrapping="Wrap"/>
+                        </StackPanel>
+                        <Button Grid.Column="1" Content="Delete" Command="{Binding DeleteSelectedElementCommand}"
+                                VerticalAlignment="Top" Padding="8,4" FontSize="11" Classes="danger"/>
+                    </Grid>
+                </Border>
+
                 <!-- Validation Messages -->
-                <Border Grid.Row="1" Background="#FFF3CD" Margin="16,0,16,16" Padding="12" CornerRadius="4"
+                <Border Grid.Row="2" Background="#FFF3CD" Margin="16,0,16,16" Padding="12" CornerRadius="4"
                         IsVisible="{Binding ValidationMessages.Count, Converter={StaticResource GreaterThanZeroConverter}}">
                     <StackPanel>
                         <TextBlock Text="Validation Issues:" FontWeight="SemiBold" Foreground="#856404" Margin="0,0,0,4"/>
@@ -429,6 +453,45 @@
                                 </ItemsControl>
                                 <TextBlock Text="No over-braids" FontSize="11" Foreground="#999" Margin="0,4"
                                            IsVisible="{Binding !Assembly.OverBraids.Count}"/>
+                            </StackPanel>
+                        </Border>
+
+                        <!-- Annotations/Balloons -->
+                        <Border Classes="panel">
+                            <StackPanel>
+                                <Grid ColumnDefinitions="*,Auto">
+                                    <TextBlock Text="ANNOTATIONS" Classes="panel-title"/>
+                                    <Button Grid.Column="1" Content="+" Command="{Binding AddAnnotationCommand}"
+                                            Classes="secondary" Padding="6,2" FontSize="12" ToolTip.Tip="Add balloon annotation"/>
+                                </Grid>
+                                <TextBlock Text="Right-click on diagram to add annotations at specific locations"
+                                           FontSize="10" Foreground="#888" TextWrapping="Wrap" Margin="0,0,0,4"/>
+                                <ItemsControl ItemsSource="{Binding Assembly.Annotations}">
+                                    <ItemsControl.ItemTemplate>
+                                        <DataTemplate x:DataType="models:Annotation">
+                                            <Border Background="#F8F8F8" Padding="8" CornerRadius="4" Margin="0,4">
+                                                <Grid ColumnDefinitions="Auto,*,Auto">
+                                                    <Border Background="#0078D4" Width="24" Height="24" CornerRadius="12" Margin="0,0,8,0">
+                                                        <TextBlock Text="{Binding BalloonNumber}" Foreground="White"
+                                                                   HorizontalAlignment="Center" VerticalAlignment="Center"
+                                                                   FontSize="11" FontWeight="Bold"/>
+                                                    </Border>
+                                                    <StackPanel Grid.Column="1">
+                                                        <TextBlock Text="{Binding ReferenceText}" FontWeight="SemiBold" FontSize="11"/>
+                                                        <TextBlock Text="{Binding NoteText}" FontSize="10" Foreground="#666"
+                                                                   TextTrimming="CharacterEllipsis" MaxLines="2"/>
+                                                    </StackPanel>
+                                                    <Button Grid.Column="2" Content="X"
+                                                            Command="{Binding $parent[ItemsControl].((vm:MainWindowViewModel)DataContext).RemoveAnnotationCommand}"
+                                                            CommandParameter="{Binding}"
+                                                            Classes="danger" Padding="4,2" FontSize="10" VerticalAlignment="Top"/>
+                                                </Grid>
+                                            </Border>
+                                        </DataTemplate>
+                                    </ItemsControl.ItemTemplate>
+                                </ItemsControl>
+                                <TextBlock Text="No annotations" FontSize="11" Foreground="#999" Margin="0,4"
+                                           IsVisible="{Binding !Assembly.Annotations.Count}"/>
                             </StackPanel>
                         </Border>
 
