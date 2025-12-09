@@ -56,208 +56,44 @@ public class ConfigurationService
     }
 
     /// <summary>
-    /// Create a sample cable library
+    /// Create a sample cable library (uses comprehensive CableLibrary)
     /// </summary>
     public static Dictionary<string, Cable> CreateSampleCableLibrary()
     {
-        var library = new Dictionary<string, Cable>();
-
-        // Single-core wires (MIL-W-22759 style)
-        var gauges = new[]
-        {
-            ("26", 0.405, 0.15),
-            ("24", 0.511, 0.15),
-            ("22", 0.644, 0.20),
-            ("20", 0.812, 0.20),
-            ("18", 1.024, 0.25),
-            ("16", 1.291, 0.30)
-        };
-
-        string[] colors = { "White", "Black", "Red", "Green", "Blue", "Yellow", "Orange", "Brown", "Violet", "Gray" };
-
-        foreach (var (gauge, conductorDia, insulationThick) in gauges)
-        {
-            foreach (var color in colors)
-            {
-                var cable = new Cable
-                {
-                    PartNumber = $"M22759/16-{gauge}-{color[0]}",
-                    Name = $"{gauge} AWG {color} Wire",
-                    Manufacturer = "Raychem",
-                    Type = CableType.SingleCore,
-                    JacketColor = color,
-                    JacketThickness = insulationThick,
-                    Cores = new List<CableCore>
-                    {
-                        new()
-                        {
-                            CoreId = "1",
-                            ConductorDiameter = conductorDia,
-                            InsulationThickness = insulationThick,
-                            InsulationColor = color,
-                            Gauge = gauge,
-                            ConductorMaterial = "Silver Plated Copper"
-                        }
-                    }
-                };
-                library[$"M22759-{gauge}-{color}"] = cable;
-            }
-        }
-
-        // Shielded twisted pairs
-        var stpCable = new Cable
-        {
-            PartNumber = "STP-22-2",
-            Name = "22 AWG Shielded Twisted Pair",
-            Manufacturer = "Alpha Wire",
-            Type = CableType.TwistedPair,
-            HasShield = true,
-            ShieldType = ShieldType.Braid,
-            ShieldThickness = 0.15,
-            ShieldCoverage = 85,
-            JacketThickness = 0.30,
-            JacketColor = "Gray",
-            Cores = new List<CableCore>
-            {
-                new()
-                {
-                    CoreId = "1",
-                    ConductorDiameter = 0.644,
-                    InsulationThickness = 0.20,
-                    InsulationColor = "White",
-                    Gauge = "22"
-                },
-                new()
-                {
-                    CoreId = "2",
-                    ConductorDiameter = 0.644,
-                    InsulationThickness = 0.20,
-                    InsulationColor = "Blue",
-                    Gauge = "22"
-                }
-            }
-        };
-        library["STP-22-2"] = stpCable;
-
-        // Coaxial cable
-        var coaxCable = new Cable
-        {
-            PartNumber = "RG-178",
-            Name = "RG-178 Coaxial Cable",
-            Manufacturer = "Times Microwave",
-            Type = CableType.Coaxial,
-            HasShield = true,
-            ShieldType = ShieldType.Braid,
-            ShieldThickness = 0.15,
-            ShieldCoverage = 90,
-            JacketThickness = 0.25,
-            JacketColor = "Brown",
-            Cores = new List<CableCore>
-            {
-                new()
-                {
-                    CoreId = "Center",
-                    ConductorDiameter = 0.305,
-                    InsulationThickness = 0.48, // PTFE dielectric
-                    InsulationColor = "White",
-                    Gauge = "30",
-                    ConductorMaterial = "Silver Plated Copper"
-                }
-            }
-        };
-        library["RG-178"] = coaxCable;
-
-        // Multi-conductor cable
-        var multiConductor = new Cable
-        {
-            PartNumber = "MC-20-4",
-            Name = "4-Conductor 20 AWG Cable",
-            Manufacturer = "Belden",
-            Type = CableType.MultiCore,
-            HasShield = true,
-            ShieldType = ShieldType.Foil,
-            ShieldThickness = 0.10,
-            HasDrainWire = true,
-            DrainWireDiameter = 0.51,
-            JacketThickness = 0.40,
-            JacketColor = "Black",
-            Cores = new List<CableCore>
-            {
-                new() { CoreId = "1", ConductorDiameter = 0.812, InsulationThickness = 0.20, InsulationColor = "Black", Gauge = "20" },
-                new() { CoreId = "2", ConductorDiameter = 0.812, InsulationThickness = 0.20, InsulationColor = "Red", Gauge = "20" },
-                new() { CoreId = "3", ConductorDiameter = 0.812, InsulationThickness = 0.20, InsulationColor = "White", Gauge = "20" },
-                new() { CoreId = "4", ConductorDiameter = 0.812, InsulationThickness = 0.20, InsulationColor = "Green", Gauge = "20" }
-            }
-        };
-        library["MC-20-4"] = multiConductor;
-
-        return library;
+        // Return the complete cable library with all MIL-W-22759, LAPP, OLFLEX, UNITRONIC, and ETHERLINE cables
+        return CableLibrary.GetCompleteCableLibrary();
     }
 
     /// <summary>
-    /// Create sample heat shrink library
+    /// Get cables filtered by category
+    /// </summary>
+    public static Dictionary<string, Cable> GetCablesByCategory(string category)
+    {
+        return category.ToUpperInvariant() switch
+        {
+            "MIL-W-22759" or "MILSPEC" => CableLibrary.CreateMilW22759Library(),
+            "OLFLEX" => CableLibrary.CreateOlflexLibrary(),
+            "UNITRONIC" => CableLibrary.CreateUnitronicLibrary(),
+            "ETHERLINE" => CableLibrary.CreateEtherlineLibrary(),
+            _ => CableLibrary.GetCompleteCableLibrary()
+        };
+    }
+
+    /// <summary>
+    /// Get available cable categories
+    /// </summary>
+    public static string[] GetCableCategories()
+    {
+        return new[] { "All", "MIL-W-22759", "OLFLEX", "UNITRONIC", "ETHERLINE" };
+    }
+
+    /// <summary>
+    /// Create sample heat shrink library (uses comprehensive DR25 library)
     /// </summary>
     public static Dictionary<string, HeatShrink> CreateSampleHeatShrinkLibrary()
     {
-        var library = new Dictionary<string, HeatShrink>();
-
-        // Raychem DR-25 series
-        var sizes = new[]
-        {
-            (3.0, 1.5, 0.5),
-            (5.0, 2.5, 0.6),
-            (8.0, 4.0, 0.7),
-            (12.0, 6.0, 0.8),
-            (18.0, 9.0, 1.0),
-            (25.0, 12.5, 1.2)
-        };
-
-        foreach (var (supplied, recovered, wall) in sizes)
-        {
-            var hs = new HeatShrink
-            {
-                PartNumber = $"DR-25-{supplied:F0}",
-                Name = $"DR-25 {supplied:F0}mm Heat Shrink",
-                Manufacturer = "Raychem",
-                Material = "Polyolefin",
-                SuppliedInnerDiameter = supplied,
-                RecoveredInnerDiameter = recovered,
-                RecoveredWallThickness = wall,
-                ShrinkRatio = "2:1",
-                Color = "Black",
-                TemperatureRating = 135
-            };
-            library[$"DR-25-{supplied:F0}"] = hs;
-        }
-
-        // Add some PTFE heat shrink
-        var ptfeSizes = new[]
-        {
-            (4.0, 2.0, 0.3),
-            (6.0, 3.0, 0.4),
-            (10.0, 5.0, 0.5)
-        };
-
-        foreach (var (supplied, recovered, wall) in ptfeSizes)
-        {
-            var hs = new HeatShrink
-            {
-                PartNumber = $"PTFE-{supplied:F0}",
-                Name = $"PTFE {supplied:F0}mm Heat Shrink",
-                Manufacturer = "Zeus",
-                Material = "PTFE",
-                SuppliedInnerDiameter = supplied,
-                RecoveredInnerDiameter = recovered,
-                RecoveredWallThickness = wall,
-                ShrinkRatio = "2:1",
-                Color = "Clear",
-                TemperatureRating = 260,
-                RecoveryTemperature = 340
-            };
-            library[$"PTFE-{supplied:F0}"] = hs;
-        }
-
-        return library;
+        // Return the complete DR25 heat shrink library
+        return CableLibrary.GetCompleteHeatShrinkLibrary();
     }
 
     /// <summary>
