@@ -65,6 +65,21 @@ public partial class MainWindowViewModel : ObservableObject
     [ObservableProperty]
     private ObservableCollection<NotesTableEntry> _notesTable;
 
+    [ObservableProperty]
+    private bool _showCrossSection = true;
+
+    [ObservableProperty]
+    private bool _showIsometric;
+
+    [ObservableProperty]
+    private bool _showTwistPattern;
+
+    [ObservableProperty]
+    private byte[]? _isometricImage;
+
+    [ObservableProperty]
+    private byte[]? _twistPatternImage;
+
     public string[] CableCategories => ConfigurationService.GetCableCategories();
 
     public MainWindowViewModel()
@@ -507,6 +522,25 @@ public partial class MainWindowViewModel : ObservableObject
         {
             CrossSectionImage = null;
             InteractiveImage = null;
+        }
+
+        // Generate 3D views
+        try
+        {
+            IsometricImage = Cable3DVisualizer.GenerateIsometricCrossSection(Assembly, 800, 600);
+        }
+        catch
+        {
+            IsometricImage = null;
+        }
+
+        try
+        {
+            TwistPatternImage = Cable3DVisualizer.GenerateTwistedView(Assembly, 800, 600, 2);
+        }
+        catch
+        {
+            TwistPatternImage = null;
         }
     }
 

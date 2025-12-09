@@ -75,7 +75,103 @@ public static class CableLibrary
         // MIL-W-22759/92 - ETFE, high strength conductor
         AddMilW22759Series(library, "92", "ETFE", "Silver Plated HSPC", 150);
 
+        // Add twisted pairs, tris, and quads
+        AddMilW22759TwistedCables(library);
+
         return library;
+    }
+
+    private static void AddMilW22759TwistedCables(Dictionary<string, Cable> library)
+    {
+        var twistedGauges = new[] { "26", "24", "22", "20" };
+        var twistedSlashes = new[] { "16", "32", "34" }; // Common types for twisted cables
+        var twistedConfigs = new[]
+        {
+            (2, "TP", "Twisted Pair"),
+            (3, "TT", "Twisted Tri"),
+            (4, "TQ", "Twisted Quad")
+        };
+
+        foreach (var slash in twistedSlashes)
+        {
+            var (insulation, conductor, tempRating) = slash switch
+            {
+                "16" => ("PTFE", "Silver Plated Copper", 200),
+                "32" => ("ETFE", "Tin Plated Copper", 150),
+                "34" => ("ETFE", "Nickel Plated Copper", 200),
+                _ => ("PTFE", "Silver Plated Copper", 200)
+            };
+
+            foreach (var gauge in twistedGauges)
+            {
+                if (!AwgSizes.TryGetValue(gauge, out var size)) continue;
+
+                foreach (var (coreCount, suffix, description) in twistedConfigs)
+                {
+                    var key = $"M22759/{slash}-{gauge}-{suffix}";
+                    var coreColors = GetTwistedCoreColors(coreCount);
+
+                    library[key] = new Cable
+                    {
+                        PartNumber = $"M22759/{slash}-{gauge}-{suffix}",
+                        Name = $"{gauge} AWG {description} {insulation}",
+                        Manufacturer = "MIL-SPEC",
+                        Type = coreCount == 2 ? CableType.TwistedPair : CableType.MultiCore,
+                        JacketColor = "Clear",
+                        JacketThickness = 0.15,
+                        HasShield = false,
+                        Cores = CreateTwistedCores(coreCount, size.ConductorDia, size.InsulationThick, gauge, conductor, coreColors)
+                    };
+
+                    // Also add shielded versions
+                    var shieldedKey = $"M22759/{slash}-{gauge}-{suffix}S";
+                    library[shieldedKey] = new Cable
+                    {
+                        PartNumber = $"M22759/{slash}-{gauge}-{suffix}S",
+                        Name = $"{gauge} AWG Shielded {description} {insulation}",
+                        Manufacturer = "MIL-SPEC",
+                        Type = coreCount == 2 ? CableType.TwistedPair : CableType.MultiCore,
+                        JacketColor = "Clear",
+                        JacketThickness = 0.20,
+                        HasShield = true,
+                        ShieldType = ShieldType.Braid,
+                        ShieldThickness = 0.15,
+                        ShieldCoverage = 85,
+                        Cores = CreateTwistedCores(coreCount, size.ConductorDia, size.InsulationThick, gauge, conductor, coreColors)
+                    };
+                }
+            }
+        }
+    }
+
+    private static string[] GetTwistedCoreColors(int count)
+    {
+        return count switch
+        {
+            2 => new[] { "White", "Blue" },
+            3 => new[] { "White", "Blue", "Orange" },
+            4 => new[] { "White", "Blue", "Orange", "Green" },
+            _ => new[] { "White", "Blue" }
+        };
+    }
+
+    private static List<CableCore> CreateTwistedCores(int count, double conductorDia, double insulationThick,
+        string gauge, string conductor, string[] colors)
+    {
+        var cores = new List<CableCore>();
+        for (int i = 0; i < count; i++)
+        {
+            cores.Add(new CableCore
+            {
+                CoreId = (i + 1).ToString(),
+                ConductorDiameter = conductorDia,
+                InsulationThickness = insulationThick,
+                InsulationColor = colors[i % colors.Length],
+                Gauge = gauge,
+                ConductorMaterial = conductor
+            });
+        }
+        return cores;
     }
 
     private static void AddMilW22759Series(Dictionary<string, Cable> library, string slash,
