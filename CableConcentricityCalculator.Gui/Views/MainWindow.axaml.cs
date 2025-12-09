@@ -12,9 +12,30 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+        KeyDown += OnKeyDown;
     }
 
     private MainWindowViewModel? ViewModel => DataContext as MainWindowViewModel;
+
+    private void OnKeyDown(object? sender, KeyEventArgs e)
+    {
+        if (ViewModel == null) return;
+
+        // Delete key to remove selected element
+        if (e.Key == Key.Delete || e.Key == Key.Back)
+        {
+            if (ViewModel.SelectedElement != null)
+            {
+                ViewModel.DeleteSelectedElementCommand.Execute(null);
+                e.Handled = true;
+            }
+            else if (ViewModel.SelectedCable != null)
+            {
+                ViewModel.RemoveCableCommand.Execute(null);
+                e.Handled = true;
+            }
+        }
+    }
 
     public void OnImagePointerPressed(object? sender, PointerPressedEventArgs e)
     {
@@ -264,6 +285,30 @@ public partial class MainWindow : Window
     private void OnCustomCableClick(object? sender, RoutedEventArgs e)
     {
         ShowCustomCableDialog();
+    }
+
+    private async void OnAddCableClick(object? sender, RoutedEventArgs e)
+    {
+        if (ViewModel?.SelectedLayer == null)
+        {
+            ViewModel!.StatusMessage = "Select a layer first";
+            return;
+        }
+
+        var dialog = new CableBrowserDialog();
+        var result = await dialog.ShowDialog<List<Cable>?>(this);
+
+        if (result != null && result.Count > 0)
+        {
+            foreach (var cable in result)
+            {
+                ViewModel.SelectedLayer.Cables.Add(cable);
+            }
+            ViewModel.SelectedCable = result.Last();
+            ViewModel.MarkChanged();
+            ViewModel.UpdateCrossSectionImage();
+            ViewModel.StatusMessage = $"Added {result.Count} cable(s) to Layer {ViewModel.SelectedLayer.LayerNumber}";
+        }
     }
 
     private void OnExitClick(object? sender, RoutedEventArgs e)

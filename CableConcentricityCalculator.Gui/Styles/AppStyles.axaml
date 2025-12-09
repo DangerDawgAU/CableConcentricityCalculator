@@ -140,4 +140,26 @@
         <Setter Property="Margin" Value="0,8"/>
     </Style>
 
+    <!-- View Tab Style -->
+    <Style Selector="RadioButton.viewTab">
+        <Setter Property="Background" Value="Transparent"/>
+        <Setter Property="Padding" Value="12,6"/>
+        <Setter Property="Margin" Value="0,0,4,0"/>
+        <Setter Property="CornerRadius" Value="4"/>
+        <Setter Property="Foreground" Value="#666666"/>
+    </Style>
+
+    <Style Selector="RadioButton.viewTab:checked">
+        <Setter Property="Background" Value="#0078D4"/>
+        <Setter Property="Foreground" Value="White"/>
+    </Style>
+
+    <Style Selector="RadioButton.viewTab:pointerover">
+        <Setter Property="Background" Value="#E8E8E8"/>
+    </Style>
+
+    <Style Selector="RadioButton.viewTab:checked:pointerover">
+        <Setter Property="Background" Value="#106EBE"/>
+    </Style>
+
 </Styles>
