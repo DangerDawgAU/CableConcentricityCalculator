@@ -47,12 +47,71 @@ public partial class MainWindowViewModel : ObservableObject
     [ObservableProperty]
     private ObservableCollection<string> _validationMessages;
 
+    [ObservableProperty]
+    private InteractiveImageResult? _interactiveImage;
+
+    [ObservableProperty]
+    private VisualElement? _selectedElement;
+
+    [ObservableProperty]
+    private string _selectedElementInfo = "";
+
+    [ObservableProperty]
+    private bool _showElementInfo;
+
+    [ObservableProperty]
+    private string _selectedCableCategory = "All";
+
+    [ObservableProperty]
+    private ObservableCollection<NotesTableEntry> _notesTable;
+
+    [ObservableProperty]
+    private bool _showCrossSection = true;
+
+    [ObservableProperty]
+    private bool _showIsometric;
+
+    [ObservableProperty]
+    private bool _showTwistPattern;
+
+    [ObservableProperty]
+    private byte[]? _isometricImage;
+
+    [ObservableProperty]
+    private byte[]? _twistPatternImage;
+
+    public string[] CableCategories => ConfigurationService.GetCableCategories();
+
     public MainWindowViewModel()
     {
         _assembly = CreateNewAssembly();
         _cableLibrary = new ObservableCollection<CableLibraryItem>(LoadCableLibrary());
         _validationMessages = new ObservableCollection<string>();
+        _notesTable = new ObservableCollection<NotesTableEntry>();
         UpdateCrossSectionImage();
+    }
+
+    partial void OnSelectedCableCategoryChanged(string value)
+    {
+        RefreshCableLibrary();
+    }
+
+    private void RefreshCableLibrary()
+    {
+        var library = SelectedCableCategory == "All"
+            ? ConfigurationService.CreateSampleCableLibrary()
+            : ConfigurationService.GetCablesByCategory(SelectedCableCategory);
+
+        CableLibrary.Clear();
+        foreach (var item in library.Select(kvp => new CableLibraryItem
+        {
+            Key = kvp.Key,
+            Cable = kvp.Value,
+            DisplayName = $"{kvp.Value.PartNumber} - {kvp.Value.Name}"
+        }).OrderBy(x => x.Key).Take(500)) // Limit to 500 items for performance
+        {
+            CableLibrary.Add(item);
+        }
     }
 
     private static CableAssembly CreateNewAssembly()
@@ -456,12 +515,259 @@ public partial class MainWindowViewModel : ObservableObject
     {
         try
         {
-            CrossSectionImage = CableVisualizer.GenerateCrossSectionImage(Assembly, 600, 600);
+            InteractiveImage = InteractiveVisualizer.GenerateInteractiveImage(Assembly, 600, 600);
+            CrossSectionImage = InteractiveImage.ImageData;
         }
         catch
         {
             CrossSectionImage = null;
+            InteractiveImage = null;
         }
+
+        // Generate 3D views
+        try
+        {
+            IsometricImage = Cable3DVisualizer.GenerateIsometricCrossSection(Assembly, 800, 600);
+        }
+        catch
+        {
+            IsometricImage = null;
+        }
+
+        try
+        {
+            TwistPatternImage = Cable3DVisualizer.GenerateTwistedView(Assembly, 800, 600, 2);
+        }
+        catch
+        {
+            TwistPatternImage = null;
+        }
+    }
+
+    /// <summary>
+    /// Handle click on the cross-section image
+    /// </summary>
+    public void HandleImageClick(float x, float y)
+    {
+        if (InteractiveImage == null) return;
+
+        var element = InteractiveVisualizer.HitTest(InteractiveImage, x, y);
+        SelectedElement = element;
+
+        if (element != null)
+        {
+            ShowElementInfo = true;
+            SelectedElementInfo = GetElementDescription(element);
+
+            // If it's a cable, select it in the tree
+            if (element.Cable != null)
+            {
+                foreach (var layer in Assembly.Layers)
+                {
+                    var cable = layer.Cables.FirstOrDefault(c => c.CableId == element.Cable.CableId);
+                    if (cable != null)
+                    {
+                        SelectedLayer = layer;
+                        SelectedCable = cable;
+                        break;
+                    }
+                }
+            }
+
+            StatusMessage = $"Selected: {GetElementBriefDescription(element)}";
+        }
+        else
+        {
+            ShowElementInfo = false;
+            SelectedElementInfo = "";
+        }
+    }
+
+    private static string GetElementDescription(VisualElement element)
+    {
+        return element.Type switch
+        {
+            VisualElementType.Cable when element.Cable != null => GetCableDescription(element.Cable),
+            VisualElementType.Core when element.Core != null => GetCoreDescription(element.Core),
+            VisualElementType.Filler => $"Filler\nLayer: {element.LayerNumber}\nIndex: {element.ElementIndex}",
+            VisualElementType.Annotation when element.Annotation != null =>
+                $"Balloon #{element.Annotation.BalloonNumber}\n{element.Annotation.ReferenceText}\n{element.Annotation.NoteText}",
+            _ => "Unknown element"
+        };
+    }
+
+    private static string GetCableDescription(Cable cable)
+    {
+        var sb = new System.Text.StringBuilder();
+        sb.AppendLine($"Part Number: {cable.PartNumber}");
+        sb.AppendLine($"Name: {cable.Name}");
+        sb.AppendLine($"Manufacturer: {cable.Manufacturer}");
+        sb.AppendLine($"Type: {cable.Type}");
+        sb.AppendLine($"Overall Ø: {cable.OuterDiameter:F2} mm");
+        sb.AppendLine($"Cores: {cable.Cores.Count}");
+        if (cable.HasShield)
+        {
+            sb.AppendLine($"Shield: {cable.ShieldType} ({cable.ShieldCoverage}%)");
+        }
+        sb.AppendLine($"Jacket: {cable.JacketColor} ({cable.JacketThickness:F2} mm)");
+        return sb.ToString();
+    }
+
+    private static string GetCoreDescription(CableCore core)
+    {
+        var sb = new System.Text.StringBuilder();
+        sb.AppendLine($"Core ID: {core.CoreId}");
+        sb.AppendLine($"Gauge: {core.Gauge} AWG");
+        sb.AppendLine($"Conductor Ø: {core.ConductorDiameter:F3} mm");
+        sb.AppendLine($"Insulation: {core.InsulationColor} ({core.InsulationThickness:F2} mm)");
+        sb.AppendLine($"Overall Ø: {core.OverallDiameter:F2} mm");
+        sb.AppendLine($"Material: {core.ConductorMaterial}");
+        if (!string.IsNullOrEmpty(core.SignalName))
+        {
+            sb.AppendLine($"Signal: {core.SignalName}");
+            sb.AppendLine($"Type: {core.SignalType}");
+        }
+        if (!string.IsNullOrEmpty(core.PinA) || !string.IsNullOrEmpty(core.PinB))
+        {
+            sb.AppendLine($"Pins: {core.PinA} ↔ {core.PinB}");
+        }
+        return sb.ToString();
+    }
+
+    private static string GetElementBriefDescription(VisualElement element)
+    {
+        return element.Type switch
+        {
+            VisualElementType.Cable when element.Cable != null => $"{element.Cable.PartNumber}",
+            VisualElementType.Core when element.Core != null => $"Core {element.Core.CoreId} ({element.Core.InsulationColor})",
+            VisualElementType.Filler => $"Filler (Layer {element.LayerNumber})",
+            VisualElementType.Annotation when element.Annotation != null => $"Note #{element.Annotation.BalloonNumber}",
+            _ => "Element"
+        };
+    }
+
+    [RelayCommand]
+    private void DeleteSelectedElement()
+    {
+        if (SelectedElement == null) return;
+
+        switch (SelectedElement.Type)
+        {
+            case VisualElementType.Cable when SelectedElement.Cable != null:
+                foreach (var layer in Assembly.Layers)
+                {
+                    var cable = layer.Cables.FirstOrDefault(c => c.CableId == SelectedElement.Cable.CableId);
+                    if (cable != null)
+                    {
+                        layer.Cables.Remove(cable);
+                        break;
+                    }
+                }
+                StatusMessage = $"Removed cable: {SelectedElement.Cable.PartNumber}";
+                break;
+
+            case VisualElementType.Annotation when SelectedElement.Annotation != null:
+                Assembly.Annotations.Remove(SelectedElement.Annotation);
+                UpdateNotesTable();
+                StatusMessage = $"Removed annotation #{SelectedElement.Annotation.BalloonNumber}";
+                break;
+
+            case VisualElementType.Filler:
+                // For fillers created via filler count, decrement the count
+                if (SelectedLayer != null && SelectedLayer.FillerCount > 0)
+                {
+                    SelectedLayer.FillerCount--;
+                }
+                StatusMessage = "Removed filler";
+                break;
+        }
+
+        SelectedElement = null;
+        ShowElementInfo = false;
+        MarkChanged();
+        UpdateCrossSectionImage();
+    }
+
+    [RelayCommand]
+    private void AddAnnotation()
+    {
+        var nextNumber = Assembly.Annotations.Count > 0
+            ? Assembly.Annotations.Max(a => a.BalloonNumber) + 1
+            : 1;
+
+        var annotation = new Annotation
+        {
+            BalloonNumber = nextNumber,
+            X = 0,
+            Y = 0,
+            ReferenceText = $"Note {nextNumber}",
+            NoteText = "Enter note text here"
+        };
+
+        Assembly.Annotations.Add(annotation);
+        UpdateNotesTable();
+        MarkChanged();
+        UpdateCrossSectionImage();
+        StatusMessage = $"Added annotation #{nextNumber}";
+    }
+
+    [RelayCommand]
+    private void RemoveAnnotation(Annotation? annotation)
+    {
+        if (annotation == null) return;
+        Assembly.Annotations.Remove(annotation);
+        UpdateNotesTable();
+        MarkChanged();
+        UpdateCrossSectionImage();
+        StatusMessage = $"Removed annotation #{annotation.BalloonNumber}";
+    }
+
+    private void UpdateNotesTable()
+    {
+        NotesTable.Clear();
+        foreach (var annotation in Assembly.Annotations.OrderBy(a => a.BalloonNumber))
+        {
+            NotesTable.Add(new NotesTableEntry
+            {
+                ItemNumber = annotation.BalloonNumber,
+                Reference = annotation.ReferenceText,
+                Description = annotation.NoteText
+            });
+        }
+    }
+
+    [RelayCommand]
+    private void AssignSignal()
+    {
+        if (SelectedElement?.Core == null) return;
+        // Signal assignment would typically open a dialog
+        // For now, just mark it as needing assignment
+        StatusMessage = $"Select signal for core {SelectedElement.Core.CoreId}";
+    }
+
+    public void SetCoreSignal(CableCore core, string signalName, SignalType signalType, string pinA = "", string pinB = "")
+    {
+        core.SignalName = signalName;
+        core.SignalType = signalType;
+        core.PinA = pinA;
+        core.PinB = pinB;
+        MarkChanged();
+        StatusMessage = $"Assigned signal '{signalName}' to core {core.CoreId}";
+    }
+
+    public void AddCustomCable(Cable cable)
+    {
+        if (SelectedLayer == null)
+        {
+            StatusMessage = "Select a layer first";
+            return;
+        }
+
+        SelectedLayer.Cables.Add(cable);
+        SelectedCable = cable;
+        MarkChanged();
+        UpdateCrossSectionImage();
+        StatusMessage = $"Added custom cable: {cable.PartNumber}";
     }
 
     public void MarkChanged()
@@ -503,7 +809,13 @@ public partial class MainWindowViewModel : ObservableObject
                 InsulationThickness = c.InsulationThickness,
                 InsulationColor = c.InsulationColor,
                 Gauge = c.Gauge,
-                ConductorMaterial = c.ConductorMaterial
+                ConductorMaterial = c.ConductorMaterial,
+                SignalName = c.SignalName,
+                SignalDescription = c.SignalDescription,
+                SignalType = c.SignalType,
+                PinA = c.PinA,
+                PinB = c.PinB,
+                WireLabel = c.WireLabel
             }).ToList()
         };
     }
