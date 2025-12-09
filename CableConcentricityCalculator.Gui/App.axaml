@@ -13,6 +13,7 @@
     </Application.Resources>
     <Application.Styles>
         <FluentTheme />
+        <StyleInclude Source="avares://Avalonia.Controls.DataGrid/Themes/Fluent.xaml"/>
         <StyleInclude Source="avares://CableConcentricityCalculator.Gui/Styles/AppStyles.axaml"/>
     </Application.Styles>
 </Application>
