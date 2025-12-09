@@ -11,18 +11,45 @@ public partial class CableBrowserDialog : Window
     private Dictionary<string, Cable> _allCables = new();
     private List<CableDisplayItem> _filteredCables = new();
 
+    // Control references
+    private readonly ComboBox _categoryCombo;
+    private readonly ComboBox _manufacturerCombo;
+    private readonly ComboBox _coresCombo;
+    private readonly ComboBox _typeCombo;
+    private readonly TextBox _searchBox;
+    private readonly TextBlock _resultCountText;
+    private readonly DataGrid _cablesGrid;
+    private readonly NumericUpDown _quantityUpDown;
+    private readonly Button _cancelButton;
+    private readonly Button _addButton;
+    private readonly Button _customButton;
+
     public List<Cable> SelectedCables { get; } = new();
 
     public CableBrowserDialog()
     {
         InitializeComponent();
+
+        // Find controls by name
+        _categoryCombo = this.FindControl<ComboBox>("CategoryCombo")!;
+        _manufacturerCombo = this.FindControl<ComboBox>("ManufacturerCombo")!;
+        _coresCombo = this.FindControl<ComboBox>("CoresCombo")!;
+        _typeCombo = this.FindControl<ComboBox>("TypeCombo")!;
+        _searchBox = this.FindControl<TextBox>("SearchBox")!;
+        _resultCountText = this.FindControl<TextBlock>("ResultCountText")!;
+        _cablesGrid = this.FindControl<DataGrid>("CablesGrid")!;
+        _quantityUpDown = this.FindControl<NumericUpDown>("QuantityUpDown")!;
+        _cancelButton = this.FindControl<Button>("CancelButton")!;
+        _addButton = this.FindControl<Button>("AddButton")!;
+        _customButton = this.FindControl<Button>("CustomButton")!;
+
         LoadCables();
         SetupFilters();
 
-        CancelButton.Click += (_, _) => Close();
-        AddButton.Click += OnAddClick;
-        CustomButton.Click += OnCustomClick;
-        CablesGrid.SelectionChanged += OnSelectionChanged;
+        _cancelButton.Click += (_, _) => Close();
+        _addButton.Click += OnAddClick;
+        _customButton.Click += OnCustomClick;
+        _cablesGrid.SelectionChanged += OnSelectionChanged;
     }
 
     private void LoadCables()
@@ -36,25 +63,25 @@ public partial class CableBrowserDialog : Window
         // Categories
         var categories = new List<string> { "All" };
         categories.AddRange(ConfigurationService.GetCableCategories().Where(c => c != "All"));
-        CategoryCombo.ItemsSource = categories;
-        CategoryCombo.SelectedIndex = 0;
+        _categoryCombo.ItemsSource = categories;
+        _categoryCombo.SelectedIndex = 0;
 
         // Manufacturers
         var manufacturers = new List<string> { "All" };
         manufacturers.AddRange(_allCables.Values.Select(c => c.Manufacturer).Distinct().OrderBy(x => x));
-        ManufacturerCombo.ItemsSource = manufacturers;
-        ManufacturerCombo.SelectedIndex = 0;
+        _manufacturerCombo.ItemsSource = manufacturers;
+        _manufacturerCombo.SelectedIndex = 0;
 
         // Core counts
         var coreCounts = new List<string> { "All", "1", "2", "3", "4", "5+", "8+" };
-        CoresCombo.ItemsSource = coreCounts;
-        CoresCombo.SelectedIndex = 0;
+        _coresCombo.ItemsSource = coreCounts;
+        _coresCombo.SelectedIndex = 0;
 
         // Types
         var types = new List<string> { "All" };
         types.AddRange(Enum.GetNames<CableType>());
-        TypeCombo.ItemsSource = types;
-        TypeCombo.SelectedIndex = 0;
+        _typeCombo.ItemsSource = types;
+        _typeCombo.SelectedIndex = 0;
     }
 
     private void OnFilterChanged(object? sender, SelectionChangedEventArgs e)
@@ -69,11 +96,11 @@ public partial class CableBrowserDialog : Window
 
     private void ApplyFilters()
     {
-        var category = CategoryCombo.SelectedItem as string ?? "All";
-        var manufacturer = ManufacturerCombo.SelectedItem as string ?? "All";
-        var coresFilter = CoresCombo.SelectedItem as string ?? "All";
-        var typeFilter = TypeCombo.SelectedItem as string ?? "All";
-        var search = SearchBox.Text?.ToLowerInvariant() ?? "";
+        var category = _categoryCombo.SelectedItem as string ?? "All";
+        var manufacturer = _manufacturerCombo.SelectedItem as string ?? "All";
+        var coresFilter = _coresCombo.SelectedItem as string ?? "All";
+        var typeFilter = _typeCombo.SelectedItem as string ?? "All";
+        var search = _searchBox.Text?.ToLowerInvariant() ?? "";
 
         var source = category == "All"
             ? _allCables
@@ -119,18 +146,18 @@ public partial class CableBrowserDialog : Window
             .OrderBy(c => c.PartNumber)
             .ToList();
 
-        CablesGrid.ItemsSource = _filteredCables;
-        ResultCountText.Text = $"{_filteredCables.Count} cables";
+        _cablesGrid.ItemsSource = _filteredCables;
+        _resultCountText.Text = $"{_filteredCables.Count} cables";
     }
 
     private void OnSelectionChanged(object? sender, SelectionChangedEventArgs e)
     {
-        AddButton.IsEnabled = CablesGrid.SelectedItem != null;
+        _addButton.IsEnabled = _cablesGrid.SelectedItem != null;
     }
 
     private void OnCableDoubleTapped(object? sender, TappedEventArgs e)
     {
-        if (CablesGrid.SelectedItem is CableDisplayItem item)
+        if (_cablesGrid.SelectedItem is CableDisplayItem item)
         {
             AddCables(item.Cable, 1);
             Close(SelectedCables);
@@ -139,9 +166,9 @@ public partial class CableBrowserDialog : Window
 
     private void OnAddClick(object? sender, RoutedEventArgs e)
     {
-        if (CablesGrid.SelectedItem is CableDisplayItem item)
+        if (_cablesGrid.SelectedItem is CableDisplayItem item)
         {
-            var quantity = (int)(QuantityUpDown.Value ?? 1);
+            var quantity = (int)(_quantityUpDown.Value ?? 1);
             AddCables(item.Cable, quantity);
             Close(SelectedCables);
         }
@@ -162,7 +189,7 @@ public partial class CableBrowserDialog : Window
 
         if (result != null)
         {
-            var quantity = (int)(QuantityUpDown.Value ?? 1);
+            var quantity = (int)(_quantityUpDown.Value ?? 1);
             for (int i = 0; i < quantity; i++)
             {
                 SelectedCables.Add(CloneCable(result));
