@@ -3,7 +3,7 @@
     xmlns:views="clr-namespace:CableConcentricityCalculator.Gui.Views;assembly=CableConcentricityCalculator.Gui"
         x:Class="CableConcentricityCalculator.Gui.Views.CableBrowserDialog"
         Title="Cable Browser"
-        Width="920" Height="550"
+        Width="1100" Height="550"
         WindowStartupLocation="CenterOwner">
 
     <Window.Styles>
@@ -19,29 +19,33 @@
         <Grid Grid.Column="0" RowDefinitions="Auto,*">
         <!-- Filter Panel -->
         <Border Background="#F5F5F5" Padding="12" BorderBrush="#E0E0E0" BorderThickness="0,0,0,1">
-            <Grid ColumnDefinitions="Auto,180,Auto,150,Auto,80,Auto,150" RowDefinitions="Auto,Auto">
+            <Grid ColumnDefinitions="Auto,140,Auto,120,Auto,70,Auto,70,Auto,80,Auto,*" RowDefinitions="Auto,Auto">
                 <TextBlock Text="Category:" Classes="label" Margin="0,0,8,0"/>
-                <ComboBox Grid.Column="1" x:Name="CategoryCombo" MinWidth="120"
+                <ComboBox Grid.Column="1" x:Name="CategoryCombo" MinWidth="100"
                           SelectionChanged="OnFilterChanged"/>
 
-                <TextBlock Grid.Column="2" Text="Manufacturer:" Classes="label" Margin="16,0,8,0"/>
-                <ComboBox Grid.Column="3" x:Name="ManufacturerCombo" MinWidth="140"
+                <TextBlock Grid.Column="2" Text="Mfr:" Classes="label" Margin="12,0,8,0"/>
+                <ComboBox Grid.Column="3" x:Name="ManufacturerCombo" MinWidth="100"
                           SelectionChanged="OnFilterChanged"/>
 
-                <TextBlock Grid.Column="4" Text="Cores:" Classes="label" Margin="16,0,8,0"/>
-                <ComboBox Grid.Column="5" x:Name="CoresCombo" MinWidth="80"
+                <TextBlock Grid.Column="4" Text="Cores:" Classes="label" Margin="12,0,8,0"/>
+                <ComboBox Grid.Column="5" x:Name="CoresCombo" MinWidth="60"
                           SelectionChanged="OnFilterChanged"/>
 
-                <TextBlock Grid.Column="6" Text="Type:" Classes="label" Margin="16,0,8,0"/>
-                <ComboBox Grid.Column="7" x:Name="TypeCombo" MinWidth="140"
+                <TextBlock Grid.Column="6" Text="AWG:" Classes="label" Margin="12,0,8,0"/>
+                <ComboBox Grid.Column="7" x:Name="AwgCombo" MinWidth="60"
+                          SelectionChanged="OnFilterChanged"/>
+
+                <TextBlock Grid.Column="8" Text="Type:" Classes="label" Margin="12,0,8,0"/>
+                <ComboBox Grid.Column="9" x:Name="TypeCombo" MinWidth="70"
                           SelectionChanged="OnFilterChanged"/>
 
                 <TextBlock Grid.Row="1" Text="Search:" Classes="label" Margin="0,8,8,0"/>
-                <TextBox Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="5" x:Name="SearchBox"
+                <TextBox Grid.Row="1" Grid.Column="1" Grid.ColumnSpan="9" x:Name="SearchBox"
                          Watermark="Search by part number or name..." Margin="0,8,0,0"
                          TextChanged="OnSearchChanged"/>
-                <TextBlock Grid.Row="1" Grid.Column="6" Grid.ColumnSpan="2" x:Name="ResultCountText"
-                           Classes="label" Margin="16,8,0,0" HorizontalAlignment="Right"/>
+                <TextBlock Grid.Row="1" Grid.Column="10" Grid.ColumnSpan="2" x:Name="ResultCountText"
+                           Classes="label" Margin="12,8,0,0" HorizontalAlignment="Right"/>
             </Grid>
         </Border>
 
