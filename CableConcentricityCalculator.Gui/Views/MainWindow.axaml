@@ -222,8 +222,6 @@
                                      Classes="viewTab"/>
                         <RadioButton GroupName="ViewTabs" Content="3D Isometric" IsChecked="{Binding ShowIsometric}"
                                      Classes="viewTab"/>
-                        <RadioButton GroupName="ViewTabs" Content="Twist Pattern" IsChecked="{Binding ShowTwistPattern}"
-                                     Classes="viewTab"/>
                     </StackPanel>
                 </Border>
 
@@ -253,21 +251,6 @@
                         <Image Source="{Binding IsometricImage, Converter={StaticResource ByteArrayToImageConverter}}"
                                Stretch="Uniform" Margin="16"/>
                         <TextBlock Text="Add cables to see 3D isometric view"
-                                   HorizontalAlignment="Center" VerticalAlignment="Center"
-                                   Foreground="#999" FontSize="14"
-                                   IsVisible="{Binding Assembly.Layers.Count, Converter={StaticResource ZeroConverter}}"/>
-                    </Grid>
-                </Border>
-
-                <!-- Twist Pattern View -->
-                <Border Grid.Row="1" Background="White" Margin="16,0,16,8" CornerRadius="0,0,8,8"
-                        BorderBrush="#E0E0E0" BorderThickness="1"
-                        BoxShadow="0 2 8 0 #20000000"
-                        IsVisible="{Binding ShowTwistPattern}">
-                    <Grid>
-                        <Image Source="{Binding TwistPatternImage, Converter={StaticResource ByteArrayToImageConverter}}"
-                               Stretch="Uniform" Margin="16"/>
-                        <TextBlock Text="Add cables with twist to see lay pattern"
                                    HorizontalAlignment="Center" VerticalAlignment="Center"
                                    Foreground="#999" FontSize="14"
                                    IsVisible="{Binding Assembly.Layers.Count, Converter={StaticResource ZeroConverter}}"/>
