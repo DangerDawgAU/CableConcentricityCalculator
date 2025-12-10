@@ -265,6 +265,341 @@ public static class CableLibrary
         return library;
     }
 
+    /// <summary>
+    /// Standard LAPP cross-section to conductor diameter mappings (mm²)
+    /// Based on LAPP specifications for copper conductors
+    /// </summary>
+    private static readonly Dictionary<double, double> LappCrossectionToDiameter = new()
+    {
+        { 0.5, 0.80 },
+        { 0.75, 0.98 },
+        { 1.0, 1.13 },
+        { 1.5, 1.38 },
+        { 2.5, 1.78 },
+        { 4.0, 2.26 },
+        { 6.0, 2.76 },
+        { 10.0, 3.57 },
+        { 16.0, 4.52 },
+        { 25.0, 5.64 }
+    };
+
+    /// <summary>
+    /// LAPP OLFLEX cable outer diameter specifications (mm)
+    /// Format: (cores, mm², outer_diameter)
+    /// </summary>
+    private static readonly Dictionary<(int, double), double> OlflexOuterDiameters = new()
+    {
+        // CLASSIC 110 - 0.5mm²
+        { (2, 0.5), 6.5 },
+        { (3, 0.5), 7.0 },
+        { (4, 0.5), 7.5 },
+        { (5, 0.5), 8.0 },
+        { (7, 0.5), 8.8 },
+        // CLASSIC 110 - 0.75mm²
+        { (2, 0.75), 7.0 },
+        { (3, 0.75), 7.5 },
+        { (4, 0.75), 8.2 },
+        { (5, 0.75), 8.8 },
+        { (7, 0.75), 9.5 },
+        // CLASSIC 110 - 1.0mm²
+        { (2, 1.0), 7.5 },
+        { (3, 1.0), 8.0 },
+        { (4, 1.0), 8.8 },
+        { (5, 1.0), 9.5 },
+        { (7, 1.0), 10.5 },
+        { (12, 1.0), 12.5 },
+        { (18, 1.0), 14.5 },
+        { (25, 1.0), 16.5 },
+        // CLASSIC 110 - 1.5mm²
+        { (2, 1.5), 8.0 },
+        { (3, 1.5), 8.8 },
+        { (4, 1.5), 9.5 },
+        { (5, 1.5), 10.2 },
+        { (7, 1.5), 11.5 },
+        { (12, 1.5), 13.5 },
+        { (18, 1.5), 15.5 },
+        // CLASSIC 110 - 2.5mm²
+        { (2, 2.5), 9.0 },
+        { (3, 2.5), 9.8 },
+        { (4, 2.5), 10.8 },
+        { (5, 2.5), 11.5 },
+        { (7, 2.5), 13.0 },
+        // CLASSIC 110 - 4.0mm²
+        { (3, 4.0), 11.0 },
+        { (4, 4.0), 12.2 },
+        { (5, 4.0), 13.0 },
+    };
+
+    /// <summary>
+    /// OLFLEX CLASSIC 100 outer diameter specifications (mm)
+    /// </summary>
+    private static readonly Dictionary<(int, double), double> OlflexClassic100OuterDiameters = new()
+    {
+        // CLASSIC 100 - 0.5mm²
+        { (2, 0.5), 5.8 },
+        { (3, 0.5), 6.3 },
+        { (4, 0.5), 6.8 },
+        { (5, 0.5), 7.3 },
+        // CLASSIC 100 - 0.75mm²
+        { (2, 0.75), 6.3 },
+        { (3, 0.75), 6.8 },
+        { (4, 0.75), 7.3 },
+        { (5, 0.75), 7.8 },
+        // CLASSIC 100 - 1.0mm²
+        { (2, 1.0), 6.8 },
+        { (3, 1.0), 7.3 },
+        { (4, 1.0), 8.0 },
+        { (5, 1.0), 8.5 },
+        // CLASSIC 100 - 1.5mm²
+        { (2, 1.5), 7.5 },
+        { (3, 1.5), 8.2 },
+        { (4, 1.5), 8.8 },
+        { (5, 1.5), 9.5 },
+        // CLASSIC 100 - 2.5mm²
+        { (3, 2.5), 9.0 },
+        { (4, 2.5), 10.0 },
+        { (5, 2.5), 10.8 },
+    };
+
+    /// <summary>
+    /// OLFLEX SERVO 700 outer diameter specifications (mm)
+    /// </summary>
+    private static readonly Dictionary<double, double> OlflexServo700OuterDiameters = new()
+    {
+        // SERVO 700 4-core + control
+        { 1.0, 11.0 },
+        { 1.5, 12.5 },
+        { 2.5, 14.5 },
+        { 4.0, 16.5 },
+        { 6.0, 19.0 },
+        { 10.0, 23.0 }
+    };
+
+    /// <summary>
+    /// OLFLEX HEAT 180 outer diameter specifications (mm)
+    /// Format: (cores, mm²) → outer_diameter
+    /// </summary>
+    private static readonly Dictionary<(int, double), double> OlflexHeat180OuterDiameters = new()
+    {
+        // HEAT 180 - 0.5mm² (silicone jacket, slightly larger)
+        { (2, 0.5), 7.5 },
+        { (3, 0.5), 8.2 },
+        { (4, 0.5), 9.0 },
+        // HEAT 180 - 0.75mm²
+        { (2, 0.75), 8.2 },
+        { (3, 0.75), 9.0 },
+        { (4, 0.75), 10.0 },
+        // HEAT 180 - 1.0mm²
+        { (2, 1.0), 9.0 },
+        { (3, 1.0), 9.8 },
+        { (4, 1.0), 11.0 },
+        { (5, 1.0), 12.0 },
+        // HEAT 180 - 1.5mm²
+        { (2, 1.5), 10.0 },
+        { (3, 1.5), 11.0 },
+        { (4, 1.5), 12.5 }
+    };
+
+    /// <summary>
+    /// OLFLEX EB (Intrinsically Safe) outer diameter specifications (mm)
+    /// Format: (cores, mm²) → outer_diameter
+    /// </summary>
+    private static readonly Dictionary<(int, double), double> OlflexEBOuterDiameters = new()
+    {
+        // EB - 0.75mm²
+        { (2, 0.75), 8.0 },
+        { (3, 0.75), 8.8 },
+        { (4, 0.75), 9.5 },
+        // EB - 1.0mm²
+        { (2, 1.0), 8.8 },
+        { (3, 1.0), 9.5 },
+        { (4, 1.0), 10.5 },
+        // EB - 1.5mm²
+        { (2, 1.5), 9.8 },
+        { (3, 1.5), 10.8 },
+        { (4, 1.5), 12.0 }
+    };
+
+    /// <summary>
+    /// UNITRONIC LiYY/LiYCY outer diameter specifications (mm)
+    /// Format: (cores, mm²) → outer_diameter
+    /// </summary>
+    private static readonly Dictionary<(int, double), double> UnitronicLiYYOuterDiameters = new()
+    {
+        // LiYY/LiYCY - 0.14mm²
+        { (2, 0.14), 4.5 }, { (3, 0.14), 5.0 }, { (4, 0.14), 5.5 }, { (5, 0.14), 6.0 },
+        { (6, 0.14), 6.5 }, { (7, 0.14), 7.0 }, { (8, 0.14), 7.5 }, { (10, 0.14), 8.5 },
+        { (12, 0.14), 9.5 }, { (14, 0.14), 10.5 }, { (16, 0.14), 11.5 }, { (18, 0.14), 12.5 },
+        { (20, 0.14), 13.5 }, { (25, 0.14), 15.5 },
+        // LiYY/LiYCY - 0.25mm²
+        { (2, 0.25), 5.2 }, { (3, 0.25), 5.8 }, { (4, 0.25), 6.5 }, { (5, 0.25), 7.2 },
+        { (6, 0.25), 7.8 }, { (7, 0.25), 8.5 }, { (8, 0.25), 9.2 }, { (10, 0.25), 10.5 },
+        { (12, 0.25), 11.8 }, { (14, 0.25), 13.0 }, { (16, 0.25), 14.5 }, { (18, 0.25), 16.0 },
+        { (20, 0.25), 17.0 }, { (25, 0.25), 20.0 },
+        // LiYY/LiYCY - 0.34mm²
+        { (2, 0.34), 5.5 }, { (3, 0.34), 6.2 }, { (4, 0.34), 7.0 }, { (5, 0.34), 7.8 },
+        { (6, 0.34), 8.5 }, { (7, 0.34), 9.2 }, { (8, 0.34), 10.0 }, { (10, 0.34), 11.5 },
+        { (12, 0.34), 13.0 }, { (14, 0.34), 14.5 }, { (16, 0.34), 16.0 }, { (18, 0.34), 17.5 },
+        { (20, 0.34), 19.0 }, { (25, 0.34), 22.0 },
+        // LiYY/LiYCY - 0.5mm²
+        { (2, 0.5), 6.2 }, { (3, 0.5), 7.0 }, { (4, 0.5), 7.8 }, { (5, 0.5), 8.8 },
+        { (6, 0.5), 9.5 }, { (7, 0.5), 10.5 }, { (8, 0.5), 11.5 }, { (10, 0.5), 13.0 },
+        { (12, 0.5), 14.8 }, { (14, 0.5), 16.5 }, { (16, 0.5), 18.0 }, { (18, 0.5), 20.0 },
+        { (20, 0.5), 22.0 }, { (25, 0.5), 26.0 }
+    };
+
+    /// <summary>
+    /// UNITRONIC FD (Flexible Data) outer diameter specifications (mm)
+    /// Format: (cores, mm²) → outer_diameter
+    /// </summary>
+    private static readonly Dictionary<(int, double), double> UnitronicFDOuterDiameters = new()
+    {
+        // FD - 0.14mm²
+        { (2, 0.14), 5.0 }, { (3, 0.14), 5.5 }, { (4, 0.14), 6.2 }, { (5, 0.14), 6.8 },
+        { (7, 0.14), 8.0 }, { (10, 0.14), 9.5 }, { (12, 0.14), 10.8 },
+        // FD - 0.25mm²
+        { (2, 0.25), 5.8 }, { (3, 0.25), 6.5 }, { (4, 0.25), 7.2 }, { (5, 0.25), 8.0 },
+        { (7, 0.25), 9.5 }, { (10, 0.25), 11.0 }, { (12, 0.25), 12.5 },
+        // FD - 0.5mm²
+        { (2, 0.5), 6.8 }, { (3, 0.5), 7.8 }, { (4, 0.5), 8.8 }, { (5, 0.5), 9.8 },
+        { (7, 0.5), 11.5 }, { (10, 0.5), 13.5 }, { (12, 0.5), 15.0 }
+    };
+
+    /// <summary>
+    /// MIL-C-27500 cable outer diameter specifications (mm) from MIL-DTL-27500
+    /// Format: (wireGauge, conductorCount) → outer_diameter
+    /// Based on PTFE tape jacket (style 06) dimensions from datasheet
+    /// </summary>
+    private static readonly Dictionary<(string, int), double> MilC27500OuterDiameters = new()
+    {
+        // 1-Conductor cables (rarely used in harnesses, but including for completeness)
+        { ("8", 1), 6.71 },
+        { ("10", 1), 5.13 },
+        { ("12", 1), 4.52 },
+        { ("14", 1), 4.04 },
+        { ("16", 1), 3.71 },
+        { ("18", 1), 3.40 },
+        { ("20", 1), 3.20 },
+        { ("22", 1), 2.97 },
+        { ("24", 1), 2.69 },
+        
+        // 2-Conductor (Twisted Pair) cables
+        { ("8", 2), 12.8 },
+        { ("10", 2), 9.65 },
+        { ("12", 2), 7.92 },
+        { ("14", 2), 6.96 },
+        { ("16", 2), 6.30 },
+        { ("18", 2), 5.79 },
+        { ("20", 2), 5.28 },
+        { ("22", 2), 4.83 },
+        { ("24", 2), 4.27 },
+        
+        // 3-Conductor (Twisted Trio) cables
+        { ("8", 3), 13.6 },
+        { ("10", 3), 10.3 },
+        { ("12", 3), 8.74 },
+        { ("14", 3), 7.40 },
+        { ("16", 3), 6.69 },
+        { ("18", 3), 6.14 },
+        { ("20", 3), 5.60 },
+        { ("22", 3), 5.10 },
+        { ("24", 3), 4.50 },
+        
+        // 4-Conductor (Twisted Quad) cables
+        { ("8", 4), 15.1 },
+        { ("10", 4), 11.3 },
+        { ("12", 4), 9.83 },
+        { ("14", 4), 8.46 },
+        { ("16", 4), 7.36 },
+        { ("18", 4), 6.75 },
+        { ("20", 4), 6.14 },
+        { ("22", 4), 5.59 },
+        { ("24", 4), 4.91 }
+    };
+
+    private static double? GetMilC27500OuterDiameter(string wireGauge, int conductorCount)
+    {
+        return MilC27500OuterDiameters.TryGetValue((wireGauge, conductorCount), out var diameter) ? diameter : null;
+    }
+
+    /// <summary>
+    /// ETHERLINE (Ethernet) cable outer diameter specifications (mm)
+    /// Format: part_number → outer_diameter
+    /// </summary>
+    private static readonly Dictionary<string, double> EtherlineOuterDiameters = new()
+    {
+        // Cat.5e cables
+        { "ETHERLINE-CAT5E-UTP", 5.5 },
+        { "ETHERLINE-CAT5E-SFUTP", 6.0 },
+        { "ETHERLINE-CAT5E-FD", 6.5 },
+        
+        // Cat.6 cables (from datasheet: 500 S/FTP = 7.3mm, 500 F/UTP = 7.4mm)
+        { "ETHERLINE-CAT6-UTP", 6.5 },
+        { "ETHERLINE-CAT6-SFUTP", 7.3 },
+        
+        // Cat.6A cables
+        { "ETHERLINE-CAT6A-SFTP", 7.8 },
+        { "ETHERLINE-CAT6A-FD", 7.5 },
+        
+        // PROFINET cables
+        { "ETHERLINE-PN-TYPEA", 6.8 },
+        { "ETHERLINE-PN-TYPEB", 7.5 },
+        { "ETHERLINE-PN-FC", 6.5 }
+    };
+
+    private static double? GetEtherlineOuterDiameter(string partNumber)
+    {
+        return EtherlineOuterDiameters.TryGetValue(partNumber, out var diameter) ? diameter : null;
+    }
+
+    private static double GetLappConductorDiameter(double crossSectionMm2)
+    {
+        if (LappCrossectionToDiameter.TryGetValue(crossSectionMm2, out var diameter))
+            return diameter;
+        
+        // Fallback to calculated value if exact match not found
+        return Math.Sqrt(crossSectionMm2 / Math.PI) * 2;
+    }
+
+    private static double GetOlflexOuterDiameter(int cores, double mm2, bool isClassic100 = false)
+    {
+        var dict = isClassic100 ? OlflexClassic100OuterDiameters : OlflexOuterDiameters;
+        if (dict.TryGetValue((cores, mm2), out var diameter))
+            return diameter;
+        
+        // Fallback calculation if exact specification not found
+        // This is a conservative estimate
+        var conductorDia = GetLappConductorDiameter(mm2);
+        var coreOd = conductorDia + (isClassic100 ? 2 * 0.5 : 2 * 0.6);
+        var bundleDia = coreOd * Math.Sqrt(cores) * 0.9; // approximate packing
+        return bundleDia + (isClassic100 ? 2 * 0.5 : 2 * 0.6); // add jacket
+    }
+
+    private static double? GetOlflexServo700OuterDiameter(double mm2)
+    {
+        return OlflexServo700OuterDiameters.TryGetValue(mm2, out var diameter) ? diameter : null;
+    }
+
+    private static double? GetOlflexHeat180OuterDiameter(int cores, double mm2)
+    {
+        return OlflexHeat180OuterDiameters.TryGetValue((cores, mm2), out var diameter) ? diameter : null;
+    }
+
+    private static double? GetOlflexEBOuterDiameter(int cores, double mm2)
+    {
+        return OlflexEBOuterDiameters.TryGetValue((cores, mm2), out var diameter) ? diameter : null;
+    }
+
+    private static double? GetUnitronicLiYYOuterDiameter(int cores, double mm2)
+    {
+        return UnitronicLiYYOuterDiameters.TryGetValue((cores, mm2), out var diameter) ? diameter : null;
+    }
+
+    private static double? GetUnitronicFDOuterDiameter(int cores, double mm2)
+    {
+        return UnitronicFDOuterDiameters.TryGetValue((cores, mm2), out var diameter) ? diameter : null;
+    }
+
     private static void AddOlflexClassic110(Dictionary<string, Cable> library)
     {
         var configs = new[]
@@ -279,10 +614,11 @@ public static class CableLibrary
 
         foreach (var (cores, mm2) in configs)
         {
-            var conductorDia = Math.Sqrt(mm2 / Math.PI) * 2;
+            var conductorDia = GetLappConductorDiameter(mm2);
             var pn = $"OLFLEX-CLASSIC-110-{cores}G{mm2:F1}";
+            var od = GetOlflexOuterDiameter(cores, mm2, isClassic100: false);
 
-            library[pn] = CreateMultiCoreCable(
+            var cable = CreateMultiCoreCable(
                 pn,
                 $"OLFLEX CLASSIC 110 {cores}G{mm2}mm²",
                 "LAPP",
@@ -291,6 +627,8 @@ public static class CableLibrary
                 0.6,
                 "Gray",
                 false);
+            cable.SpecifiedOuterDiameter = od;
+            library[pn] = cable;
         }
     }
 
@@ -307,10 +645,11 @@ public static class CableLibrary
 
         foreach (var (cores, mm2) in configs)
         {
-            var conductorDia = Math.Sqrt(mm2 / Math.PI) * 2;
+            var conductorDia = GetLappConductorDiameter(mm2);
             var pn = $"OLFLEX-CLASSIC-100-{cores}x{mm2:F1}";
+            var od = GetOlflexOuterDiameter(cores, mm2, isClassic100: true);
 
-            library[pn] = CreateMultiCoreCable(
+            var cable = CreateMultiCoreCable(
                 pn,
                 $"OLFLEX CLASSIC 100 {cores}x{mm2}mm²",
                 "LAPP",
@@ -319,6 +658,8 @@ public static class CableLibrary
                 0.5,
                 "Gray",
                 false);
+            cable.SpecifiedOuterDiameter = od;
+            library[pn] = cable;
         }
     }
 
@@ -334,10 +675,11 @@ public static class CableLibrary
 
         foreach (var (cores, mm2) in configs)
         {
-            var conductorDia = Math.Sqrt(mm2 / Math.PI) * 2;
+            var conductorDia = GetLappConductorDiameter(mm2);
             var pn = $"OLFLEX-CHAIN-809-{cores}G{mm2:F1}";
+            var od = GetOlflexOuterDiameter(cores, mm2, isClassic100: false) + 0.2; // Chain has slightly thicker jacket
 
-            library[pn] = CreateMultiCoreCable(
+            var cable = CreateMultiCoreCable(
                 pn,
                 $"OLFLEX CHAIN 809 {cores}G{mm2}mm² Continuous Flex",
                 "LAPP",
@@ -346,6 +688,8 @@ public static class CableLibrary
                 0.7,
                 "Gray",
                 false);
+            cable.SpecifiedOuterDiameter = od;
+            library[pn] = cable;
         }
     }
 
@@ -355,11 +699,12 @@ public static class CableLibrary
 
         foreach (var mm2 in sizes)
         {
-            var conductorDia = Math.Sqrt(mm2 / Math.PI) * 2;
+            var conductorDia = GetLappConductorDiameter(mm2);
+            var od = GetOlflexServo700OuterDiameter(mm2) ?? 11.0; // Fallback to minimum
 
             // 4-core power + control pairs
             var pn = $"OLFLEX-SERVO-700-4G{mm2:F1}";
-            library[pn] = new Cable
+            var cable = new Cable
             {
                 PartNumber = pn,
                 Name = $"OLFLEX SERVO 700 4G{mm2}mm² + Control Pairs",
@@ -371,8 +716,10 @@ public static class CableLibrary
                 ShieldCoverage = 85,
                 JacketColor = "Orange",
                 JacketThickness = 1.2,
-                Cores = CreateColoredCores(4, conductorDia, 0.8)
+                Cores = CreateColoredCores(4, conductorDia, 0.8),
+                SpecifiedOuterDiameter = od
             };
+            library[pn] = cable;
         }
     }
 
@@ -388,10 +735,11 @@ public static class CableLibrary
 
         foreach (var (cores, mm2) in configs)
         {
-            var conductorDia = Math.Sqrt(mm2 / Math.PI) * 2;
+            var conductorDia = GetLappConductorDiameter(mm2);
             var pn = $"OLFLEX-HEAT-180-{cores}x{mm2:F1}";
+            var od = GetOlflexHeat180OuterDiameter(cores, mm2);
 
-            library[pn] = CreateMultiCoreCable(
+            var cable = CreateMultiCoreCable(
                 pn,
                 $"OLFLEX HEAT 180 {cores}x{mm2}mm² Silicone",
                 "LAPP",
@@ -400,6 +748,9 @@ public static class CableLibrary
                 0.8,
                 "Brown",
                 false);
+            if (od.HasValue)
+                cable.SpecifiedOuterDiameter = od.Value;
+            library[pn] = cable;
         }
     }
 
@@ -414,8 +765,9 @@ public static class CableLibrary
 
         foreach (var (cores, mm2) in configs)
         {
-            var conductorDia = Math.Sqrt(mm2 / Math.PI) * 2;
+            var conductorDia = GetLappConductorDiameter(mm2);
             var pn = $"OLFLEX-EB-{cores}x{mm2:F1}";
+            var od = GetOlflexEBOuterDiameter(cores, mm2);
 
             var cable = CreateMultiCoreCable(
                 pn,
@@ -428,6 +780,8 @@ public static class CableLibrary
                 true);
             cable.ShieldType = ShieldType.FoilAndBraid;
             cable.ShieldThickness = 0.25;
+            if (od.HasValue)
+                cable.SpecifiedOuterDiameter = od.Value;
             library[pn] = cable;
         }
     }
@@ -464,8 +818,9 @@ public static class CableLibrary
             {
                 var conductorDia = Math.Sqrt(mm2 / Math.PI) * 2;
                 var pn = $"UNITRONIC-LIYY-{cores}x{mm2:F2}";
+                var od = GetUnitronicLiYYOuterDiameter(cores, mm2);
 
-                library[pn] = CreateMultiCoreCable(
+                var cable = CreateMultiCoreCable(
                     pn,
                     $"UNITRONIC LiYY {cores}x{mm2}mm² Data Cable",
                     "LAPP",
@@ -474,6 +829,9 @@ public static class CableLibrary
                     0.3,
                     "Gray",
                     false);
+                if (od.HasValue)
+                    cable.SpecifiedOuterDiameter = od.Value;
+                library[pn] = cable;
             }
         }
     }
@@ -488,6 +846,7 @@ public static class CableLibrary
             {
                 var conductorDia = Math.Sqrt(mm2 / Math.PI) * 2;
                 var pn = $"UNITRONIC-LIYCY-{cores}x{mm2:F2}";
+                var od = GetUnitronicLiYYOuterDiameter(cores, mm2);
 
                 var cable = CreateMultiCoreCable(
                     pn,
@@ -501,6 +860,8 @@ public static class CableLibrary
                 cable.ShieldType = ShieldType.Braid;
                 cable.ShieldThickness = 0.15;
                 cable.ShieldCoverage = 85;
+                if (od.HasValue)
+                    cable.SpecifiedOuterDiameter = od.Value;
                 library[pn] = cable;
             }
         }
@@ -579,8 +940,9 @@ public static class CableLibrary
             {
                 var conductorDia = Math.Sqrt(mm2 / Math.PI) * 2;
                 var pn = $"UNITRONIC-FD-{cores}x{mm2:F2}";
+                var od = GetUnitronicFDOuterDiameter(cores, mm2);
 
-                library[pn] = CreateMultiCoreCable(
+                var cable = CreateMultiCoreCable(
                     pn,
                     $"UNITRONIC FD {cores}x{mm2}mm² Flexible Data",
                     "LAPP",
@@ -589,6 +951,9 @@ public static class CableLibrary
                     0.35,
                     "Gray",
                     false);
+                if (od.HasValue)
+                    cable.SpecifiedOuterDiameter = od.Value;
+                library[pn] = cable;
             }
         }
     }
@@ -618,7 +983,7 @@ public static class CableLibrary
     private static void AddEtherlineCat5e(Dictionary<string, Cable> library)
     {
         // Standard Cat.5e
-        library["ETHERLINE-CAT5E-UTP"] = new Cable
+        var cable1 = new Cable
         {
             PartNumber = "ETHERLINE-CAT5E-UTP",
             Name = "ETHERLINE Cat.5e 4x2xAWG26 UTP",
@@ -629,9 +994,12 @@ public static class CableLibrary
             JacketThickness = 0.6,
             Cores = CreateEthernetCores("26")
         };
+        if (GetEtherlineOuterDiameter("ETHERLINE-CAT5E-UTP") is var od1 && od1.HasValue)
+            cable1.SpecifiedOuterDiameter = od1.Value;
+        library["ETHERLINE-CAT5E-UTP"] = cable1;
 
         // Shielded Cat.5e
-        library["ETHERLINE-CAT5E-SFUTP"] = new Cable
+        var cable2 = new Cable
         {
             PartNumber = "ETHERLINE-CAT5E-SFUTP",
             Name = "ETHERLINE Cat.5e 4x2xAWG26 SF/UTP",
@@ -645,9 +1013,12 @@ public static class CableLibrary
             JacketThickness = 0.7,
             Cores = CreateEthernetCores("26")
         };
+        if (GetEtherlineOuterDiameter("ETHERLINE-CAT5E-SFUTP") is var od2 && od2.HasValue)
+            cable2.SpecifiedOuterDiameter = od2.Value;
+        library["ETHERLINE-CAT5E-SFUTP"] = cable2;
 
         // Flexible Cat.5e
-        library["ETHERLINE-CAT5E-FD"] = new Cable
+        var cable3 = new Cable
         {
             PartNumber = "ETHERLINE-CAT5E-FD",
             Name = "ETHERLINE Cat.5e FD 4x2xAWG26/7",
@@ -660,11 +1031,14 @@ public static class CableLibrary
             JacketThickness = 0.7,
             Cores = CreateEthernetCores("26")
         };
+        if (GetEtherlineOuterDiameter("ETHERLINE-CAT5E-FD") is var od3 && od3.HasValue)
+            cable3.SpecifiedOuterDiameter = od3.Value;
+        library["ETHERLINE-CAT5E-FD"] = cable3;
     }
 
     private static void AddEtherlineCat6(Dictionary<string, Cable> library)
     {
-        library["ETHERLINE-CAT6-UTP"] = new Cable
+        var cable1 = new Cable
         {
             PartNumber = "ETHERLINE-CAT6-UTP",
             Name = "ETHERLINE Cat.6 4x2xAWG23 UTP",
@@ -675,8 +1049,11 @@ public static class CableLibrary
             JacketThickness = 0.6,
             Cores = CreateEthernetCores("23")
         };
+        if (GetEtherlineOuterDiameter("ETHERLINE-CAT6-UTP") is var od1 && od1.HasValue)
+            cable1.SpecifiedOuterDiameter = od1.Value;
+        library["ETHERLINE-CAT6-UTP"] = cable1;
 
-        library["ETHERLINE-CAT6-SFUTP"] = new Cable
+        var cable2 = new Cable
         {
             PartNumber = "ETHERLINE-CAT6-SFUTP",
             Name = "ETHERLINE Cat.6 4x2xAWG23 SF/UTP",
@@ -690,11 +1067,14 @@ public static class CableLibrary
             JacketThickness = 0.8,
             Cores = CreateEthernetCores("23")
         };
+        if (GetEtherlineOuterDiameter("ETHERLINE-CAT6-SFUTP") is var od2 && od2.HasValue)
+            cable2.SpecifiedOuterDiameter = od2.Value;
+        library["ETHERLINE-CAT6-SFUTP"] = cable2;
     }
 
     private static void AddEtherlineCat6A(Dictionary<string, Cable> library)
     {
-        library["ETHERLINE-CAT6A-SFTP"] = new Cable
+        var cable1 = new Cable
         {
             PartNumber = "ETHERLINE-CAT6A-SFTP",
             Name = "ETHERLINE Cat.6A 4x2xAWG23 S/FTP",
@@ -708,8 +1088,11 @@ public static class CableLibrary
             JacketThickness = 0.9,
             Cores = CreateEthernetCores("23")
         };
+        if (GetEtherlineOuterDiameter("ETHERLINE-CAT6A-SFTP") is var od1 && od1.HasValue)
+            cable1.SpecifiedOuterDiameter = od1.Value;
+        library["ETHERLINE-CAT6A-SFTP"] = cable1;
 
-        library["ETHERLINE-CAT6A-FD"] = new Cable
+        var cable2 = new Cable
         {
             PartNumber = "ETHERLINE-CAT6A-FD",
             Name = "ETHERLINE Cat.6A FD 4x2xAWG26/7",
@@ -722,12 +1105,15 @@ public static class CableLibrary
             JacketThickness = 0.9,
             Cores = CreateEthernetCores("26")
         };
+        if (GetEtherlineOuterDiameter("ETHERLINE-CAT6A-FD") is var od2 && od2.HasValue)
+            cable2.SpecifiedOuterDiameter = od2.Value;
+        library["ETHERLINE-CAT6A-FD"] = cable2;
     }
 
     private static void AddEtherlinePN(Dictionary<string, Cable> library)
     {
         // PROFINET Type A
-        library["ETHERLINE-PN-TYPEA"] = new Cable
+        var cableA = new Cable
         {
             PartNumber = "ETHERLINE-PN-TYPEA",
             Name = "ETHERLINE PN Cat.5e Type A",
@@ -746,9 +1132,12 @@ public static class CableLibrary
                 new() { CoreId = "2-", ConductorDiameter = 0.57, InsulationThickness = 0.4, InsulationColor = "Blue", Gauge = "22" }
             }
         };
+        if (GetEtherlineOuterDiameter("ETHERLINE-PN-TYPEA") is var odA && odA.HasValue)
+            cableA.SpecifiedOuterDiameter = odA.Value;
+        library["ETHERLINE-PN-TYPEA"] = cableA;
 
         // PROFINET Type B
-        library["ETHERLINE-PN-TYPEB"] = new Cable
+        var cableB = new Cable
         {
             PartNumber = "ETHERLINE-PN-TYPEB",
             Name = "ETHERLINE PN Cat.5e Type B",
@@ -767,9 +1156,12 @@ public static class CableLibrary
                 new() { CoreId = "2-", ConductorDiameter = 0.64, InsulationThickness = 0.5, InsulationColor = "Blue", Gauge = "22" }
             }
         };
+        if (GetEtherlineOuterDiameter("ETHERLINE-PN-TYPEB") is var odB && odB.HasValue)
+            cableB.SpecifiedOuterDiameter = odB.Value;
+        library["ETHERLINE-PN-TYPEB"] = cableB;
 
         // PROFINET FC
-        library["ETHERLINE-PN-FC"] = new Cable
+        var cableFC = new Cable
         {
             PartNumber = "ETHERLINE-PN-FC",
             Name = "ETHERLINE PN FC Cat.5e Flexible",
@@ -788,6 +1180,9 @@ public static class CableLibrary
                 new() { CoreId = "2-", ConductorDiameter = 0.51, InsulationThickness = 0.4, InsulationColor = "Blue", Gauge = "24" }
             }
         };
+        if (GetEtherlineOuterDiameter("ETHERLINE-PN-FC") is var odFC && odFC.HasValue)
+            cableFC.SpecifiedOuterDiameter = odFC.Value;
+        library["ETHERLINE-PN-FC"] = cableFC;
     }
 
     private static List<CableCore> CreateEthernetCores(string gauge)
@@ -995,7 +1390,7 @@ public static class CableLibrary
                             // Calculate jacket thickness - use provided value or default based on shielding
                             var finalJacketThickness = jacketThickness > 0 ? jacketThickness : (hasShield ? 0.30 : 0.20);
 
-                            library[partNumber] = new Cable
+                            var cable = new Cable
                             {
                                 PartNumber = partNumber,
                                 Name = name,
@@ -1009,6 +1404,13 @@ public static class CableLibrary
                                 ShieldCoverage = hasShield ? 90 : 0,
                                 Cores = cores
                             };
+
+                            // Set specified outer diameter from MIL-DTL-27500 datasheet
+                            var od = GetMilC27500OuterDiameter(wireSize, coreCount);
+                            if (od.HasValue)
+                                cable.SpecifiedOuterDiameter = od.Value;
+
+                            library[partNumber] = cable;
                         }
                     }
                 }
