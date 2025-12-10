@@ -72,6 +72,7 @@ public class ConfigurationService
         return category.ToUpperInvariant() switch
         {
             "MIL-W-22759" or "MILSPEC" => CableLibrary.CreateMilW22759Library(),
+            "MIL-C-27500" or "MIL-DTL-27500" => CableLibrary.CreateMilC27500Library(),
             "OLFLEX" => CableLibrary.CreateOlflexLibrary(),
             "UNITRONIC" => CableLibrary.CreateUnitronicLibrary(),
             "ETHERLINE" => CableLibrary.CreateEtherlineLibrary(),
@@ -84,7 +85,7 @@ public class ConfigurationService
     /// </summary>
     public static string[] GetCableCategories()
     {
-        return new[] { "All", "MIL-W-22759", "OLFLEX", "UNITRONIC", "ETHERLINE" };
+        return new[] { "All", "MIL-W-22759", "MIL-C-27500", "OLFLEX", "UNITRONIC", "ETHERLINE" };
     }
 
     /// <summary>

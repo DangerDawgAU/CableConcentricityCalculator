@@ -16,6 +16,7 @@ public partial class CableBrowserDialog : Window
     private readonly ComboBox _categoryCombo;
     private readonly ComboBox _manufacturerCombo;
     private readonly ComboBox _coresCombo;
+    private readonly ComboBox _awgCombo;
     private readonly ComboBox _typeCombo;
     private readonly TextBox _searchBox;
     private readonly TextBlock _resultCountText;
@@ -44,6 +45,7 @@ public partial class CableBrowserDialog : Window
         _categoryCombo = this.FindControl<ComboBox>("CategoryCombo")!;
         _manufacturerCombo = this.FindControl<ComboBox>("ManufacturerCombo")!;
         _coresCombo = this.FindControl<ComboBox>("CoresCombo")!;
+        _awgCombo = this.FindControl<ComboBox>("AwgCombo")!;
         _typeCombo = this.FindControl<ComboBox>("TypeCombo")!;
         _searchBox = this.FindControl<TextBox>("SearchBox")!;
         _resultCountText = this.FindControl<TextBlock>("ResultCountText")!;
@@ -98,6 +100,18 @@ public partial class CableBrowserDialog : Window
         _coresCombo.ItemsSource = coreCounts;
         _coresCombo.SelectedIndex = 0;
 
+        // AWG gauges
+        var awgGauges = new List<string> { "All" };
+        awgGauges.AddRange(_allCables.Values
+            .SelectMany(c => c.Cores)
+            .Select(core => core.Gauge)
+            .Where(g => !string.IsNullOrEmpty(g))
+            .Distinct()
+            .OrderBy(g => int.TryParse(g, out int n) ? n : int.MaxValue)
+            .ThenBy(x => x));
+        _awgCombo.ItemsSource = awgGauges;
+        _awgCombo.SelectedIndex = 0;
+
         // Types
         var types = new List<string> { "All" };
         types.AddRange(Enum.GetNames<CableType>());
@@ -120,6 +134,7 @@ public partial class CableBrowserDialog : Window
         var category = _categoryCombo.SelectedItem as string ?? "All";
         var manufacturer = _manufacturerCombo.SelectedItem as string ?? "All";
         var coresFilter = _coresCombo.SelectedItem as string ?? "All";
+        var awgFilter = _awgCombo.SelectedItem as string ?? "All";
         var typeFilter = _typeCombo.SelectedItem as string ?? "All";
         var search = _searchBox.Text?.ToLowerInvariant() ?? "";
 
@@ -145,6 +160,12 @@ public partial class CableBrowserDialog : Window
                 _ when int.TryParse(coresFilter, out int n) => filtered.Where(c => c.Cores.Count == n),
                 _ => filtered
             };
+        }
+
+        // Apply AWG filter
+        if (awgFilter != "All")
+        {
+            filtered = filtered.Where(c => c.Cores.Any(core => core.Gauge == awgFilter));
         }
 
         // Apply type filter
@@ -199,7 +220,7 @@ public partial class CableBrowserDialog : Window
     private void OpenGoogleSearch()
     {
         if (!(_cablesGrid.SelectedItem is CableDisplayItem item)) return;
-        var searchTerm = Uri.EscapeDataString(item.PartNumber + " " + item.Name);
+        var searchTerm = Uri.EscapeDataString(item.PartNumber);
         string url = $"https://www.google.com/search?q={searchTerm}";
         try
         {
