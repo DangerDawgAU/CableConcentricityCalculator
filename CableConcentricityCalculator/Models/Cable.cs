@@ -102,12 +102,22 @@ public class Cable
     }
 
     /// <summary>
+    /// Optional override for outer diameter (for manufacturer specs)
+    /// If set, this value is used instead of calculated value
+    /// </summary>
+    public double? SpecifiedOuterDiameter { get; set; }
+
+    /// <summary>
     /// Overall outer diameter of this cable in mm
     /// </summary>
     public double OuterDiameter
     {
         get
         {
+            // Use specified outer diameter if provided
+            if (SpecifiedOuterDiameter.HasValue)
+                return SpecifiedOuterDiameter.Value;
+
             double diameter = CoreBundleDiameter;
 
             if (HasShield)
