@@ -1,5 +1,6 @@
 <Window xmlns="https://github.com/avaloniaui"
-        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:views="clr-namespace:CableConcentricityCalculator.Gui.Views;assembly=CableConcentricityCalculator.Gui"
         x:Class="CableConcentricityCalculator.Gui.Views.CableBrowserDialog"
         Title="Cable Browser"
         Width="700" Height="550"
@@ -44,6 +45,7 @@
 
         <!-- Cable List -->
         <DataGrid Grid.Row="1" x:Name="CablesGrid" Margin="12"
+              x:DataType="views:CableDisplayItem"
                   AutoGenerateColumns="False"
                   IsReadOnly="True"
                   CanUserReorderColumns="True"
@@ -56,7 +58,7 @@
                 <DataGridTextColumn Header="Part Number" Binding="{Binding PartNumber}" Width="150"/>
                 <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="200"/>
                 <DataGridTextColumn Header="Manufacturer" Binding="{Binding Manufacturer}" Width="100"/>
-                <DataGridTextColumn Header="Cores" Binding="{Binding Cores.Count}" Width="50"/>
+                <DataGridTextColumn Header="Cores" Binding="{Binding Cable.Cores.Count}" Width="50"/>
                 <DataGridTextColumn Header="Conductor Ø" Binding="{Binding ConductorDiameterDisplay}" Width="90"/>
                 <DataGridTextColumn Header="Overall Ø" Binding="{Binding OuterDiameterDisplay}" Width="90"/>
                 <DataGridTextColumn Header="Type" Binding="{Binding Type}" Width="80"/>
