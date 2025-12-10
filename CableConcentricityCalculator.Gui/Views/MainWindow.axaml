@@ -6,7 +6,7 @@
         x:Class="CableConcentricityCalculator.Gui.Views.MainWindow"
         x:DataType="vm:MainWindowViewModel"
         Title="Cable Concentricity Calculator"
-        Width="1400" Height="900"
+        WindowState="Maximized"
         MinWidth="1200" MinHeight="700"
         WindowStartupLocation="CenterScreen">
 
