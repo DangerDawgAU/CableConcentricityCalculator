@@ -72,13 +72,7 @@ public partial class MainWindowViewModel : ObservableObject
     private bool _showIsometric;
 
     [ObservableProperty]
-    private bool _showTwistPattern;
-
-    [ObservableProperty]
     private byte[]? _isometricImage;
-
-    [ObservableProperty]
-    private byte[]? _twistPatternImage;
 
     public string[] CableCategories => ConfigurationService.GetCableCategories();
 
@@ -565,23 +559,23 @@ public partial class MainWindowViewModel : ObservableObject
             InteractiveImage = null;
         }
 
-        // Generate 3D views
+        // Generate 3D views - Save STL file
         try
         {
+            var stlBytes = Cable3DSTLVisualizer.GenerateSTL(Assembly);
+            var outputDir = Path.Combine(Environment.CurrentDirectory, "output");
+            Directory.CreateDirectory(outputDir);
+            var stlPath = Path.Combine(outputDir, $"{Assembly.PartNumber}_3D.stl");
+            File.WriteAllBytes(stlPath, stlBytes);
+            
+            // Generate a preview image from the STL (isometric view)
             IsometricImage = Cable3DVisualizer.GenerateIsometricCrossSection(Assembly, 800, 600);
+            StatusMessage = $"STL saved: {stlPath}";
         }
         catch
         {
             IsometricImage = null;
-        }
-
-        try
-        {
-            TwistPatternImage = Cable3DVisualizer.GenerateTwistedView(Assembly, 800, 600, 2);
-        }
-        catch
-        {
-            TwistPatternImage = null;
+            StatusMessage = "Error generating STL file";
         }
     }
 
