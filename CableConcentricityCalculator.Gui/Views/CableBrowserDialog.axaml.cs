@@ -3,6 +3,7 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using CableConcentricityCalculator.Models;
 using CableConcentricityCalculator.Services;
+using System.Diagnostics;
 
 namespace CableConcentricityCalculator.Gui.Views;
 
@@ -19,10 +20,19 @@ public partial class CableBrowserDialog : Window
     private readonly TextBox _searchBox;
     private readonly TextBlock _resultCountText;
     private readonly DataGrid _cablesGrid;
-    private readonly NumericUpDown _quantityUpDown;
+    private readonly NumericUpDown _multipleQuantityUpDown;
+    private readonly Button _useCableButton;
+    private readonly Button _addMultipleButton;
     private readonly Button _cancelButton;
-    private readonly Button _addButton;
     private readonly Button _customButton;
+    // Info pane controls
+    private readonly TextBlock _infoPartNumber;
+    private readonly TextBlock _infoName;
+    private readonly TextBlock _infoManufacturer;
+    private readonly TextBlock _infoType;
+    private readonly TextBlock _infoCores;
+    private readonly TextBlock _infoOD;
+    private readonly Button _googleSearchButton;
 
     public List<Cable> SelectedCables { get; } = new();
 
@@ -38,18 +48,29 @@ public partial class CableBrowserDialog : Window
         _searchBox = this.FindControl<TextBox>("SearchBox")!;
         _resultCountText = this.FindControl<TextBlock>("ResultCountText")!;
         _cablesGrid = this.FindControl<DataGrid>("CablesGrid")!;
-        _quantityUpDown = this.FindControl<NumericUpDown>("QuantityUpDown")!;
+        _multipleQuantityUpDown = this.FindControl<NumericUpDown>("MultipleQuantityUpDown")!;
+        _useCableButton = this.FindControl<Button>("UseCableButton")!;
+        _addMultipleButton = this.FindControl<Button>("AddMultipleButton")!;
         _cancelButton = this.FindControl<Button>("CancelButton")!;
-        _addButton = this.FindControl<Button>("AddButton")!;
         _customButton = this.FindControl<Button>("CustomButton")!;
+        // Info pane controls
+        _infoPartNumber = this.FindControl<TextBlock>("InfoPartNumber")!;
+        _infoName = this.FindControl<TextBlock>("InfoName")!;
+        _infoManufacturer = this.FindControl<TextBlock>("InfoManufacturer")!;
+        _infoType = this.FindControl<TextBlock>("InfoType")!;
+        _infoCores = this.FindControl<TextBlock>("InfoCores")!;
+        _infoOD = this.FindControl<TextBlock>("InfoOD")!;
+        _googleSearchButton = this.FindControl<Button>("GoogleSearchButton")!;
 
         LoadCables();
         SetupFilters();
 
         _cancelButton.Click += (_, _) => Close();
-        _addButton.Click += OnAddClick;
+        _useCableButton.Click += OnUseCableClick;
+        _addMultipleButton.Click += OnAddMultipleClick;
         _customButton.Click += OnCustomClick;
         _cablesGrid.SelectionChanged += OnSelectionChanged;
+        _googleSearchButton.Click += (_, _) => OpenGoogleSearch();
     }
 
     private void LoadCables()
@@ -152,10 +173,45 @@ public partial class CableBrowserDialog : Window
 
     private void OnSelectionChanged(object? sender, SelectionChangedEventArgs e)
     {
-        _addButton.IsEnabled = _cablesGrid.SelectedItem != null;
+        bool hasSelection = _cablesGrid.SelectedItem != null;
+        _useCableButton.IsEnabled = hasSelection;
+        _addMultipleButton.IsEnabled = hasSelection;
+        _googleSearchButton.IsEnabled = hasSelection;
+
+        if (_cablesGrid.SelectedItem is CableDisplayItem item)
+        {
+            ShowInfoFor(item.Cable);
+        }
     }
 
-    private void OnCableDoubleTapped(object? sender, TappedEventArgs e)
+    private void ShowInfoFor(Cable cable)
+    {
+        if (cable == null) return;
+
+        _infoPartNumber.Text = cable.PartNumber;
+        _infoName.Text = cable.Name;
+        _infoManufacturer.Text = cable.Manufacturer;
+        _infoType.Text = cable.Type.ToString();
+        _infoCores.Text = cable.Cores.Count.ToString();
+        _infoOD.Text = $"{cable.OuterDiameter:F2} mm";
+    }
+
+    private void OpenGoogleSearch()
+    {
+        if (!(_cablesGrid.SelectedItem is CableDisplayItem item)) return;
+        var searchTerm = Uri.EscapeDataString(item.PartNumber + " " + item.Name);
+        string url = $"https://www.google.com/search?q={searchTerm}";
+        try
+        {
+            Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
+        }
+        catch
+        {
+            // ignore errors silently
+        }
+    }
+
+    private void OnUseCableClick(object? sender, RoutedEventArgs e)
     {
         if (_cablesGrid.SelectedItem is CableDisplayItem item)
         {
@@ -164,11 +220,11 @@ public partial class CableBrowserDialog : Window
         }
     }
 
-    private void OnAddClick(object? sender, RoutedEventArgs e)
+    private void OnAddMultipleClick(object? sender, RoutedEventArgs e)
     {
         if (_cablesGrid.SelectedItem is CableDisplayItem item)
         {
-            var quantity = (int)(_quantityUpDown.Value ?? 1);
+            var quantity = (int)(_multipleQuantityUpDown.Value ?? 1);
             AddCables(item.Cable, quantity);
             Close(SelectedCables);
         }
@@ -189,7 +245,7 @@ public partial class CableBrowserDialog : Window
 
         if (result != null)
         {
-            var quantity = (int)(_quantityUpDown.Value ?? 1);
+            var quantity = (int)(_multipleQuantityUpDown.Value ?? 1);
             for (int i = 0; i < quantity; i++)
             {
                 SelectedCables.Add(CloneCable(result));
