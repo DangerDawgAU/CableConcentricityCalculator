@@ -388,11 +388,34 @@
                         <!-- Heat Shrinks -->
                         <Border Classes="panel">
                             <StackPanel>
-                                <Grid ColumnDefinitions="*,Auto">
-                                    <TextBlock Text="HEAT SHRINKS" Classes="panel-title"/>
-                                    <Button Grid.Column="1" Content="+" Command="{Binding AddHeatShrinkCommand}"
-                                            Classes="secondary" Padding="6,2" FontSize="12"/>
-                                </Grid>
+                                <TextBlock Text="HEAT SHRINKS" Classes="panel-title"/>
+                                
+                                <!-- Heat Shrink Selector -->
+                                <StackPanel Margin="0,8,0,8">
+                                    <TextBlock Text="Select Type:" FontSize="11" Foreground="#555" Margin="0,0,0,4"/>
+                                    <ComboBox ItemsSource="{Binding AvailableHeatShrinks}"
+                                              SelectedItem="{Binding SelectedHeatShrink}"
+                                              FontSize="11">
+                                        <ComboBox.ItemTemplate>
+                                            <DataTemplate x:DataType="models:HeatShrink">
+                                                <TextBlock>
+                                                    <TextBlock.Text>
+                                                        <MultiBinding StringFormat="{}{0} ({1}mm - {2}mm shrink)">
+                                                            <Binding Path="PartNumber"/>
+                                                            <Binding Path="SuppliedInnerDiameter"/>
+                                                            <Binding Path="RecoveredInnerDiameter"/>
+                                                        </MultiBinding>
+                                                    </TextBlock.Text>
+                                                </TextBlock>
+                                            </DataTemplate>
+                                        </ComboBox.ItemTemplate>
+                                    </ComboBox>
+                                    <Button Content="Add Selected Heat Shrink" Command="{Binding AddHeatShrinkCommand}"
+                                            Classes="primary" Margin="0,6,0,0"/>
+                                </StackPanel>
+
+                                <!-- Applied Heat Shrinks List -->
+                                <TextBlock Text="Applied Heat Shrinks:" FontSize="11" Foreground="#555" Margin="0,8,0,4"/>
                                 <ItemsControl ItemsSource="{Binding Assembly.HeatShrinks}">
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate x:DataType="models:HeatShrink">
@@ -402,9 +425,18 @@
                                                         <TextBlock Text="{Binding PartNumber}" FontWeight="SemiBold" FontSize="11"/>
                                                         <TextBlock FontSize="10" Foreground="#666">
                                                             <TextBlock.Text>
-                                                                <MultiBinding StringFormat="{}{0}, {1}">
+                                                                <MultiBinding StringFormat="{}{0}, {1}, Ratio: {2}">
                                                                     <Binding Path="Material"/>
+                                                                    <Binding Path="Manufacturer"/>
                                                                     <Binding Path="ShrinkRatio"/>
+                                                                </MultiBinding>
+                                                            </TextBlock.Text>
+                                                        </TextBlock>
+                                                        <TextBlock FontSize="9" Foreground="#999" Margin="0,2,0,0">
+                                                            <TextBlock.Text>
+                                                                <MultiBinding StringFormat="{}ID: {0}mm → {1}mm">
+                                                                    <Binding Path="SuppliedInnerDiameter"/>
+                                                                    <Binding Path="RecoveredInnerDiameter"/>
                                                                 </MultiBinding>
                                                             </TextBlock.Text>
                                                         </TextBlock>
@@ -418,7 +450,7 @@
                                         </DataTemplate>
                                     </ItemsControl.ItemTemplate>
                                 </ItemsControl>
-                                <TextBlock Text="No heat shrinks" FontSize="11" Foreground="#999" Margin="0,4"
+                                <TextBlock Text="No heat shrinks applied" FontSize="11" Foreground="#999" Margin="0,4"
                                            IsVisible="{Binding !Assembly.HeatShrinks.Count}"/>
                             </StackPanel>
                         </Border>
