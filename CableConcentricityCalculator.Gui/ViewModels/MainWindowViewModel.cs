@@ -76,11 +76,19 @@ public partial class MainWindowViewModel : ObservableObject
 
     public string[] CableCategories => ConfigurationService.GetCableCategories();
 
-    public ObservableCollection<HeatShrink> AvailableHeatShrinks { get; } = 
+    public ObservableCollection<HeatShrink> AvailableHeatShrinks { get; } =
         new(HeatShrinkService.GetAvailableHeatShrinks());
 
     [ObservableProperty]
     private HeatShrink? _selectedHeatShrink;
+
+    public ObservableCollection<OverBraid> AvailableOverBraids { get; } =
+        new(OverBraidService.GetAllAvailableBraids());
+
+    [ObservableProperty]
+    private OverBraid? _selectedOverBraid;
+
+    public string[] MDPCXColors => OverBraidService.MDPCXColors;
 
     public MainWindowViewModel()
     {
@@ -91,6 +99,8 @@ public partial class MainWindowViewModel : ObservableObject
         UpdateCrossSectionImage();
         // Select the most appropriate heat shrink based on initial assembly
         SelectedHeatShrink = HeatShrinkService.SelectAppropriateHeatShrink(Assembly.DiameterWithBraids);
+        // Select the most appropriate over-braid/sleeving based on initial assembly
+        SelectedOverBraid = OverBraidService.SelectAppropriateMDPCXSleeving(Assembly.CoreBundleDiameter);
     }
 
     partial void OnSelectedCableCategoryChanged(string value)
@@ -539,21 +549,38 @@ public partial class MainWindowViewModel : ObservableObject
     [RelayCommand]
     private void AddOverBraid()
     {
+        if (SelectedOverBraid == null)
+        {
+            StatusMessage = "Please select an over-braid/sleeving from the dropdown first";
+            return;
+        }
+
+        // Clone the selected over-braid to add to assembly
         var braid = new OverBraid
         {
-            PartNumber = "BRAID-NEW",
-            Name = "New Over-Braid",
-            Material = "Tinned Copper",
-            CoveragePercent = 85,
-            WallThickness = 0.5,
-            IsShielding = true,
-            Color = "Silver"
+            PartNumber = SelectedOverBraid.PartNumber,
+            Name = SelectedOverBraid.Name,
+            Manufacturer = SelectedOverBraid.Manufacturer,
+            Type = SelectedOverBraid.Type,
+            Material = SelectedOverBraid.Material,
+            NominalInnerDiameter = SelectedOverBraid.NominalInnerDiameter,
+            MinInnerDiameter = SelectedOverBraid.MinInnerDiameter,
+            MaxInnerDiameter = SelectedOverBraid.MaxInnerDiameter,
+            WallThickness = SelectedOverBraid.WallThickness,
+            CoveragePercent = SelectedOverBraid.CoveragePercent,
+            Color = SelectedOverBraid.Color,
+            IsShielding = SelectedOverBraid.IsShielding,
+            CarrierCount = SelectedOverBraid.CarrierCount,
+            EndsPerCarrier = SelectedOverBraid.EndsPerCarrier,
+            WireDiameter = SelectedOverBraid.WireDiameter,
+            PicksPerInch = SelectedOverBraid.PicksPerInch,
+            AppliedOverLayer = -1  // Outermost by default
         };
 
         Assembly.OverBraids.Add(braid);
         MarkChanged();
         UpdateCrossSectionImage();
-        StatusMessage = "Added over-braid";
+        StatusMessage = $"Added {braid.Name}";
     }
 
     [RelayCommand]
