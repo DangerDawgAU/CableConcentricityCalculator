@@ -3,7 +3,7 @@
     xmlns:views="clr-namespace:CableConcentricityCalculator.Gui.Views;assembly=CableConcentricityCalculator.Gui"
         x:Class="CableConcentricityCalculator.Gui.Views.CableBrowserDialog"
         Title="Cable Browser"
-        Width="700" Height="550"
+        Width="920" Height="550"
         WindowStartupLocation="CenterOwner">
 
     <Window.Styles>
@@ -17,13 +17,13 @@
     <Grid RowDefinitions="Auto,*,Auto">
         <!-- Filter Panel -->
         <Border Background="#F5F5F5" Padding="12" BorderBrush="#E0E0E0" BorderThickness="0,0,0,1">
-            <Grid ColumnDefinitions="Auto,*,Auto,Auto,Auto,Auto,Auto,Auto" RowDefinitions="Auto,Auto">
+            <Grid ColumnDefinitions="Auto,180,Auto,150,Auto,80,Auto,150" RowDefinitions="Auto,Auto">
                 <TextBlock Text="Category:" Classes="label" Margin="0,0,8,0"/>
-                <ComboBox Grid.Column="1" x:Name="CategoryCombo" MinWidth="140"
+                <ComboBox Grid.Column="1" x:Name="CategoryCombo" MinWidth="120"
                           SelectionChanged="OnFilterChanged"/>
 
                 <TextBlock Grid.Column="2" Text="Manufacturer:" Classes="label" Margin="16,0,8,0"/>
-                <ComboBox Grid.Column="3" x:Name="ManufacturerCombo" MinWidth="120"
+                <ComboBox Grid.Column="3" x:Name="ManufacturerCombo" MinWidth="140"
                           SelectionChanged="OnFilterChanged"/>
 
                 <TextBlock Grid.Column="4" Text="Cores:" Classes="label" Margin="16,0,8,0"/>
@@ -31,7 +31,7 @@
                           SelectionChanged="OnFilterChanged"/>
 
                 <TextBlock Grid.Column="6" Text="Type:" Classes="label" Margin="16,0,8,0"/>
-                <ComboBox Grid.Column="7" x:Name="TypeCombo" MinWidth="120"
+                <ComboBox Grid.Column="7" x:Name="TypeCombo" MinWidth="140"
                           SelectionChanged="OnFilterChanged"/>
 
                 <TextBlock Grid.Row="1" Text="Search:" Classes="label" Margin="0,8,8,0"/>
@@ -70,7 +70,7 @@
             <Grid ColumnDefinitions="*,Auto,Auto,Auto">
                 <StackPanel Orientation="Horizontal" Spacing="8">
                     <TextBlock Text="Quantity:" VerticalAlignment="Center" FontSize="12"/>
-                    <NumericUpDown x:Name="QuantityUpDown" Value="1" Minimum="1" Maximum="100" Width="80"/>
+                    <NumericUpDown x:Name="QuantityUpDown" Value="1" Minimum="1" Maximum="1000" Width="140"/>
                 </StackPanel>
                 <Button Grid.Column="1" Content="Cancel" x:Name="CancelButton" Padding="16,8" Margin="0,0,8,0"/>
                 <Button Grid.Column="2" Content="Add Selected" x:Name="AddButton" Padding="16,8"
