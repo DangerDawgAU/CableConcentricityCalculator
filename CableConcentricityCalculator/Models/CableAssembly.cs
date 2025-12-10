@@ -1,3 +1,5 @@
+using System.Collections.ObjectModel;
+
 namespace CableConcentricityCalculator.Models;
 
 /// <summary>
@@ -43,22 +45,22 @@ public class CableAssembly
     /// <summary>
     /// Concentric layers from center outward
     /// </summary>
-    public List<CableLayer> Layers { get; set; } = new();
+    public ObservableCollection<CableLayer> Layers { get; set; } = new();
 
     /// <summary>
     /// Heat shrink tubing applications
     /// </summary>
-    public List<HeatShrink> HeatShrinks { get; set; } = new();
+    public ObservableCollection<HeatShrink> HeatShrinks { get; set; } = new();
 
     /// <summary>
     /// Over-braid applications
     /// </summary>
-    public List<OverBraid> OverBraids { get; set; } = new();
+    public ObservableCollection<OverBraid> OverBraids { get; set; } = new();
 
     /// <summary>
     /// Diagram annotations and balloons
     /// </summary>
-    public List<Annotation> Annotations { get; set; } = new();
+    public ObservableCollection<Annotation> Annotations { get; set; } = new();
 
     /// <summary>
     /// Outer jacket (if applicable)

@@ -1,3 +1,5 @@
+using System.Collections.ObjectModel;
+
 namespace CableConcentricityCalculator.Models;
 
 /// <summary>
@@ -13,7 +15,7 @@ public class CableLayer
     /// <summary>
     /// Cables in this layer
     /// </summary>
-    public List<Cable> Cables { get; set; } = new();
+    public ObservableCollection<Cable> Cables { get; set; } = new();
 
     /// <summary>
     /// Twist direction for this layer

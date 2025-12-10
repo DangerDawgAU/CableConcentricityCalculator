@@ -185,7 +185,7 @@ public class ConfigurationService
         {
             LayerNumber = 0,
             TwistDirection = TwistDirection.None,
-            Cables = new List<Cable>
+            Cables = new System.Collections.ObjectModel.ObservableCollection<Cable>
             {
                 CloneCable(cableLibrary["M22759-22-White"])
             }
@@ -198,7 +198,7 @@ public class ConfigurationService
             LayerNumber = 1,
             TwistDirection = TwistDirection.RightHand,
             LayLength = 30,
-            Cables = new List<Cable>
+            Cables = new System.Collections.ObjectModel.ObservableCollection<Cable>
             {
                 CloneCable(cableLibrary["M22759-22-Black"]),
                 CloneCable(cableLibrary["M22759-22-Red"]),
@@ -216,7 +216,7 @@ public class ConfigurationService
             LayerNumber = 2,
             TwistDirection = TwistDirection.LeftHand,
             LayLength = 40,
-            Cables = new List<Cable>()
+            Cables = new System.Collections.ObjectModel.ObservableCollection<Cable>()
         };
 
         string[] layer2Colors = { "White", "Black", "Red", "Green", "Blue", "Yellow",
