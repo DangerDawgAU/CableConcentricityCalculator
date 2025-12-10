@@ -40,9 +40,6 @@
                 <MenuItem Header="_Optimize Fillers" Command="{Binding OptimizeFillersCommand}"/>
                 <MenuItem Header="_Validate Assembly" Command="{Binding ValidateAssemblyCommand}"/>
             </MenuItem>
-            <MenuItem Header="_Tools">
-                <MenuItem Header="Load _Demo Assembly" Command="{Binding LoadDemoAssemblyCommand}"/>
-            </MenuItem>
             <MenuItem Header="_Help">
                 <MenuItem Header="_About" Click="OnAboutClick"/>
             </MenuItem>
@@ -76,10 +73,6 @@
                 </Button>
                 <Button Command="{Binding ValidateAssemblyCommand}" ToolTip.Tip="Validate Assembly" Classes="icon-button">
                     <TextBlock Text="Validate" FontSize="12"/>
-                </Button>
-                <Separator Width="1" Background="#D0D0D0" Margin="8,4"/>
-                <Button Command="{Binding LoadDemoAssemblyCommand}" ToolTip.Tip="Load Demo" Classes="icon-button">
-                    <TextBlock Text="Demo" FontSize="12" Foreground="#0078D4"/>
                 </Button>
             </StackPanel>
         </Border>
@@ -147,7 +140,7 @@
                                         <TextBlock Grid.Row="1" Grid.Column="1" FontSize="11" Foreground="#666">
                                             <TextBlock.Text>
                                                 <MultiBinding StringFormat="Ø {0:F2} mm | {1} | {2}mm lay">
-                                                    <Binding Path="LayerDiameter"/>
+                                                    <Binding Path="CumulativeDiameter"/>
                                                     <Binding Path="TwistDirection"/>
                                                     <Binding Path="LayLength"/>
                                                 </MultiBinding>
@@ -229,8 +222,6 @@
                                      Classes="viewTab"/>
                         <RadioButton GroupName="ViewTabs" Content="3D Isometric" IsChecked="{Binding ShowIsometric}"
                                      Classes="viewTab"/>
-                        <RadioButton GroupName="ViewTabs" Content="Twist Pattern" IsChecked="{Binding ShowTwistPattern}"
-                                     Classes="viewTab"/>
                     </StackPanel>
                 </Border>
 
@@ -260,21 +251,6 @@
                         <Image Source="{Binding IsometricImage, Converter={StaticResource ByteArrayToImageConverter}}"
                                Stretch="Uniform" Margin="16"/>
                         <TextBlock Text="Add cables to see 3D isometric view"
-                                   HorizontalAlignment="Center" VerticalAlignment="Center"
-                                   Foreground="#999" FontSize="14"
-                                   IsVisible="{Binding Assembly.Layers.Count, Converter={StaticResource ZeroConverter}}"/>
-                    </Grid>
-                </Border>
-
-                <!-- Twist Pattern View -->
-                <Border Grid.Row="1" Background="White" Margin="16,0,16,8" CornerRadius="0,0,8,8"
-                        BorderBrush="#E0E0E0" BorderThickness="1"
-                        BoxShadow="0 2 8 0 #20000000"
-                        IsVisible="{Binding ShowTwistPattern}">
-                    <Grid>
-                        <Image Source="{Binding TwistPatternImage, Converter={StaticResource ByteArrayToImageConverter}}"
-                               Stretch="Uniform" Margin="16"/>
-                        <TextBlock Text="Add cables with twist to see lay pattern"
                                    HorizontalAlignment="Center" VerticalAlignment="Center"
                                    Foreground="#999" FontSize="14"
                                    IsVisible="{Binding Assembly.Layers.Count, Converter={StaticResource ZeroConverter}}"/>

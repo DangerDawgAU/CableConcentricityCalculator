@@ -909,6 +909,142 @@ public static class CableLibrary
     }
 
     /// <summary>
+    /// Create MIL-DTL-27500 cable library - Military spec twisted pair, trio, and quad cables
+    /// Format: M27500-[COMPONENT_WIRE_TYPE][RC][COMPONENT_WIRE_SIZE][NUMBER_OF_WIRES][SHIELD_MATERIAL][JACKET_MATERIAL]
+    /// Example: M27500-8RC2S06 = M22759/8 wire type, RC wire, 2 wires, S shield (silver), 06 jacket code
+    /// </summary>
+    public static Dictionary<string, Cable> CreateMilC27500Library()
+    {
+        var library = new Dictionary<string, Cable>();
+
+        // Component wire types (from MIL-W-22759 variants)
+        var componentWireTypes = new[]
+        {
+            ("VA", "M22759/5 (PTFE, Silver)", "Silver Plated Copper", 0.10, 200),
+            ("WA", "M22759/6 (PTFE)", "Copper", 0.10, 200),
+            ("SA", "M22759/7 (ETFE, Silver)", "Silver Plated Copper", 0.15, 150),
+            ("TA", "M22759/8 (ETFE)", "Tin Plated Copper", 0.15, 150),
+            ("LE", "M22759/9 (Polyimide)", "Copper", 0.10, 200),
+            ("LH", "M22759/10 (Polyimide)", "Copper", 0.15, 200),
+            ("RC", "M22759/11 (ETFE)", "Copper", 0.10, 150),
+            ("RI", "M22759/12 (ETFE)", "Copper", 0.15, 150)
+        };
+
+        // Wire sizes (gauge)
+        var wireSizes = new[] { "26", "24", "22", "20" };
+
+        // Number of conductors (2=pair, 3=trio, 4=quad)
+        var conductorCounts = new[] { 2, 3, 4 };
+
+        // Shield material codes
+        var shieldMaterials = new[]
+        {
+            ("U", "No Shield", false, "None"),
+            ("N", "Nickel-plated copper, round", true, "Nickel"),
+            ("S", "Silver-plated copper, round", true, "Silver"),
+            ("T", "Tin-plated copper, round", true, "Tin"),
+            ("C", "Heavy nickel-plated copper, round", true, "Nickel"),
+            ("F", "Stainless steel, round", true, "Stainless"),
+            ("P", "Nickel-plated high-strength copper, round", true, "Nickel"),
+            ("M", "Silver-plated high-strength copper, round", true, "Silver"),
+            ("G", "Silver-plated copper, flat", true, "Silver"),
+            ("J", "Tin-plated copper, flat", true, "Tin"),
+        };
+
+        // Jacket material codes (from MIL-DTL-27500 table)
+        var jacketMaterials = new[]
+        {
+            ("00", "No jacket", "Clear", 0.0),
+            ("15", "ETFE, extruded, clear", "Clear", 0.20),
+            ("14", "ETFE, extruded, white", "White", 0.20),
+            ("05", "FEP, extruded, clear", "Clear", 0.25),
+            ("09", "FEP, extruded, white", "White", 0.25),
+            ("02", "Nylon, extruded, clear", "Clear", 0.15),
+            ("21", "PFA, extruded, clear", "Clear", 0.20),
+            ("20", "PFA, extruded, white", "White", 0.20),
+            ("06", "PTFE, tape, white", "White", 0.30),
+            ("01", "PVC, extruded, white", "White", 0.25)
+        };
+
+        foreach (var (wireTypeCode, wireTypeDesc, conductor, defaultInsulation, tempRating) in componentWireTypes)
+        {
+            if (!AwgSizes.TryGetValue("22", out var sizeRef)) continue; // Use 22 as reference for insulation
+
+            foreach (var wireSize in wireSizes)
+            {
+                if (!AwgSizes.TryGetValue(wireSize, out var size)) continue;
+
+                foreach (var coreCount in conductorCounts)
+                {
+                    foreach (var (shieldCode, shieldDesc, hasShield, shieldMat) in shieldMaterials)
+                    {
+                        foreach (var (jacketCode, jacketDesc, jacketColor, jacketThickness) in jacketMaterials)
+                        {
+                            // Build part number: M27500-[WIRE_TYPE][SIZE][CORES][SHIELD][JACKET]
+                            var partNumber = $"M27500-{wireTypeCode}{wireSize}{coreCount}{shieldCode}{jacketCode}";
+                            var name = $"MIL-DTL-27500 {wireSize} AWG {coreCount}-Conductor {shieldDesc}";
+
+                            var cableType = coreCount switch
+                            {
+                                2 => CableType.TwistedPair,
+                                _ => CableType.MultiCore
+                            };
+
+                            var cores = CreateMilC27500Cores(coreCount, wireSize, size.ConductorDia, size.InsulationThick);
+
+                            // Calculate jacket thickness - use provided value or default based on shielding
+                            var finalJacketThickness = jacketThickness > 0 ? jacketThickness : (hasShield ? 0.30 : 0.20);
+
+                            library[partNumber] = new Cable
+                            {
+                                PartNumber = partNumber,
+                                Name = name,
+                                Manufacturer = "MIL-SPEC",
+                                Type = cableType,
+                                JacketColor = jacketColor,
+                                JacketThickness = finalJacketThickness,
+                                HasShield = hasShield,
+                                ShieldType = hasShield ? ShieldType.Braid : ShieldType.None,
+                                ShieldThickness = hasShield ? 0.15 : 0,
+                                ShieldCoverage = hasShield ? 90 : 0,
+                                Cores = cores
+                            };
+                        }
+                    }
+                }
+            }
+        }
+
+        return library;
+    }
+
+    private static List<CableCore> CreateMilC27500Cores(int count, string gauge, double conductorDia, double insulationThick)
+    {
+        var colors = count switch
+        {
+            2 => new[] { "White", "Black" },
+            3 => new[] { "White", "Black", "Red" },
+            4 => new[] { "White", "Black", "Red", "Green" },
+            _ => new[] { "White" }
+        };
+
+        var cores = new List<CableCore>();
+        for (int i = 0; i < count; i++)
+        {
+            cores.Add(new CableCore
+            {
+                CoreId = (i + 1).ToString(),
+                ConductorDiameter = conductorDia,
+                InsulationThickness = insulationThick,
+                InsulationColor = colors[i % colors.Length],
+                Gauge = gauge,
+                ConductorMaterial = "Copper"
+            });
+        }
+        return cores;
+    }
+
+    /// <summary>
     /// Get complete merged cable library
     /// </summary>
     public static Dictionary<string, Cable> GetCompleteCableLibrary()
@@ -916,6 +1052,9 @@ public static class CableLibrary
         var library = new Dictionary<string, Cable>();
 
         foreach (var kvp in CreateMilW22759Library())
+            library[kvp.Key] = kvp.Value;
+
+        foreach (var kvp in CreateMilC27500Library())
             library[kvp.Key] = kvp.Value;
 
         foreach (var kvp in CreateOlflexLibrary())
