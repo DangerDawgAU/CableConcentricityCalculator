@@ -72,13 +72,7 @@ public partial class MainWindowViewModel : ObservableObject
     private bool _showIsometric;
 
     [ObservableProperty]
-    private bool _showTwistPattern;
-
-    [ObservableProperty]
     private byte[]? _isometricImage;
-
-    [ObservableProperty]
-    private byte[]? _twistPatternImage;
 
     public string[] CableCategories => ConfigurationService.GetCableCategories();
 
@@ -139,6 +133,7 @@ public partial class MainWindowViewModel : ObservableObject
 
     partial void OnAssemblyChanged(CableAssembly value)
     {
+        UpdateCumulativeLayerDiameters();
         UpdateCrossSectionImage();
         ValidateAssembly();
     }
@@ -146,6 +141,51 @@ public partial class MainWindowViewModel : ObservableObject
     partial void OnSelectedLayerChanged(CableLayer? value)
     {
         SelectedCable = value?.Cables.FirstOrDefault();
+    }
+
+    /// <summary>
+    /// Recalculate cumulative diameters for all layers based on the current assembly
+    /// </summary>
+    private void UpdateCumulativeLayerDiameters()
+    {
+        double cumulativeDiameter = 0;
+
+        foreach (var layer in Assembly.Layers.OrderBy(l => l.LayerNumber))
+        {
+            if (layer.LayerNumber == 0)
+            {
+                // Center layer - calculate its own diameter
+                var elements = layer.GetElements();
+                if (elements.Count == 0)
+                {
+                    cumulativeDiameter = 0;
+                }
+                else if (elements.Count == 1)
+                {
+                    cumulativeDiameter = elements[0].Diameter;
+                }
+                else
+                {
+                    // Use max diameter for multi-element center layer
+                    var maxDia = elements.Max(e => e.Diameter);
+                    cumulativeDiameter = maxDia * 2; // Rough approximation
+                }
+            }
+            else
+            {
+                // Add this layer's thickness (2x cable radius)
+                var layerThickness = layer.LayerDiameter;
+                cumulativeDiameter += 2 * layerThickness;
+            }
+
+            // Add tape wrap if present
+            if (layer.TapeWrap != null)
+            {
+                cumulativeDiameter += 2 * layer.TapeWrap.EffectiveThickness;
+            }
+
+            layer.CumulativeDiameter = cumulativeDiameter;
+        }
     }
 
     [RelayCommand]
@@ -344,6 +384,7 @@ public partial class MainWindowViewModel : ObservableObject
         Assembly.Layers.Add(newLayer);
         SelectedLayer = newLayer;
         MarkChanged();
+        UpdateCumulativeLayerDiameters();
         UpdateCrossSectionImage();
         StatusMessage = $"Added Layer {newLayerNumber}";
     }
@@ -367,6 +408,7 @@ public partial class MainWindowViewModel : ObservableObject
             : null;
 
         MarkChanged();
+        UpdateCumulativeLayerDiameters();
         UpdateCrossSectionImage();
         StatusMessage = "Layer removed";
     }
@@ -380,6 +422,7 @@ public partial class MainWindowViewModel : ObservableObject
         SelectedLayer.Cables.Add(clone);
         SelectedCable = clone;
         MarkChanged();
+        UpdateCumulativeLayerDiameters();
         UpdateCrossSectionImage();
         StatusMessage = $"Added {clone.PartNumber} to Layer {SelectedLayer.LayerNumber}";
     }
@@ -395,6 +438,7 @@ public partial class MainWindowViewModel : ObservableObject
             SelectedLayer.Cables.Add(clone);
         }
 
+        UpdateCumulativeLayerDiameters();
         MarkChanged();
         UpdateCrossSectionImage();
         StatusMessage = $"Added {count}x {SelectedLibraryCable.Cable.PartNumber} to Layer {SelectedLayer.LayerNumber}";
@@ -413,6 +457,7 @@ public partial class MainWindowViewModel : ObservableObject
             : null;
 
         MarkChanged();
+        UpdateCumulativeLayerDiameters();
         UpdateCrossSectionImage();
         StatusMessage = "Cable removed";
     }
@@ -438,16 +483,6 @@ public partial class MainWindowViewModel : ObservableObject
         }
 
         StatusMessage = issues.Count == 0 ? "Validation passed" : $"{issues.Count} validation issue(s)";
-    }
-
-    [RelayCommand]
-    private void LoadDemoAssembly()
-    {
-        Assembly = ConfigurationService.CreateSampleAssembly();
-        CurrentFilePath = null;
-        HasUnsavedChanges = false;
-        SelectedLayer = Assembly.Layers.FirstOrDefault();
-        StatusMessage = "Loaded demo assembly";
     }
 
     [RelayCommand]
@@ -524,23 +559,23 @@ public partial class MainWindowViewModel : ObservableObject
             InteractiveImage = null;
         }
 
-        // Generate 3D views
+        // Generate 3D views - Save STL file
         try
         {
+            var stlBytes = Cable3DSTLVisualizer.GenerateSTL(Assembly);
+            var outputDir = Path.Combine(Environment.CurrentDirectory, "output");
+            Directory.CreateDirectory(outputDir);
+            var stlPath = Path.Combine(outputDir, $"{Assembly.PartNumber}_3D.stl");
+            File.WriteAllBytes(stlPath, stlBytes);
+            
+            // Generate a preview image from the STL (isometric view)
             IsometricImage = Cable3DVisualizer.GenerateIsometricCrossSection(Assembly, 800, 600);
+            StatusMessage = $"STL saved: {stlPath}";
         }
         catch
         {
             IsometricImage = null;
-        }
-
-        try
-        {
-            TwistPatternImage = Cable3DVisualizer.GenerateTwistedView(Assembly, 800, 600, 2);
-        }
-        catch
-        {
-            TwistPatternImage = null;
+            StatusMessage = "Error generating STL file";
         }
     }
 
