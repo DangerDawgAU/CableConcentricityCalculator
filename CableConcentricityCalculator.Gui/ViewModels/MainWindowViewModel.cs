@@ -76,6 +76,12 @@ public partial class MainWindowViewModel : ObservableObject
 
     public string[] CableCategories => ConfigurationService.GetCableCategories();
 
+    public ObservableCollection<HeatShrink> AvailableHeatShrinks { get; } = 
+        new(HeatShrinkService.GetAvailableHeatShrinks());
+
+    [ObservableProperty]
+    private HeatShrink? _selectedHeatShrink;
+
     public MainWindowViewModel()
     {
         _assembly = CreateNewAssembly();
@@ -83,6 +89,8 @@ public partial class MainWindowViewModel : ObservableObject
         _validationMessages = new ObservableCollection<string>();
         _notesTable = new ObservableCollection<NotesTableEntry>();
         UpdateCrossSectionImage();
+        // Select the most appropriate heat shrink based on initial assembly
+        SelectedHeatShrink = HeatShrinkService.SelectAppropriateHeatShrink(Assembly.DiameterWithBraids);
     }
 
     partial void OnSelectedCableCategoryChanged(string value)
@@ -136,6 +144,8 @@ public partial class MainWindowViewModel : ObservableObject
         UpdateCumulativeLayerDiameters();
         UpdateCrossSectionImage();
         ValidateAssembly();
+        // Update selected heat shrink based on new assembly diameter
+        SelectedHeatShrink = HeatShrinkService.SelectAppropriateHeatShrink(value.DiameterWithBraids);
     }
 
     partial void OnSelectedLayerChanged(CableLayer? value)
@@ -488,22 +498,32 @@ public partial class MainWindowViewModel : ObservableObject
     [RelayCommand]
     private void AddHeatShrink()
     {
-        var hs = new HeatShrink
+        if (SelectedHeatShrink == null)
         {
-            PartNumber = "HS-NEW",
-            Name = "New Heat Shrink",
-            Material = "Polyolefin",
-            SuppliedInnerDiameter = 12,
-            RecoveredInnerDiameter = 6,
-            RecoveredWallThickness = 0.8,
-            ShrinkRatio = "2:1",
-            Color = "Black"
+            StatusMessage = "Please select a heat shrink from the dropdown first";
+            return;
+        }
+
+        // Create a copy of the selected heat shrink for this assembly
+        var newHeatShrink = new HeatShrink
+        {
+            PartNumber = SelectedHeatShrink.PartNumber,
+            Name = SelectedHeatShrink.Name,
+            Manufacturer = SelectedHeatShrink.Manufacturer,
+            Material = SelectedHeatShrink.Material,
+            SuppliedInnerDiameter = SelectedHeatShrink.SuppliedInnerDiameter,
+            RecoveredInnerDiameter = SelectedHeatShrink.RecoveredInnerDiameter,
+            RecoveredWallThickness = SelectedHeatShrink.RecoveredWallThickness,
+            ShrinkRatio = SelectedHeatShrink.ShrinkRatio,
+            Color = SelectedHeatShrink.Color,
+            TemperatureRating = SelectedHeatShrink.TemperatureRating,
+            RecoveryTemperature = SelectedHeatShrink.RecoveryTemperature
         };
 
-        Assembly.HeatShrinks.Add(hs);
+        Assembly.HeatShrinks.Add(newHeatShrink);
         MarkChanged();
         UpdateCrossSectionImage();
-        StatusMessage = "Added heat shrink";
+        StatusMessage = $"Added {newHeatShrink.PartNumber}";
     }
 
     [RelayCommand]
