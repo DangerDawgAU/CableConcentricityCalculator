@@ -40,9 +40,6 @@
                 <MenuItem Header="_Optimize Fillers" Command="{Binding OptimizeFillersCommand}"/>
                 <MenuItem Header="_Validate Assembly" Command="{Binding ValidateAssemblyCommand}"/>
             </MenuItem>
-            <MenuItem Header="_Tools">
-                <MenuItem Header="Load _Demo Assembly" Command="{Binding LoadDemoAssemblyCommand}"/>
-            </MenuItem>
             <MenuItem Header="_Help">
                 <MenuItem Header="_About" Click="OnAboutClick"/>
             </MenuItem>
@@ -76,10 +73,6 @@
                 </Button>
                 <Button Command="{Binding ValidateAssemblyCommand}" ToolTip.Tip="Validate Assembly" Classes="icon-button">
                     <TextBlock Text="Validate" FontSize="12"/>
-                </Button>
-                <Separator Width="1" Background="#D0D0D0" Margin="8,4"/>
-                <Button Command="{Binding LoadDemoAssemblyCommand}" ToolTip.Tip="Load Demo" Classes="icon-button">
-                    <TextBlock Text="Demo" FontSize="12" Foreground="#0078D4"/>
                 </Button>
             </StackPanel>
         </Border>
@@ -147,7 +140,7 @@
                                         <TextBlock Grid.Row="1" Grid.Column="1" FontSize="11" Foreground="#666">
                                             <TextBlock.Text>
                                                 <MultiBinding StringFormat="Ø {0:F2} mm | {1} | {2}mm lay">
-                                                    <Binding Path="LayerDiameter"/>
+                                                    <Binding Path="CumulativeDiameter"/>
                                                     <Binding Path="TwistDirection"/>
                                                     <Binding Path="LayLength"/>
                                                 </MultiBinding>

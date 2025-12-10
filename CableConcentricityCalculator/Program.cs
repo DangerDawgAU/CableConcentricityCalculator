@@ -32,11 +32,7 @@ class Program
 
     static void HandleCommandLineArgs(string[] args)
     {
-        if (args[0] == "--demo" || args[0] == "-d")
-        {
-            RunDemo();
-        }
-        else if (args[0] == "--load" || args[0] == "-l")
+        if (args[0] == "--load" || args[0] == "-l")
         {
             if (args.Length < 2)
             {
@@ -62,47 +58,11 @@ class Program
         table.AddColumn("Argument");
         table.AddColumn("Description");
 
-        table.AddRow("--demo, -d", "Run with sample cable assembly");
         table.AddRow("--load, -l <file> [output]", "Load assembly from JSON and generate PDF");
         table.AddRow("--help, -h", "Show this help");
         table.AddRow("[italic](no args)[/]", "Run interactive mode");
 
         AnsiConsole.Write(table);
-    }
-
-    static void RunDemo()
-    {
-        AnsiConsole.MarkupLine("[yellow]Running demo with sample cable assembly...[/]");
-        AnsiConsole.WriteLine();
-
-        _currentAssembly = ConfigurationService.CreateSampleAssembly();
-        DisplayAssemblySummary();
-
-        // Generate outputs
-        var outputDir = Path.Combine(Environment.CurrentDirectory, "output");
-        Directory.CreateDirectory(outputDir);
-
-        var pdfPath = Path.Combine(outputDir, $"{_currentAssembly.PartNumber}_Report.pdf");
-        var jsonPath = Path.Combine(outputDir, $"{_currentAssembly.PartNumber}.json");
-        var imagePath = Path.Combine(outputDir, $"{_currentAssembly.PartNumber}_CrossSection.png");
-
-        AnsiConsole.Status()
-            .Start("Generating outputs...", ctx =>
-            {
-                ctx.Status("Saving configuration...");
-                ConfigurationService.SaveAssembly(_currentAssembly, jsonPath);
-
-                ctx.Status("Generating cross-section image...");
-                var imageBytes = CableVisualizer.GenerateCrossSectionImage(_currentAssembly);
-                File.WriteAllBytes(imagePath, imageBytes);
-
-                ctx.Status("Generating PDF report...");
-                PdfReportGenerator.GenerateReport(_currentAssembly, pdfPath);
-            });
-
-        AnsiConsole.MarkupLine($"[green]✓[/] Configuration saved: [link]{jsonPath}[/]");
-        AnsiConsole.MarkupLine($"[green]✓[/] Cross-section image: [link]{imagePath}[/]");
-        AnsiConsole.MarkupLine($"[green]✓[/] PDF report: [link]{pdfPath}[/]");
     }
 
     static void LoadAndProcess(string inputPath, string? outputPath)

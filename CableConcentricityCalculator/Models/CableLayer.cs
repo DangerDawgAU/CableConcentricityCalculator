@@ -1,12 +1,22 @@
 using System.Collections.ObjectModel;
+using System.Collections.Specialized;
+using System.ComponentModel;
 
 namespace CableConcentricityCalculator.Models;
 
 /// <summary>
 /// Represents a single concentric layer in the cable assembly
 /// </summary>
-public class CableLayer
+public class CableLayer : INotifyPropertyChanged
 {
+    private ObservableCollection<Cable> _cables;
+
+    public CableLayer()
+    {
+        _cables = new();
+        _cables.CollectionChanged += Cables_CollectionChanged;
+    }
+
     /// <summary>
     /// Layer number (0 = center, 1 = first layer around center, etc.)
     /// </summary>
@@ -15,47 +25,174 @@ public class CableLayer
     /// <summary>
     /// Cables in this layer
     /// </summary>
-    public ObservableCollection<Cable> Cables { get; set; } = new();
+    public ObservableCollection<Cable> Cables
+    {
+        get => _cables;
+        set
+        {
+            if (_cables != value)
+            {
+                // Unsubscribe from old collection
+                if (_cables != null)
+                    _cables.CollectionChanged -= Cables_CollectionChanged;
 
+                _cables = value;
+
+                // Subscribe to new collection
+                if (_cables != null)
+                    _cables.CollectionChanged += Cables_CollectionChanged;
+
+                OnPropertyChanged(nameof(Cables));
+                OnPropertyChanged(nameof(MaxCableDiameter));
+                OnPropertyChanged(nameof(LayerDiameter));
+                OnPropertyChanged(nameof(TotalConductorCount));
+            }
+        }
+    }
+
+    private void Cables_CollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
+    {
+        OnPropertyChanged(nameof(MaxCableDiameter));
+        OnPropertyChanged(nameof(LayerDiameter));
+        OnPropertyChanged(nameof(TotalConductorCount));
+    }
+
+    private TwistDirection _twistDirection = TwistDirection.RightHand;
     /// <summary>
     /// Twist direction for this layer
     /// </summary>
-    public TwistDirection TwistDirection { get; set; } = TwistDirection.RightHand;
+    public TwistDirection TwistDirection
+    {
+        get => _twistDirection;
+        set
+        {
+            if (_twistDirection != value)
+            {
+                _twistDirection = value;
+                OnPropertyChanged(nameof(TwistDirection));
+            }
+        }
+    }
 
+    private double _layLength = 50;
     /// <summary>
     /// Lay length (twist pitch) in mm - distance for one complete rotation
     /// </summary>
-    public double LayLength { get; set; } = 50;
+    public double LayLength
+    {
+        get => _layLength;
+        set
+        {
+            if (_layLength != value)
+            {
+                _layLength = value;
+                OnPropertyChanged(nameof(LayLength));
+            }
+        }
+    }
 
+    private int _fillerCount;
     /// <summary>
     /// Number of filler wires added for concentricity
     /// </summary>
-    public int FillerCount { get; set; }
+    public int FillerCount
+    {
+        get => _fillerCount;
+        set
+        {
+            if (_fillerCount != value)
+            {
+                _fillerCount = value;
+                OnPropertyChanged(nameof(FillerCount));
+            }
+        }
+    }
 
+    private double _fillerDiameter;
     /// <summary>
     /// Filler wire diameter in mm
     /// </summary>
-    public double FillerDiameter { get; set; }
+    public double FillerDiameter
+    {
+        get => _fillerDiameter;
+        set
+        {
+            if (_fillerDiameter != value)
+            {
+                _fillerDiameter = value;
+                OnPropertyChanged(nameof(FillerDiameter));
+                OnPropertyChanged(nameof(LayerDiameter));
+            }
+        }
+    }
 
+    private string _fillerMaterial = "Nylon";
     /// <summary>
     /// Filler material
     /// </summary>
-    public string FillerMaterial { get; set; } = "Nylon";
+    public string FillerMaterial
+    {
+        get => _fillerMaterial;
+        set
+        {
+            if (_fillerMaterial != value)
+            {
+                _fillerMaterial = value;
+                OnPropertyChanged(nameof(FillerMaterial));
+            }
+        }
+    }
 
+    private string _fillerColor = "Natural";
     /// <summary>
     /// Filler color
     /// </summary>
-    public string FillerColor { get; set; } = "Natural";
+    public string FillerColor
+    {
+        get => _fillerColor;
+        set
+        {
+            if (_fillerColor != value)
+            {
+                _fillerColor = value;
+                OnPropertyChanged(nameof(FillerColor));
+            }
+        }
+    }
 
+    private TapeWrap? _tapeWrap;
     /// <summary>
     /// Optional tape wrap over this layer
     /// </summary>
-    public TapeWrap? TapeWrap { get; set; }
+    public TapeWrap? TapeWrap
+    {
+        get => _tapeWrap;
+        set
+        {
+            if (_tapeWrap != value)
+            {
+                _tapeWrap = value;
+                OnPropertyChanged(nameof(TapeWrap));
+            }
+        }
+    }
 
+    private string _notes = string.Empty;
     /// <summary>
     /// Notes for this layer
     /// </summary>
-    public string Notes { get; set; } = string.Empty;
+    public string Notes
+    {
+        get => _notes;
+        set
+        {
+            if (_notes != value)
+            {
+                _notes = value;
+                OnPropertyChanged(nameof(Notes));
+            }
+        }
+    }
 
     /// <summary>
     /// Maximum cable diameter in this layer
@@ -70,9 +207,26 @@ public class CableLayer
         Cables.Where(c => !c.IsFiller).Sum(c => c.Cores.Count);
 
     /// <summary>
-    /// Layer diameter contribution (diameter of this layer's elements)
+    /// Layer diameter contribution (diameter of this layer's elements only)
     /// </summary>
     public double LayerDiameter => MaxCableDiameter > 0 ? MaxCableDiameter : FillerDiameter;
+
+    private double _cumulativeDiameter;
+    /// <summary>
+    /// Cumulative diameter from center to outer edge of this layer
+    /// </summary>
+    public double CumulativeDiameter
+    {
+        get => _cumulativeDiameter;
+        set
+        {
+            if (_cumulativeDiameter != value)
+            {
+                _cumulativeDiameter = value;
+                OnPropertyChanged(nameof(CumulativeDiameter));
+            }
+        }
+    }
 
     /// <summary>
     /// Total number of elements (cables + fillers) in this layer
@@ -116,6 +270,13 @@ public class CableLayer
         string dir = TwistDirection == TwistDirection.RightHand ? "RH" : "LH";
         string fillers = FillerCount > 0 ? $" +{FillerCount} fillers" : "";
         return $"Layer {LayerNumber}: {Cables.Count} cables{fillers} ({dir}, {LayLength}mm lay)";
+    }
+
+    public event PropertyChangedEventHandler? PropertyChanged;
+
+    protected void OnPropertyChanged(string propertyName)
+    {
+        PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propertyName));
     }
 }
 
