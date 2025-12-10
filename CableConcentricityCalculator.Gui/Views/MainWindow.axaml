@@ -463,6 +463,29 @@
                                     <Button Grid.Column="1" Content="+" Command="{Binding AddOverBraidCommand}"
                                             Classes="secondary" Padding="6,2" FontSize="12"/>
                                 </Grid>
+
+                                <!-- Over-Braid/Sleeving Selector -->
+                                <StackPanel Margin="0,8,0,8">
+                                    <TextBlock Text="Select Type:" FontSize="11" Foreground="#555" Margin="0,0,0,4"/>
+                                    <ComboBox ItemsSource="{Binding AvailableOverBraids}"
+                                              SelectedItem="{Binding SelectedOverBraid}"
+                                              FontSize="11">
+                                        <ComboBox.ItemTemplate>
+                                            <DataTemplate x:DataType="models:OverBraid">
+                                                <TextBlock>
+                                                    <TextBlock.Text>
+                                                        <MultiBinding StringFormat="{}{0} - {1} ({2}mm)">
+                                                            <Binding Path="Manufacturer"/>
+                                                            <Binding Path="Name"/>
+                                                            <Binding Path="NominalInnerDiameter"/>
+                                                        </MultiBinding>
+                                                    </TextBlock.Text>
+                                                </TextBlock>
+                                            </DataTemplate>
+                                        </ComboBox.ItemTemplate>
+                                    </ComboBox>
+                                </StackPanel>
+
                                 <ItemsControl ItemsSource="{Binding Assembly.OverBraids}">
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate x:DataType="models:OverBraid">
