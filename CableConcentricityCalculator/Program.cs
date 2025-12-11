@@ -15,6 +15,13 @@ class Program
 
     static void Main(string[] args)
     {
+        // Generate JSON libraries if requested
+        if (args.Length > 0 && args[0] == "--export-libraries")
+        {
+            ExportLibrariesToJson();
+            return;
+        }
+
         AnsiConsole.Write(new FigletText("Cable Designer").Color(Color.Blue));
         AnsiConsole.MarkupLine("[grey]Concentric Cable Harness Assembly Calculator[/]");
         AnsiConsole.WriteLine();
@@ -28,6 +35,23 @@ class Program
 
         // Interactive mode
         RunInteractiveMode();
+    }
+
+    static void ExportLibrariesToJson()
+    {
+        AnsiConsole.MarkupLine("[yellow]Exporting all libraries to JSON...[/]");
+
+        // Load each library - this will trigger save if JSON doesn't exist
+        var cables = CableLibrary.GetCompleteCableLibrary();
+        AnsiConsole.MarkupLine($"[green]✓ Exported {cables.Count} cables[/]");
+
+        var heatShrinks = CableLibrary.GetCompleteHeatShrinkLibrary();
+        AnsiConsole.MarkupLine($"[green]✓ Exported {heatShrinks.Count} heat shrinks[/]");
+
+        var braids = OverBraidService.GetAllAvailableBraids();
+        AnsiConsole.MarkupLine($"[green]✓ Exported {braids.Count} over-braids[/]");
+
+        AnsiConsole.MarkupLine("[green bold]Library export complete![/]");
     }
 
     static void HandleCommandLineArgs(string[] args)
@@ -727,6 +751,7 @@ class Program
             DrainWireDiameter = source.DrainWireDiameter,
             IsFiller = source.IsFiller,
             FillerMaterial = source.FillerMaterial,
+            SpecifiedOuterDiameter = source.SpecifiedOuterDiameter,
             Cores = source.Cores.Select(c => new CableCore
             {
                 CoreId = c.CoreId,

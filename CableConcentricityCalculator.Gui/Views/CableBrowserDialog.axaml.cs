@@ -294,6 +294,7 @@ public partial class CableBrowserDialog : Window
             DrainWireDiameter = source.DrainWireDiameter,
             IsFiller = source.IsFiller,
             FillerMaterial = source.FillerMaterial,
+            SpecifiedOuterDiameter = source.SpecifiedOuterDiameter,
             Cores = source.Cores.Select(c => new CableCore
             {
                 CoreId = c.CoreId,

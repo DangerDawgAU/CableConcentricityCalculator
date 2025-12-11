@@ -36,31 +36,20 @@ public static class HeatShrinkService
     };
 
     /// <summary>
-    /// Get all available Raychem DR25 heat shrink options
+    /// Get all available heat shrink options - loads from JSON
     /// </summary>
     public static List<HeatShrink> GetAvailableHeatShrinks()
     {
-        var shrinks = new List<HeatShrink>();
+        // Load from JSON library
+        var library = LibraryLoader.LoadHeatShrinkLibrary();
 
-        foreach (var ((suppliedId, recoveredId), partNumber) in RaychemDR25Catalog)
+        if (library.Count == 0)
         {
-            shrinks.Add(new HeatShrink
-            {
-                PartNumber = partNumber,
-                Name = $"Raychem DR25 - {partNumber}",
-                Manufacturer = "Raychem",
-                Material = "Polyolefin",
-                SuppliedInnerDiameter = suppliedId,
-                RecoveredInnerDiameter = recoveredId,
-                RecoveredWallThickness = 0.4,  // Typical for DR25
-                ShrinkRatio = "2:1",
-                Color = "Black",
-                TemperatureRating = 125,  // Raychem DR25 typical
-                RecoveryTemperature = 120
-            });
+            throw new InvalidOperationException(
+                "Heat shrink library not found. Please ensure HeatShrinkLibrary.json exists in the Libraries folder.");
         }
 
-        return shrinks.OrderBy(h => h.SuppliedInnerDiameter).ToList();
+        return library.Values.OrderBy(h => h.SuppliedInnerDiameter).ToList();
     }
 
     /// <summary>
