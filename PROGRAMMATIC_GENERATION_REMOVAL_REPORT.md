@@ -63,6 +63,10 @@ public static class HeatShrinkService
 **Retained:**
 - `GetAllAvailableBraids()` - Loads from OverBraidLibrary.json
 
+**Added (New Feature):**
+- `SelectAppropriateOverBraid(double cableDiameter)` - Auto-selection based on cable diameter using min/max ranges from JSON library
+- `GetOverBraidByPartNumber(string partNumber)` - Lookup by part number from JSON library
+
 **Before:**
 ```csharp
 private static readonly Dictionary<string, (double min, double nom, double max)> MDPCXCatalog = new()
@@ -138,8 +142,8 @@ public MainWindowViewModel()
 public MainWindowViewModel()
 {
     // ...
-    // Select first available over-braid (user can manually select if needed)
-    SelectedOverBraid = AvailableOverBraids.FirstOrDefault();
+    // Select the most appropriate over-braid based on core bundle diameter
+    SelectedOverBraid = OverBraidService.SelectAppropriateOverBraid(Assembly.CoreBundleDiameter);
 }
 ```
 
