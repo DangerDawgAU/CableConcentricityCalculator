@@ -262,6 +262,16 @@ public class PdfReportGenerator
                 }
             });
 
+            // Lay length diagram - show for the first layer with twist
+            var layerWithTwist = assembly.Layers
+                .OrderBy(l => l.LayerNumber)
+                .FirstOrDefault(l => l.LayLength > 0 && l.TwistDirection != TwistDirection.None);
+
+            if (layerWithTwist != null)
+            {
+                col.Item().PaddingTop(10).Element(c => ComposeLayLengthDiagram(c, layerWithTwist));
+            }
+
             // Tape wraps
             var layersWithTape = assembly.Layers.Where(l => l.TapeWrap != null).ToList();
             if (layersWithTape.Count > 0)
@@ -421,6 +431,25 @@ public class PdfReportGenerator
                     table.Cell().Element(cell => cell.BorderBottom(1).BorderColor(Colors.Grey.Lighten2)
                         .Padding(2).Text(cable.Cores.FirstOrDefault()?.Gauge ?? "-").FontSize(8));
                 }
+            });
+        });
+    }
+
+    private static void ComposeLayLengthDiagram(IContainer container, CableLayer layer)
+    {
+        container.Column(col =>
+        {
+            col.Item().Text("LAY LENGTH DIAGRAM").FontSize(10).Bold();
+
+            col.Item().PaddingTop(5).AlignCenter().Element(outerContainer =>
+            {
+                outerContainer.MaxWidth(400).Element(imgContainer =>
+                {
+                    imgContainer.Border(1).BorderColor(Colors.Grey.Lighten1)
+                        .Background(Colors.White)
+                        .Padding(5)
+                        .Image(LayLengthVisualizer.GenerateLayLengthDiagram(layer, 540, 180));
+                });
             });
         });
     }
