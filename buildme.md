@@ -72,18 +72,39 @@ CableConcentricityCalculator/
 │   ├── CableConcentricityCalculator.csproj
 │   ├── Program.cs                           # Console entry point
 │   ├── Models/                              # Data models (shared)
-│   ├── Services/                            # Business logic
+│   ├── Services/                            # Business logic and libraries
+│   │   ├── ConcentricityCalculator.cs       # Core calculation engine
+│   │   ├── CableLibrary.cs                  # Cable library management
+│   │   ├── LibraryLoader.cs                 # JSON library loader
+│   │   ├── HeatShrinkService.cs             # Heat shrink selection
+│   │   └── OverBraidService.cs              # Over-braid selection
 │   ├── Visualization/                       # Cross-section rendering
-│   └── Reports/                             # PDF generation
+│   │   ├── CableVisualizer.cs               # 2D cross-sections
+│   │   ├── Cable3DVisualizer.cs             # 3D isometric views
+│   │   ├── Cable3DSTLVisualizer.cs          # STL file generation
+│   │   ├── InteractiveVisualizer.cs         # Interactive hit-testing
+│   │   └── LayLengthVisualizer.cs           # Lay length diagrams
+│   ├── Reports/                             # PDF generation
+│   │   └── PdfReportGenerator.cs            # QuestPDF report builder
+│   └── Libraries/                           # JSON-based libraries
+│       ├── README.md                        # Library documentation
+│       ├── CableLibrary.json                # Cable specifications
+│       ├── HeatShrinkLibrary.json           # Heat shrink catalog
+│       └── OverBraidLibrary.json            # Over-braid/sleeving catalog
 └── CableConcentricityCalculator.Gui/        # GUI application
     ├── CableConcentricityCalculator.Gui.csproj
     ├── Program.cs                           # GUI entry point
     ├── App.axaml                            # Application definition
     ├── Views/                               # UI views (XAML)
-    │   └── MainWindow.axaml
+    │   ├── MainWindow.axaml                 # Main application window
+    │   ├── CableBrowserDialog.axaml         # Cable selection dialog
+    │   └── CustomCableDialog.axaml          # Custom cable creation
     ├── ViewModels/                          # MVVM view models
+    │   └── MainWindowViewModel.cs           # Main window state/logic
     ├── Converters/                          # Value converters
+    │   └── Various XAML converters
     └── Styles/                              # Application styles
+        └── AppStyles.axaml                  # Global styles and themes
 ```
 
 ## Building the Application
@@ -224,10 +245,29 @@ The GUI follows the Model-View-ViewModel pattern:
 
 Both applications share:
 - Data models (`CableConcentricityCalculator.Models`)
+  - `CableAssembly`, `CableLayer`, `Cable`, `CableCore`
+  - `HeatShrink`, `OverBraid`, `Annotation`
 - Calculation engine (`ConcentricityCalculator`)
-- Visualization (`CableVisualizer`)
+  - Layer packing algorithms
+  - Filler optimization
+  - Validation logic
+- JSON-based libraries (`LibraryLoader`)
+  - Cable library (CableLibrary.json)
+  - Heat shrink library (HeatShrinkLibrary.json)
+  - Over-braid library (OverBraidLibrary.json)
+- Visualization (`CableVisualizer`, `Cable3DVisualizer`, `InteractiveVisualizer`)
+  - 2D cross-sections with SkiaSharp
+  - 3D isometric projections
+  - STL file generation
+  - Interactive hit-testing
 - PDF generation (`PdfReportGenerator`)
+  - QuestPDF-based reports
+  - Cross-section diagrams
+  - Lay length diagrams
+  - Bill of materials
 - Configuration handling (`ConfigurationService`)
+  - JSON serialization/deserialization
+  - Sample assembly generation
 
 ## Troubleshooting
 
@@ -277,15 +317,32 @@ QuestPDF.Settings.License = LicenseType.Community;
 
 ### Adding New Cable Types
 
-1. Add enum value to `CableType` in `Models/Cable.cs`
-2. Update visualization in `CableVisualizer.cs`
-3. Update GUI cable library in `MainWindowViewModel.cs`
+1. Edit `Libraries/CableLibrary.json` and add new cable definition
+2. Follow the JSON schema documented in `Libraries/README.md`
+3. Restart application to load updated library
+4. No code changes required!
+
+Alternatively, for programmatic generation:
+1. Add helper method to `CableLibrary.cs`
+2. Uncomment save lines to export to JSON
+3. Re-comment save lines after generation
 
 ### Adding Custom Cable Libraries
 
-1. Create JSON file with cable definitions
-2. Extend `ConfigurationService.LoadCableLibrary()`
-3. Update GUI dropdown binding
+1. **Direct JSON editing** (recommended):
+   - Edit `CableConcentricityCalculator/Libraries/CableLibrary.json`
+   - Add new cable entries following existing format
+   - See `Libraries/README.md` for schema documentation
+
+2. **Programmatic generation**:
+   - Add generation code to `CableLibrary.cs`
+   - Uncomment `LibraryLoader.SaveCableLibrary()` calls
+   - Run application once to export
+   - Re-comment save calls
+
+3. **Heat shrink and over-braid libraries**:
+   - Similar process for `HeatShrinkLibrary.json` and `OverBraidLibrary.json`
+   - Edit `HeatShrinkService.cs` or `OverBraidService.cs` for programmatic generation
 
 ### Adding Report Sections
 
