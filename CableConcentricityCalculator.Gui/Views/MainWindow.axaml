@@ -458,11 +458,7 @@
                         <!-- Over-Braids -->
                         <Border Classes="panel">
                             <StackPanel>
-                                <Grid ColumnDefinitions="*,Auto">
-                                    <TextBlock Text="OVER-BRAIDS" Classes="panel-title"/>
-                                    <Button Grid.Column="1" Content="+" Command="{Binding AddOverBraidCommand}"
-                                            Classes="secondary" Padding="6,2" FontSize="12"/>
-                                </Grid>
+                                <TextBlock Text="OVER-BRAIDS" Classes="panel-title"/>
 
                                 <!-- Over-Braid/Sleeving Selector -->
                                 <StackPanel Margin="0,8,0,8">
@@ -484,8 +480,12 @@
                                             </DataTemplate>
                                         </ComboBox.ItemTemplate>
                                     </ComboBox>
+                                    <Button Content="Add Selected Over-Braid" Command="{Binding AddOverBraidCommand}"
+                                            Classes="primary" Margin="0,6,0,0"/>
                                 </StackPanel>
 
+                                <!-- Applied Over-Braids List -->
+                                <TextBlock Text="Applied Over-Braids:" FontSize="11" Foreground="#555" Margin="0,8,0,4"/>
                                 <ItemsControl ItemsSource="{Binding Assembly.OverBraids}">
                                     <ItemsControl.ItemTemplate>
                                         <DataTemplate x:DataType="models:OverBraid">
@@ -495,9 +495,19 @@
                                                         <TextBlock Text="{Binding PartNumber}" FontWeight="SemiBold" FontSize="11"/>
                                                         <TextBlock FontSize="10" Foreground="#666">
                                                             <TextBlock.Text>
-                                                                <MultiBinding StringFormat="{}{0}, {1}% coverage">
+                                                                <MultiBinding StringFormat="{}{0}, {1}, Coverage: {2}%">
                                                                     <Binding Path="Material"/>
+                                                                    <Binding Path="Manufacturer"/>
                                                                     <Binding Path="CoveragePercent"/>
+                                                                </MultiBinding>
+                                                            </TextBlock.Text>
+                                                        </TextBlock>
+                                                        <TextBlock FontSize="9" Foreground="#999" Margin="0,2,0,0">
+                                                            <TextBlock.Text>
+                                                                <MultiBinding StringFormat="{}ID: {0}mm (range: {1}-{2}mm)">
+                                                                    <Binding Path="NominalInnerDiameter"/>
+                                                                    <Binding Path="MinInnerDiameter"/>
+                                                                    <Binding Path="MaxInnerDiameter"/>
                                                                 </MultiBinding>
                                                             </TextBlock.Text>
                                                         </TextBlock>
@@ -511,7 +521,7 @@
                                         </DataTemplate>
                                     </ItemsControl.ItemTemplate>
                                 </ItemsControl>
-                                <TextBlock Text="No over-braids" FontSize="11" Foreground="#999" Margin="0,4"
+                                <TextBlock Text="No over-braids applied" FontSize="11" Foreground="#999" Margin="0,4"
                                            IsVisible="{Binding !Assembly.OverBraids.Count}"/>
                             </StackPanel>
                         </Border>
