@@ -141,10 +141,39 @@ If users need additional manufacturers beyond MDPC-X:
 - Material: PET-X Polyester, Made in Germany
 - Standards: German automotive industry quality standards
 
+## Auto-Selection Feature
+
+Added `SelectAppropriateOverBraid()` method to `OverBraidService.cs` for automatic size recommendation:
+
+```csharp
+public static OverBraid? SelectAppropriateOverBraid(double cableDiameter)
+```
+
+**Selection Logic:**
+1. Finds braids where cable diameter fits within min-max range
+2. Prefers braids where cable diameter is closest to nominal diameter
+3. If no exact fit, selects the smallest braid that can expand to accommodate the cable
+4. Returns null if cable diameter is invalid (≤ 0)
+
+**Example Selections:**
+- Cable Ø 3.0mm → MDPC-X MICRO (1.5-4.0mm range)
+- Cable Ø 4.5mm → MDPC-X XTC (2.2-5.0mm range)
+- Cable Ø 6.0mm → MDPC-X SMALL (2.0-7.8mm range)
+- Cable Ø 10.0mm → MDPC-X MEDIUM (5.0-14.5mm range)
+- Cable Ø 18.0mm → MDPC-X BIG (12.0-24.0mm range)
+
+This matches the MDPC-X sizing guide:
+- **MICRO**: 1.5mm to 4.0mm diameter
+- **XTC**: 2.2mm to 5.0mm diameter (maximum coverage)
+- **SMALL**: 2.0mm to 7.8mm diameter
+- **MEDIUM**: 5.0mm to 14.5mm diameter
+- **BIG**: 12.0mm to 24.0mm diameter
+
 ## Recommendations
 
 1. ✅ **Complete** - Verified MDPC-X specifications
 2. ✅ **Complete** - Removed unverified Generic entries
 3. ✅ **Complete** - Standardized part number format
-4. ⏳ **Optional** - Users can add specific colors as needed
-5. ⏳ **Future** - Verify and add other manufacturers if required
+4. ✅ **Complete** - Added automatic size selection based on cable diameter
+5. ⏳ **Optional** - Users can add specific colors as needed
+6. ⏳ **Future** - Verify and add other manufacturers if required

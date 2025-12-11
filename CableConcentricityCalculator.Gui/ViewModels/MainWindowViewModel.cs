@@ -97,8 +97,8 @@ public partial class MainWindowViewModel : ObservableObject
         UpdateCrossSectionImage();
         // Select the most appropriate heat shrink based on initial assembly
         SelectedHeatShrink = HeatShrinkService.SelectAppropriateHeatShrink(Assembly.DiameterWithBraids);
-        // Select first available over-braid (user can manually select if needed)
-        SelectedOverBraid = AvailableOverBraids.FirstOrDefault();
+        // Select the most appropriate over-braid based on core bundle diameter
+        SelectedOverBraid = OverBraidService.SelectAppropriateOverBraid(Assembly.CoreBundleDiameter);
     }
 
     partial void OnSelectedCableCategoryChanged(string value)
