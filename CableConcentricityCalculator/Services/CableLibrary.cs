@@ -1448,35 +1448,37 @@ public static class CableLibrary
 
     /// <summary>
     /// Get complete merged cable library
+    /// First attempts to load from JSON, then falls back to programmatic generation
     /// </summary>
     public static Dictionary<string, Cable> GetCompleteCableLibrary()
     {
-        var library = new Dictionary<string, Cable>();
+        // Load from JSON library
+        var library = LibraryLoader.LoadCableLibrary();
 
-        foreach (var kvp in CreateMilW22759Library())
-            library[kvp.Key] = kvp.Value;
-
-        foreach (var kvp in CreateMilC27500Library())
-            library[kvp.Key] = kvp.Value;
-
-        foreach (var kvp in CreateOlflexLibrary())
-            library[kvp.Key] = kvp.Value;
-
-        foreach (var kvp in CreateUnitronicLibrary())
-            library[kvp.Key] = kvp.Value;
-
-        foreach (var kvp in CreateEtherlineLibrary())
-            library[kvp.Key] = kvp.Value;
+        if (library.Count == 0)
+        {
+            throw new InvalidOperationException(
+                "Cable library not found. Please ensure CableLibrary.json exists in the Libraries folder.");
+        }
 
         return library;
     }
 
     /// <summary>
-    /// Get complete merged heat shrink library
+    /// Get complete merged heat shrink library - loads from JSON
     /// </summary>
     public static Dictionary<string, HeatShrink> GetCompleteHeatShrinkLibrary()
     {
-        return CreateDR25Library();
+        // Load from JSON library
+        var library = LibraryLoader.LoadHeatShrinkLibrary();
+
+        if (library.Count == 0)
+        {
+            throw new InvalidOperationException(
+                "Heat shrink library not found. Please ensure HeatShrinkLibrary.json exists in the Libraries folder.");
+        }
+
+        return library;
     }
 
     // Helper methods

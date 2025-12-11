@@ -290,6 +290,7 @@ public class ConfigurationService
             ShieldCoverage = source.ShieldCoverage,
             HasDrainWire = source.HasDrainWire,
             DrainWireDiameter = source.DrainWireDiameter,
+            SpecifiedOuterDiameter = source.SpecifiedOuterDiameter,
             Cores = source.Cores.Select(c => new CableCore
             {
                 CoreId = c.CoreId,
