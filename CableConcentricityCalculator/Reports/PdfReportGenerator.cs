@@ -63,32 +63,35 @@ public class PdfReportGenerator
 
     private static void ComposeHeader(IContainer container, CableAssembly assembly)
     {
-        container.Row(row =>
+        container.Column(headerCol =>
         {
-            row.RelativeItem().Column(col =>
+            headerCol.Item().Row(row =>
             {
-                col.Item().Text("CABLE ASSEMBLY SPECIFICATION")
-                    .FontSize(16).Bold().FontColor(Colors.Blue.Darken2);
-
-                col.Item().Text($"{assembly.PartNumber} Rev {assembly.Revision}")
-                    .FontSize(14).SemiBold();
-
-                col.Item().Text(assembly.Name)
-                    .FontSize(11).Italic();
-            });
-
-            row.ConstantItem(120).Column(col =>
-            {
-                col.Item().AlignRight().Text($"Date: {assembly.DesignDate:yyyy-MM-dd}");
-                col.Item().AlignRight().Text($"By: {assembly.DesignedBy}");
-                if (!string.IsNullOrEmpty(assembly.ProjectReference))
+                row.RelativeItem().Column(col =>
                 {
-                    col.Item().AlignRight().Text($"Project: {assembly.ProjectReference}");
-                }
-            });
-        });
+                    col.Item().Text("CABLE ASSEMBLY SPECIFICATION")
+                        .FontSize(16).Bold().FontColor(Colors.Blue.Darken2);
 
-        container.PaddingTop(5).LineHorizontal(1).LineColor(Colors.Blue.Darken2);
+                    col.Item().Text($"{assembly.PartNumber} Rev {assembly.Revision}")
+                        .FontSize(14).SemiBold();
+
+                    col.Item().Text(assembly.Name)
+                        .FontSize(11).Italic();
+                });
+
+                row.ConstantItem(120).Column(col =>
+                {
+                    col.Item().AlignRight().Text($"Date: {assembly.DesignDate:yyyy-MM-dd}");
+                    col.Item().AlignRight().Text($"By: {assembly.DesignedBy}");
+                    if (!string.IsNullOrEmpty(assembly.ProjectReference))
+                    {
+                        col.Item().AlignRight().Text($"Project: {assembly.ProjectReference}");
+                    }
+                });
+            });
+
+            headerCol.Item().PaddingTop(5).LineHorizontal(1).LineColor(Colors.Blue.Darken2);
+        });
     }
 
     private static void ComposeContent(IContainer container, CableAssembly assembly)
@@ -139,12 +142,13 @@ public class PdfReportGenerator
         {
             col.Item().Text("CROSS-SECTION VIEW").FontSize(11).Bold();
 
-            col.Item().PaddingTop(5).AlignCenter().Container()
-                .Width(280).Height(280)
-                .Border(1).BorderColor(Colors.Grey.Lighten1)
-                .Background(Colors.White)
-                .Padding(5)
-                .Image(CableVisualizer.GenerateCrossSectionImage(assembly, 540, 540));
+            col.Item().PaddingTop(5).AlignCenter().Width(280).Height(280).Element(imgContainer =>
+            {
+                imgContainer.Border(1).BorderColor(Colors.Grey.Lighten1)
+                    .Background(Colors.White)
+                    .Padding(5)
+                    .Image(CableVisualizer.GenerateCrossSectionImage(assembly, 540, 540));
+            });
         });
     }
 
@@ -164,10 +168,16 @@ public class PdfReportGenerator
 
                 void AddRow(string label, string value)
                 {
-                    table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten2)
-                        .Padding(3).Text(label).FontSize(9);
-                    table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten2)
-                        .Padding(3).AlignRight().Text(value).FontSize(9).SemiBold();
+                    table.Cell().Element(cell =>
+                    {
+                        cell.BorderBottom(1).BorderColor(Colors.Grey.Lighten2)
+                            .Padding(3).Text(label).FontSize(9);
+                    });
+                    table.Cell().Element(cell =>
+                    {
+                        cell.BorderBottom(1).BorderColor(Colors.Grey.Lighten2)
+                            .Padding(3).AlignRight().Text(value).FontSize(9).SemiBold();
+                    });
                 }
 
                 AddRow("Overall Diameter", $"{assembly.OverallDiameter:F2} mm");
@@ -215,14 +225,14 @@ public class PdfReportGenerator
                 // Header
                 table.Header(header =>
                 {
-                    header.Cell().Background(Colors.Blue.Lighten4).Padding(3)
-                        .Text("Layer").FontSize(8).Bold();
-                    header.Cell().Background(Colors.Blue.Lighten4).Padding(3)
-                        .Text("Contents").FontSize(8).Bold();
-                    header.Cell().Background(Colors.Blue.Lighten4).Padding(3)
-                        .Text("Twist").FontSize(8).Bold();
-                    header.Cell().Background(Colors.Blue.Lighten4).Padding(3)
-                        .Text("Lay (mm)").FontSize(8).Bold();
+                    header.Cell().Element(cell => cell.Background(Colors.Blue.Lighten4).Padding(3)
+                        .Text("Layer").FontSize(8).Bold());
+                    header.Cell().Element(cell => cell.Background(Colors.Blue.Lighten4).Padding(3)
+                        .Text("Contents").FontSize(8).Bold());
+                    header.Cell().Element(cell => cell.Background(Colors.Blue.Lighten4).Padding(3)
+                        .Text("Twist").FontSize(8).Bold());
+                    header.Cell().Element(cell => cell.Background(Colors.Blue.Lighten4).Padding(3)
+                        .Text("Lay (mm)").FontSize(8).Bold());
                 });
 
                 foreach (var layer in assembly.Layers.OrderBy(l => l.LayerNumber))
@@ -241,14 +251,14 @@ public class PdfReportGenerator
                     if (fillerCount > 0)
                         contents += $" + {fillerCount} filler" + (fillerCount != 1 ? "s" : "");
 
-                    table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten2)
-                        .Padding(3).Text($"L{layer.LayerNumber}").FontSize(9);
-                    table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten2)
-                        .Padding(3).Text(contents).FontSize(9);
-                    table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten2)
-                        .Padding(3).Text(twist).FontSize(9);
-                    table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten2)
-                        .Padding(3).AlignRight().Text(layer.LayLength > 0 ? layer.LayLength.ToString("F0") : "-").FontSize(9);
+                    table.Cell().Element(cell => cell.BorderBottom(1).BorderColor(Colors.Grey.Lighten2)
+                        .Padding(3).Text($"L{layer.LayerNumber}").FontSize(9));
+                    table.Cell().Element(cell => cell.BorderBottom(1).BorderColor(Colors.Grey.Lighten2)
+                        .Padding(3).Text(contents).FontSize(9));
+                    table.Cell().Element(cell => cell.BorderBottom(1).BorderColor(Colors.Grey.Lighten2)
+                        .Padding(3).Text(twist).FontSize(9));
+                    table.Cell().Element(cell => cell.BorderBottom(1).BorderColor(Colors.Grey.Lighten2)
+                        .Padding(3).AlignRight().Text(layer.LayLength > 0 ? layer.LayLength.ToString("F0") : "-").FontSize(9));
                 }
             });
 
@@ -314,34 +324,34 @@ public class PdfReportGenerator
                 // Header
                 table.Header(header =>
                 {
-                    header.Cell().Background(Colors.Blue.Lighten4).Padding(3)
-                        .Text("#").FontSize(8).Bold();
-                    header.Cell().Background(Colors.Blue.Lighten4).Padding(3)
-                        .Text("Part Number").FontSize(8).Bold();
-                    header.Cell().Background(Colors.Blue.Lighten4).Padding(3)
-                        .Text("Description").FontSize(8).Bold();
-                    header.Cell().Background(Colors.Blue.Lighten4).Padding(3)
-                        .Text("Manufacturer").FontSize(8).Bold();
-                    header.Cell().Background(Colors.Blue.Lighten4).Padding(3)
-                        .Text("Qty").FontSize(8).Bold();
-                    header.Cell().Background(Colors.Blue.Lighten4).Padding(3)
-                        .Text("Unit").FontSize(8).Bold();
+                    header.Cell().Element(cell => cell.Background(Colors.Blue.Lighten4).Padding(3)
+                        .Text("#").FontSize(8).Bold());
+                    header.Cell().Element(cell => cell.Background(Colors.Blue.Lighten4).Padding(3)
+                        .Text("Part Number").FontSize(8).Bold());
+                    header.Cell().Element(cell => cell.Background(Colors.Blue.Lighten4).Padding(3)
+                        .Text("Description").FontSize(8).Bold());
+                    header.Cell().Element(cell => cell.Background(Colors.Blue.Lighten4).Padding(3)
+                        .Text("Manufacturer").FontSize(8).Bold());
+                    header.Cell().Element(cell => cell.Background(Colors.Blue.Lighten4).Padding(3)
+                        .Text("Qty").FontSize(8).Bold());
+                    header.Cell().Element(cell => cell.Background(Colors.Blue.Lighten4).Padding(3)
+                        .Text("Unit").FontSize(8).Bold());
                 });
 
                 foreach (var item in bom)
                 {
-                    table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten2)
-                        .Padding(2).Text(item.ItemNumber.ToString()).FontSize(8);
-                    table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten2)
-                        .Padding(2).Text(item.PartNumber).FontSize(8);
-                    table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten2)
-                        .Padding(2).Text(item.Description).FontSize(8);
-                    table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten2)
-                        .Padding(2).Text(item.Manufacturer).FontSize(8);
-                    table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten2)
-                        .Padding(2).AlignRight().Text(item.Quantity.ToString()).FontSize(8);
-                    table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten2)
-                        .Padding(2).Text(item.Unit).FontSize(8);
+                    table.Cell().Element(cell => cell.BorderBottom(1).BorderColor(Colors.Grey.Lighten2)
+                        .Padding(2).Text(item.ItemNumber.ToString()).FontSize(8));
+                    table.Cell().Element(cell => cell.BorderBottom(1).BorderColor(Colors.Grey.Lighten2)
+                        .Padding(2).Text(item.PartNumber).FontSize(8));
+                    table.Cell().Element(cell => cell.BorderBottom(1).BorderColor(Colors.Grey.Lighten2)
+                        .Padding(2).Text(item.Description).FontSize(8));
+                    table.Cell().Element(cell => cell.BorderBottom(1).BorderColor(Colors.Grey.Lighten2)
+                        .Padding(2).Text(item.Manufacturer).FontSize(8));
+                    table.Cell().Element(cell => cell.BorderBottom(1).BorderColor(Colors.Grey.Lighten2)
+                        .Padding(2).AlignRight().Text(item.Quantity.ToString()).FontSize(8));
+                    table.Cell().Element(cell => cell.BorderBottom(1).BorderColor(Colors.Grey.Lighten2)
+                        .Padding(2).Text(item.Unit).FontSize(8));
                 }
             });
         });
@@ -378,38 +388,38 @@ public class PdfReportGenerator
                 // Header
                 table.Header(header =>
                 {
-                    header.Cell().Background(Colors.Blue.Lighten4).Padding(3)
-                        .Text("Part Number").FontSize(8).Bold();
-                    header.Cell().Background(Colors.Blue.Lighten4).Padding(3)
-                        .Text("Type").FontSize(8).Bold();
-                    header.Cell().Background(Colors.Blue.Lighten4).Padding(3)
-                        .Text("Cores").FontSize(8).Bold();
-                    header.Cell().Background(Colors.Blue.Lighten4).Padding(3)
-                        .Text("OD (mm)").FontSize(8).Bold();
-                    header.Cell().Background(Colors.Blue.Lighten4).Padding(3)
-                        .Text("Shield").FontSize(8).Bold();
-                    header.Cell().Background(Colors.Blue.Lighten4).Padding(3)
-                        .Text("Jacket").FontSize(8).Bold();
-                    header.Cell().Background(Colors.Blue.Lighten4).Padding(3)
-                        .Text("Gauge").FontSize(8).Bold();
+                    header.Cell().Element(cell => cell.Background(Colors.Blue.Lighten4).Padding(3)
+                        .Text("Part Number").FontSize(8).Bold());
+                    header.Cell().Element(cell => cell.Background(Colors.Blue.Lighten4).Padding(3)
+                        .Text("Type").FontSize(8).Bold());
+                    header.Cell().Element(cell => cell.Background(Colors.Blue.Lighten4).Padding(3)
+                        .Text("Cores").FontSize(8).Bold());
+                    header.Cell().Element(cell => cell.Background(Colors.Blue.Lighten4).Padding(3)
+                        .Text("OD (mm)").FontSize(8).Bold());
+                    header.Cell().Element(cell => cell.Background(Colors.Blue.Lighten4).Padding(3)
+                        .Text("Shield").FontSize(8).Bold());
+                    header.Cell().Element(cell => cell.Background(Colors.Blue.Lighten4).Padding(3)
+                        .Text("Jacket").FontSize(8).Bold());
+                    header.Cell().Element(cell => cell.Background(Colors.Blue.Lighten4).Padding(3)
+                        .Text("Gauge").FontSize(8).Bold());
                 });
 
                 foreach (var cable in allCables)
                 {
-                    table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten2)
-                        .Padding(2).Text(cable.PartNumber).FontSize(8);
-                    table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten2)
-                        .Padding(2).Text(cable.Type.ToString()).FontSize(8);
-                    table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten2)
-                        .Padding(2).AlignCenter().Text(cable.Cores.Count.ToString()).FontSize(8);
-                    table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten2)
-                        .Padding(2).AlignRight().Text(cable.OuterDiameter.ToString("F2")).FontSize(8);
-                    table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten2)
-                        .Padding(2).Text(cable.HasShield ? cable.ShieldType.ToString() : "-").FontSize(8);
-                    table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten2)
-                        .Padding(2).Text(cable.JacketColor).FontSize(8);
-                    table.Cell().BorderBottom(1).BorderColor(Colors.Grey.Lighten2)
-                        .Padding(2).Text(cable.Cores.FirstOrDefault()?.Gauge ?? "-").FontSize(8);
+                    table.Cell().Element(cell => cell.BorderBottom(1).BorderColor(Colors.Grey.Lighten2)
+                        .Padding(2).Text(cable.PartNumber).FontSize(8));
+                    table.Cell().Element(cell => cell.BorderBottom(1).BorderColor(Colors.Grey.Lighten2)
+                        .Padding(2).Text(cable.Type.ToString()).FontSize(8));
+                    table.Cell().Element(cell => cell.BorderBottom(1).BorderColor(Colors.Grey.Lighten2)
+                        .Padding(2).AlignCenter().Text(cable.Cores.Count.ToString()).FontSize(8));
+                    table.Cell().Element(cell => cell.BorderBottom(1).BorderColor(Colors.Grey.Lighten2)
+                        .Padding(2).AlignRight().Text(cable.OuterDiameter.ToString("F2")).FontSize(8));
+                    table.Cell().Element(cell => cell.BorderBottom(1).BorderColor(Colors.Grey.Lighten2)
+                        .Padding(2).Text(cable.HasShield ? cable.ShieldType.ToString() : "-").FontSize(8));
+                    table.Cell().Element(cell => cell.BorderBottom(1).BorderColor(Colors.Grey.Lighten2)
+                        .Padding(2).Text(cable.JacketColor).FontSize(8));
+                    table.Cell().Element(cell => cell.BorderBottom(1).BorderColor(Colors.Grey.Lighten2)
+                        .Padding(2).Text(cable.Cores.FirstOrDefault()?.Gauge ?? "-").FontSize(8));
                 }
             });
         });
@@ -420,8 +430,11 @@ public class PdfReportGenerator
         container.Column(col =>
         {
             col.Item().Text("NOTES").FontSize(11).Bold();
-            col.Item().PaddingTop(5).Border(1).BorderColor(Colors.Grey.Lighten1)
-                .Padding(8).Text(assembly.Notes).FontSize(9);
+            col.Item().PaddingTop(5).Element(notesBox =>
+            {
+                notesBox.Border(1).BorderColor(Colors.Grey.Lighten1)
+                    .Padding(8).Text(assembly.Notes).FontSize(9);
+            });
         });
     }
 
@@ -429,16 +442,19 @@ public class PdfReportGenerator
     {
         container.Column(col =>
         {
-            col.Item().Background(Colors.Yellow.Lighten3).Padding(5).Column(inner =>
+            col.Item().Element(warningBox =>
             {
-                inner.Item().Text("⚠ DESIGN WARNINGS").FontSize(11).Bold()
-                    .FontColor(Colors.Orange.Darken3);
-
-                foreach (var issue in issues)
+                warningBox.Background(Colors.Yellow.Lighten3).Padding(5).Column(inner =>
                 {
-                    inner.Item().PaddingTop(3).Text($"• {issue}").FontSize(9)
-                        .FontColor(Colors.Orange.Darken2);
-                }
+                    inner.Item().Text("⚠ DESIGN WARNINGS").FontSize(11).Bold()
+                        .FontColor(Colors.Orange.Darken3);
+
+                    foreach (var issue in issues)
+                    {
+                        inner.Item().PaddingTop(3).Text($"• {issue}").FontSize(9)
+                            .FontColor(Colors.Orange.Darken2);
+                    }
+                });
             });
         });
     }
@@ -447,6 +463,16 @@ public class PdfReportGenerator
     {
         container.Column(col =>
         {
+            // Verification reminder
+            col.Item().PaddingBottom(5).AlignCenter().Text(text =>
+            {
+                text.Span("⚠ IMPORTANT: ").FontSize(9).Bold().FontColor(Colors.Orange.Darken2);
+                text.Span("Verify all measurements and specifications before committing to this design. ")
+                    .FontSize(8).FontColor(Colors.Grey.Darken1);
+                text.Span("This document is for reference only and should be validated by a qualified engineer.")
+                    .FontSize(8).FontColor(Colors.Grey.Darken1);
+            });
+
             col.Item().LineHorizontal(1).LineColor(Colors.Grey.Lighten1);
             col.Item().PaddingTop(5).Row(row =>
             {
