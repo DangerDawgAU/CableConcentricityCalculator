@@ -60,3 +60,6 @@ Thumbs.db
 [Tt]est[Rr]esult*/
 *.trx
 [Cc]overage/
+
+# Libraries
+*.pdf
