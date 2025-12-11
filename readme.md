@@ -12,12 +12,16 @@ A comprehensive C# application for designing and visualizing concentrically twis
 - **Multi-Core Support**: Handle single-core and multi-core cables with configurable core counts
 - **Flexible Configuration**: Define conductor diameters, insulation, shielding, and jacket properties
 - **Filler Wire Calculation**: Automatic calculation of filler wires needed for proper concentricity
-- **Visual Cross-Section**: Real-time visual cross-section diagrams of your cable assembly
-- **PDF Report Generation**: Create professional PDF reports with all assembly specifications
-- **Heat Shrink Support**: Define heat shrink tubing with shrink ratios and wall thicknesses
-- **Over-Braid Configuration**: Add EMI shielding braids with coverage specifications
+- **Visual Cross-Section**: Real-time visual cross-section diagrams of your cable assembly with interactive element selection
+- **3D Isometric View**: Generate 3D isometric projections and STL files for manufacturing
+- **PDF Report Generation**: Create professional PDF reports with all assembly specifications, cross-sections, and lay length diagrams
+- **Heat Shrink Support**: Comprehensive heat shrink library (DR-25 series) with automatic sizing and detailed specifications
+- **Over-Braid Configuration**: Add EMI shielding braids and expandable sleeves with coverage specifications
+- **JSON-Based Libraries**: Extensible cable, heat shrink, and over-braid libraries stored in JSON files for easy customization
 - **Bill of Materials**: Automatic BOM generation from assembly configuration
 - **JSON Import/Export**: Save and load designs for reuse and modification
+- **Interactive Annotations**: Add balloon callouts and notes with reference markers
+- **Cable Browser**: Advanced cable selection dialog with filtering by type, manufacturer, and core count
 
 ## Quick Start
 
@@ -65,32 +69,63 @@ dotnet run --project CableConcentricityCalculator -- --load Samples/sample-7-con
 The GUI is divided into three panels:
 
 1. **Left Panel - Layers & Cables**
-   - View and manage cable layers
+   - View and manage cable layers with visual indicators
    - Add/remove cables from selected layer
-   - Quick-add buttons for common quantities (1, 6, 12 cables)
+   - "Add Cable..." button opens advanced cable browser dialog with:
+     - Filter by cable type, manufacturer, core count, and gauge
+     - Live search across cable library
+     - Quick preview of cable specifications
+   - Visual layer badges showing cable/conductor counts
 
-2. **Center Panel - Cross-Section View**
-   - Real-time visualization of your cable assembly
-   - Updates automatically as you make changes
-   - Shows validation warnings if present
+2. **Center Panel - Visualization**
+   - **Cross-Section View**: Real-time 2D cross-section diagram
+     - Interactive - click elements to select and view details
+     - Color-coded cables by jacket color
+     - Shows heat shrink, over-braids, and annotations
+   - **3D Isometric View**: Perspective view of cable assembly
+     - Automatically generates STL files for 3D printing/CAD
+     - Shows length and layup structure
+   - Toggle between views with tabs
+   - Displays validation warnings if present
 
 3. **Right Panel - Properties**
-   - Assembly properties (part number, name, ratings)
-   - Calculated dimensions (overall diameter, conductor count)
-   - Layer properties (twist direction, lay length, fillers)
-   - Heat shrink and over-braid management
-   - Notes field
+   - **Assembly Properties**: Part number, revision, name, designer, temperature/voltage ratings
+   - **Dimensions** (calculated): Overall diameter, core bundle diameter, cable/conductor/filler counts
+   - **Layer Properties**: Twist direction, lay length, filler count/diameter/material
+   - **Heat Shrinks**:
+     - Dropdown selector with all DR-25 sizes (black and clear)
+     - "Add Selected Heat Shrink" button
+     - List of applied heat shrinks with specifications
+     - Shows shrink ratios, inner diameters, and wall thicknesses
+   - **Over-Braids**:
+     - Dropdown selector with expandable sleeves and EMI braids
+     - "Add Selected Over-Braid" button
+     - List of applied over-braids with coverage details
+     - Shows diameter ranges and shielding capabilities
+   - **Annotations**: Add balloon callouts with notes
+   - **Notes**: Free-form text field for design notes
 
 ### Workflow
 
 1. **Create New Assembly**: File → New or Ctrl+N
-2. **Add First Layer**: Click "+ Layer" button
-3. **Add Cables**: Select cable from library dropdown, click "Add 1" or "+6"/"+12"
+2. **Add First Layer**: Click "+ Layer" button (center layer is Layer 0)
+3. **Add Cables**:
+   - Click "Add Cable..." button in left panel
+   - Use filters to find cables by type, manufacturer, core count, or gauge
+   - Select cable and click "Add to Layer"
 4. **Configure Layer**: Set twist direction, lay length, fillers in right panel
 5. **Add More Layers**: Repeat for each concentric layer
-6. **Add Shielding**: Click "+" in Over-Braids section
-7. **Validate**: Click "Validate" to check assembly
-8. **Export**: File → Export PDF or Export Image
+6. **Add Heat Shrink** (optional):
+   - Select heat shrink from dropdown in right panel
+   - Click "Add Selected Heat Shrink"
+   - Application automatically suggests appropriate sizes
+7. **Add Over-Braids** (optional):
+   - Select over-braid/sleeving from dropdown
+   - Click "Add Selected Over-Braid"
+8. **Add Annotations** (optional): Click "+" in Annotations section to add notes
+9. **Optimize Fillers**: Click "Optimize Fillers" to automatically calculate filler requirements
+10. **Validate**: Click "Validate" to check assembly for issues
+11. **Export**: File → Export PDF or Export Image
 
 ### Keyboard Shortcuts
 
@@ -204,29 +239,41 @@ Generated reports include:
 6. **Cable Specifications**: Detailed info for each cable type
 7. **Notes and Warnings**: Design notes and validation warnings
 
-## Cable Library
+## Cable Library System
 
-The built-in library includes:
+The application uses a **JSON-based library system** for easy customization and extension. All libraries are stored in the `Libraries/` folder as JSON files.
 
-### MIL-SPEC Wires (M22759)
-- Gauges: 16, 18, 20, 22, 24, 26 AWG
-- Colors: White, Black, Red, Green, Blue, Yellow, Orange, Brown, Violet, Gray
-- Silver-plated copper conductors
+### Cable Library (`CableLibrary.json`)
+Includes comprehensive cable specifications:
+- **MIL-SPEC Wires** (M22759): Gauges 16-26 AWG in 10 colors
+- **OLFLEX Cables**: Multi-core industrial cables (2-25 cores)
+- **Shielded Twisted Pairs**: With foil and braid shielding
+- **Coaxial Cables**: RG-series (RG-174, RG-178, RG-316)
+- **Custom Cables**: Easily add your own cable definitions
 
-### Specialty Cables
-- Shielded twisted pairs
-- Coaxial cables (RG-178)
-- Multi-conductor cables
+### Heat Shrink Library (`HeatShrinkLibrary.json`)
+Complete DR-25 series from TE Connectivity/Raychem:
+- **Standard DR-25**: Sizes from 1.2mm to 101.6mm (2:1 shrink ratio)
+- **Black and Clear**: Available in both colors for all sizes
+- **Adhesive-Lined (DR-25-HM)**: For environmental sealing
+- Detailed specifications: Supplied/recovered diameters, wall thicknesses, temperature ratings
+- Automatic size suggestions based on cable diameter
 
-### Heat Shrink
-- DR-25 series (Polyolefin)
-- PTFE heat shrink
-- Various sizes
+### Over-Braid Library (`OverBraidLibrary.json`)
+Comprehensive sleeving and shielding options:
+- **MDPC-X Sleeving**: Expandable sleeves in multiple colors and sizes
+- **Techflex Sleeving**: Clean-cut and expandable braids
+- **Tinned Copper Braids**: EMI/RFI shielding braids with various coverage percentages
+- **PET Expandable**: Flexible protective sleeving
+- Specifications include: Diameter ranges (min/nominal/max), coverage %, material, shielding capability
 
-### Over-Braids
-- Tinned copper braids
-- PET expandable sleeving
-- Various diameters
+### Adding Custom Parts
+
+All libraries can be edited directly as JSON files. See [Libraries/README.md](CableConcentricityCalculator/Libraries/README.md) for:
+- JSON schema documentation
+- Step-by-step instructions for adding custom cables, heat shrinks, and over-braids
+- Validation guidelines
+- Best practices for library management
 
 ## Output Files
 
@@ -234,9 +281,10 @@ The application generates files in the `output/` directory:
 
 | File | Description |
 |------|-------------|
-| `{PartNumber}.json` | Cable assembly configuration |
-| `{PartNumber}_Report.pdf` | Complete specification report |
-| `{PartNumber}_CrossSection.png` | Cross-section visualization |
+| `{PartNumber}.json` | Cable assembly configuration (JSON format) |
+| `{PartNumber}_Report.pdf` | Complete specification report with cross-sections and BOM |
+| `{PartNumber}_CrossSection.png` | 2D cross-section visualization (1200×1200 pixels) |
+| `{PartNumber}_3D.stl` | 3D model in STL format for CAD/3D printing |
 
 ## Tips for Cable Design
 
