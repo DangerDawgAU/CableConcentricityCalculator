@@ -198,13 +198,19 @@ public static class OverBraidService
     }
 
     /// <summary>
-    /// Get all available over-braids (MDPC-X + standard shielding braids)
+    /// Get all available over-braids - loads from JSON
     /// </summary>
     public static List<OverBraid> GetAllAvailableBraids()
     {
-        var allBraids = new List<OverBraid>();
-        allBraids.AddRange(GetAllMDPCXSleeving());
-        allBraids.AddRange(GetStandardShieldingBraids());
-        return allBraids.OrderBy(b => b.Manufacturer).ThenBy(b => b.NominalInnerDiameter).ToList();
+        // Load from JSON library
+        var library = LibraryLoader.LoadOverBraidLibrary();
+
+        if (library.Count == 0)
+        {
+            throw new InvalidOperationException(
+                "Over-braid library not found. Please ensure OverBraidLibrary.json exists in the Libraries folder.");
+        }
+
+        return library.Values.OrderBy(b => b.Manufacturer).ThenBy(b => b.NominalInnerDiameter).ToList();
     }
 }
