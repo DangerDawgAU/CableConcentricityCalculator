@@ -88,8 +88,6 @@ public partial class MainWindowViewModel : ObservableObject
     [ObservableProperty]
     private OverBraid? _selectedOverBraid;
 
-    public string[] MDPCXColors => OverBraidService.MDPCXColors;
-
     public MainWindowViewModel()
     {
         _assembly = CreateNewAssembly();
@@ -99,8 +97,8 @@ public partial class MainWindowViewModel : ObservableObject
         UpdateCrossSectionImage();
         // Select the most appropriate heat shrink based on initial assembly
         SelectedHeatShrink = HeatShrinkService.SelectAppropriateHeatShrink(Assembly.DiameterWithBraids);
-        // Select the most appropriate over-braid/sleeving based on initial assembly
-        SelectedOverBraid = OverBraidService.SelectAppropriateMDPCXSleeving(Assembly.CoreBundleDiameter);
+        // Select first available over-braid (user can manually select if needed)
+        SelectedOverBraid = AvailableOverBraids.FirstOrDefault();
     }
 
     partial void OnSelectedCableCategoryChanged(string value)
