@@ -58,7 +58,10 @@
                   CanUserResizeColumns="True"
                   CanUserSortColumns="True"
                   SelectionMode="Single"
-                  GridLinesVisibility="Horizontal">
+                  GridLinesVisibility="Horizontal"
+                  RowHeight="32"
+                  ScrollViewer.HorizontalScrollBarVisibility="Auto"
+                  ScrollViewer.VerticalScrollBarVisibility="Auto">
             <DataGrid.Columns>
                 <DataGridTextColumn Header="Part Number" Binding="{Binding PartNumber}" Width="150"/>
                 <DataGridTextColumn Header="Name" Binding="{Binding Name}" Width="200"/>

@@ -86,6 +86,11 @@ public class Cable
     public string FillerMaterial { get; set; } = "Nylon";
 
     /// <summary>
+    /// Optional description of the cable
+    /// </summary>
+    public string Description { get; set; } = string.Empty;
+
+    /// <summary>
     /// Calculated core bundle diameter (for multi-core cables)
     /// </summary>
     public double CoreBundleDiameter
