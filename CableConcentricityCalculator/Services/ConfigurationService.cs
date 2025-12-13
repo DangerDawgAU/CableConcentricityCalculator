@@ -65,20 +65,37 @@ public class ConfigurationService
     }
 
     /// <summary>
-    /// Get cables filtered by category
+    /// Get cables filtered by category (filters by both PartNumber and Name fields)
     /// </summary>
     public static Dictionary<string, Cable> GetCablesByCategory(string category)
     {
+        var allCables = CableLibrary.GetCompleteCableLibrary();
+
         return category.ToUpperInvariant() switch
         {
-            "MIL-W-22759" or "MILSPEC" => CableLibrary.GetCompleteCableLibrary()
-                .Where(c => c.Key.StartsWith("M22759/"))
+            "MIL-W-22759" or "MILSPEC" => allCables
+                .Where(c => c.Value.PartNumber.Contains("22759", StringComparison.OrdinalIgnoreCase) ||
+                            c.Value.Name.Contains("22759", StringComparison.OrdinalIgnoreCase))
                 .ToDictionary(c => c.Key, c => c.Value),
-            "MIL-C-27500" or "MIL-DTL-27500" => CableLibrary.CreateMilC27500Library(),
-            "OLFLEX" => CableLibrary.CreateOlflexLibrary(),
-            "UNITRONIC" => CableLibrary.CreateUnitronicLibrary(),
-            "ETHERLINE" => CableLibrary.CreateEtherlineLibrary(),
-            _ => CableLibrary.GetCompleteCableLibrary()
+            "MIL-C-27500" or "MIL-DTL-27500" => allCables
+                .Where(c => c.Value.PartNumber.Contains("27500", StringComparison.OrdinalIgnoreCase) ||
+                            c.Value.Name.Contains("27500", StringComparison.OrdinalIgnoreCase))
+                .ToDictionary(c => c.Key, c => c.Value),
+            "OLFLEX" => allCables
+                .Where(c => c.Value.PartNumber.Contains("OLFLEX", StringComparison.OrdinalIgnoreCase) ||
+                            c.Value.Name.Contains("OLFLEX", StringComparison.OrdinalIgnoreCase) ||
+                            c.Value.Name.Contains("ÖLFLEX", StringComparison.OrdinalIgnoreCase))
+                .ToDictionary(c => c.Key, c => c.Value),
+            "UNITRONIC" => allCables
+                .Where(c => c.Value.PartNumber.Contains("UNITRONIC", StringComparison.OrdinalIgnoreCase) ||
+                            c.Value.Name.Contains("UNITRONIC", StringComparison.OrdinalIgnoreCase))
+                .ToDictionary(c => c.Key, c => c.Value),
+            "ETHERLINE" => allCables
+                .Where(c => c.Value.PartNumber.Contains("ETHERLINE", StringComparison.OrdinalIgnoreCase) ||
+                            c.Value.Name.Contains("ETHERLINE", StringComparison.OrdinalIgnoreCase) ||
+                            c.Value.Name.Contains("Ethernet", StringComparison.OrdinalIgnoreCase))
+                .ToDictionary(c => c.Key, c => c.Value),
+            _ => allCables
         };
     }
 
