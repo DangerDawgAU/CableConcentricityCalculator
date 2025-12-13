@@ -468,15 +468,25 @@
                                               FontSize="11">
                                         <ComboBox.ItemTemplate>
                                             <DataTemplate x:DataType="models:OverBraid">
-                                                <TextBlock>
-                                                    <TextBlock.Text>
-                                                        <MultiBinding StringFormat="{}{0} - {1} ({2}mm)">
-                                                            <Binding Path="Manufacturer"/>
-                                                            <Binding Path="Name"/>
-                                                            <Binding Path="NominalInnerDiameter"/>
-                                                        </MultiBinding>
-                                                    </TextBlock.Text>
-                                                </TextBlock>
+                                                <StackPanel>
+                                                    <TextBlock FontWeight="SemiBold">
+                                                        <TextBlock.Text>
+                                                            <MultiBinding StringFormat="{}{0} - {1}">
+                                                                <Binding Path="Manufacturer"/>
+                                                                <Binding Path="Name"/>
+                                                            </MultiBinding>
+                                                        </TextBlock.Text>
+                                                    </TextBlock>
+                                                    <TextBlock FontSize="10" Foreground="#666">
+                                                        <TextBlock.Text>
+                                                            <MultiBinding StringFormat="{}ID: {0}mm (range: {1}-{2}mm)">
+                                                                <Binding Path="NominalInnerDiameter"/>
+                                                                <Binding Path="MinInnerDiameter"/>
+                                                                <Binding Path="MaxInnerDiameter"/>
+                                                            </MultiBinding>
+                                                        </TextBlock.Text>
+                                                    </TextBlock>
+                                                </StackPanel>
                                             </DataTemplate>
                                         </ComboBox.ItemTemplate>
                                     </ComboBox>
