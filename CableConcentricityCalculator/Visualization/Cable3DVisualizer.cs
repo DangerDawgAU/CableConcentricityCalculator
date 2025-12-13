@@ -1,5 +1,6 @@
 using CableConcentricityCalculator.Models;
 using CableConcentricityCalculator.Services;
+using CableConcentricityCalculator.Utilities;
 using SkiaSharp;
 
 namespace CableConcentricityCalculator.Visualization;
@@ -12,23 +13,6 @@ public static class Cable3DVisualizer
     private const float IsoAngle = 30f * MathF.PI / 180f; // 30 degrees for isometric
     private const float CosIso = 0.866f; // cos(30°)
     private const float SinIso = 0.5f;   // sin(30°)
-
-    private static readonly Dictionary<string, SKColor> ColorMap = new(StringComparer.OrdinalIgnoreCase)
-    {
-        { "White", SKColors.White },
-        { "Black", new SKColor(40, 40, 40) },
-        { "Red", new SKColor(220, 20, 20) },
-        { "Green", new SKColor(0, 150, 0) },
-        { "Blue", new SKColor(0, 80, 180) },
-        { "Yellow", new SKColor(240, 220, 0) },
-        { "Orange", new SKColor(255, 140, 0) },
-        { "Brown", new SKColor(139, 90, 43) },
-        { "Violet", new SKColor(148, 0, 211) },
-        { "Gray", new SKColor(128, 128, 128) },
-        { "Silver", new SKColor(192, 192, 192) },
-        { "Clear", new SKColor(220, 220, 220, 180) },
-        { "Natural", new SKColor(245, 240, 220) }
-    };
 
     /// <summary>
     /// Generate a 3D isometric view showing cables as solid spiraling cylinders
@@ -335,7 +319,7 @@ public static class Cable3DVisualizer
 
     private static SKColor GetColor(string colorName)
     {
-        if (ColorMap.TryGetValue(colorName, out var color))
+        if (ColorUtilities.ColorMapSK.TryGetValue(colorName, out var color))
             return color;
 
         return SKColors.Gray;
