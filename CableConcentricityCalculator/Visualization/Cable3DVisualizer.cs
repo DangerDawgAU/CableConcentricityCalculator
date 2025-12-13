@@ -37,10 +37,10 @@ public static class Cable3DVisualizer
     private class CableQuadSegment
     {
         public string ColorName { get; set; } = "Black";
-        public CablePoint P0 { get; set; }
-        public CablePoint P1 { get; set; }
-        public CablePoint P2 { get; set; }
-        public CablePoint P3 { get; set; }
+        public required CablePoint P0 { get; set; }
+        public required CablePoint P1 { get; set; }
+        public required CablePoint P2 { get; set; }
+        public required CablePoint P3 { get; set; }
         public float AvgZ { get; set; }
     }
 
