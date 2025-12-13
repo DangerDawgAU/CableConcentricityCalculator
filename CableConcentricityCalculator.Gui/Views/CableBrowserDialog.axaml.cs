@@ -219,8 +219,30 @@ public partial class CableBrowserDialog : Window
     private void OpenGoogleSearch()
     {
         if (!(_cablesGrid.SelectedItem is CableDisplayItem item)) return;
-        var searchTerm = Uri.EscapeDataString(item.PartNumber);
-        string url = $"https://www.google.com/search?q={searchTerm}";
+
+        // Build search term based on manufacturer
+        string searchTerm;
+        if (item.Manufacturer.Equals("LAPP", StringComparison.OrdinalIgnoreCase))
+        {
+            // For LAPP cables: use "PartNumber Manufacturer" OR "PartNumber Name"
+            // Use the Name if available, otherwise use Manufacturer
+            if (!string.IsNullOrWhiteSpace(item.Name))
+            {
+                searchTerm = $"{item.PartNumber} {item.Name}";
+            }
+            else
+            {
+                searchTerm = $"{item.PartNumber} {item.Manufacturer}";
+            }
+        }
+        else
+        {
+            // For MIL and other cables: use just the part number
+            searchTerm = item.PartNumber;
+        }
+
+        var encodedSearch = Uri.EscapeDataString(searchTerm);
+        string url = $"https://www.google.com/search?q={encodedSearch}";
         try
         {
             Process.Start(new ProcessStartInfo(url) { UseShellExecute = true });
