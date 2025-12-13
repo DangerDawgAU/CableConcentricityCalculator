@@ -63,3 +63,5 @@ Thumbs.db
 
 # Libraries
 *.pdf
+*.py
+*.pyc

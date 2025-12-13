@@ -84767,6 +84767,546 @@
             "DrainWireDiameter": 0.0,
             "ShieldType": 0,
             "SpecifiedOuterDiameter": 1.42
+        },
+        {
+            "Cores": [
+                {
+                    "CoreId": "1",
+                    "ConductorDiameter": 0.3,
+                    "InsulationThickness": 0.25,
+                    "InsulationColor": "Various",
+                    "Gauge": "30",
+                    "ConductorMaterial": "Copper"
+                }
+            ],
+            "JacketColor": "Various",
+            "Manufacturer": "Generic Aliexpress",
+            "IsFiller": false,
+            "PartNumber": "30AWG",
+            "Type": 0,
+            "Name": "UL Flexible Silicone Wire 30AWG",
+            "ShieldThickness": 0,
+            "HasDrainWire": false,
+            "ShieldCoverage": 0,
+            "CableId": "aliexpress-30awg",
+            "Description": "UL Flexible Silicone Wire, 11/0.08mm stranding, 0.8mm OD",
+            "HasShield": false,
+            "JacketThickness": 0,
+            "ShieldType": 0,
+            "SpecifiedOuterDiameter": 0.8
+        },
+        {
+            "Cores": [
+                {
+                    "CoreId": "1",
+                    "ConductorDiameter": 0.35,
+                    "InsulationThickness": 0.425,
+                    "InsulationColor": "Various",
+                    "Gauge": "28",
+                    "ConductorMaterial": "Copper"
+                }
+            ],
+            "JacketColor": "Various",
+            "Manufacturer": "Generic Aliexpress",
+            "IsFiller": false,
+            "PartNumber": "28AWG",
+            "Type": 0,
+            "Name": "UL Flexible Silicone Wire 28AWG",
+            "ShieldThickness": 0,
+            "HasDrainWire": false,
+            "ShieldCoverage": 0,
+            "CableId": "aliexpress-28awg",
+            "Description": "UL Flexible Silicone Wire, 16/0.08mm stranding, 1.2mm OD",
+            "HasShield": false,
+            "JacketThickness": 0,
+            "ShieldType": 0,
+            "SpecifiedOuterDiameter": 1.2
+        },
+        {
+            "Cores": [
+                {
+                    "CoreId": "1",
+                    "ConductorDiameter": 0.45,
+                    "InsulationThickness": 0.525,
+                    "InsulationColor": "Various",
+                    "Gauge": "26",
+                    "ConductorMaterial": "Copper"
+                }
+            ],
+            "JacketColor": "Various",
+            "Manufacturer": "Generic Aliexpress",
+            "IsFiller": false,
+            "PartNumber": "26AWG",
+            "Type": 0,
+            "Name": "UL Flexible Silicone Wire 26AWG",
+            "ShieldThickness": 0,
+            "HasDrainWire": false,
+            "ShieldCoverage": 0,
+            "CableId": "aliexpress-26awg",
+            "Description": "UL Flexible Silicone Wire, 30/0.08mm stranding, 1.5mm OD",
+            "HasShield": false,
+            "JacketThickness": 0,
+            "ShieldType": 0,
+            "SpecifiedOuterDiameter": 1.5
+        },
+        {
+            "Cores": [
+                {
+                    "CoreId": "1",
+                    "ConductorDiameter": 0.6,
+                    "InsulationThickness": 0.5,
+                    "InsulationColor": "Various",
+                    "Gauge": "24",
+                    "ConductorMaterial": "Copper"
+                }
+            ],
+            "JacketColor": "Various",
+            "Manufacturer": "Generic Aliexpress",
+            "IsFiller": false,
+            "PartNumber": "24AWG",
+            "Type": 0,
+            "Name": "UL Flexible Silicone Wire 24AWG",
+            "ShieldThickness": 0,
+            "HasDrainWire": false,
+            "ShieldCoverage": 0,
+            "CableId": "aliexpress-24awg",
+            "Description": "UL Flexible Silicone Wire, 40/0.08mm stranding, 1.6mm OD",
+            "HasShield": false,
+            "JacketThickness": 0,
+            "ShieldType": 0,
+            "SpecifiedOuterDiameter": 1.6
+        },
+        {
+            "Cores": [
+                {
+                    "CoreId": "1",
+                    "ConductorDiameter": 0.72,
+                    "InsulationThickness": 0.49,
+                    "InsulationColor": "Various",
+                    "Gauge": "22",
+                    "ConductorMaterial": "Copper"
+                }
+            ],
+            "JacketColor": "Various",
+            "Manufacturer": "Generic Aliexpress",
+            "IsFiller": false,
+            "PartNumber": "22AWG",
+            "Type": 0,
+            "Name": "UL Flexible Silicone Wire 22AWG",
+            "ShieldThickness": 0,
+            "HasDrainWire": false,
+            "ShieldCoverage": 0,
+            "CableId": "aliexpress-22awg",
+            "Description": "UL Flexible Silicone Wire, 60/0.08mm stranding, 1.7mm OD",
+            "HasShield": false,
+            "JacketThickness": 0,
+            "ShieldType": 0,
+            "SpecifiedOuterDiameter": 1.7
+        },
+        {
+            "Cores": [
+                {
+                    "CoreId": "1",
+                    "ConductorDiameter": 0.92,
+                    "InsulationThickness": 0.44,
+                    "InsulationColor": "Various",
+                    "Gauge": "20",
+                    "ConductorMaterial": "Copper"
+                }
+            ],
+            "JacketColor": "Various",
+            "Manufacturer": "Generic Aliexpress",
+            "IsFiller": false,
+            "PartNumber": "20AWG",
+            "Type": 0,
+            "Name": "UL Flexible Silicone Wire 20AWG",
+            "ShieldThickness": 0,
+            "HasDrainWire": false,
+            "ShieldCoverage": 0,
+            "CableId": "aliexpress-20awg",
+            "Description": "UL Flexible Silicone Wire, 100/0.08mm stranding, 1.8mm OD",
+            "HasShield": false,
+            "JacketThickness": 0,
+            "ShieldType": 0,
+            "SpecifiedOuterDiameter": 1.8
+        },
+        {
+            "Cores": [
+                {
+                    "CoreId": "1",
+                    "ConductorDiameter": 1.13,
+                    "InsulationThickness": 0.585,
+                    "InsulationColor": "Various",
+                    "Gauge": "18",
+                    "ConductorMaterial": "Copper"
+                }
+            ],
+            "JacketColor": "Various",
+            "Manufacturer": "Generic Aliexpress",
+            "IsFiller": false,
+            "PartNumber": "18AWG",
+            "Type": 0,
+            "Name": "UL Flexible Silicone Wire 18AWG",
+            "ShieldThickness": 0,
+            "HasDrainWire": false,
+            "ShieldCoverage": 0,
+            "CableId": "aliexpress-18awg",
+            "Description": "UL Flexible Silicone Wire, 150/0.08mm stranding, 2.3mm OD",
+            "HasShield": false,
+            "JacketThickness": 0,
+            "ShieldType": 0,
+            "SpecifiedOuterDiameter": 2.3
+        },
+        {
+            "Cores": [
+                {
+                    "CoreId": "1",
+                    "ConductorDiameter": 1.15,
+                    "InsulationThickness": 0.7750000000000001,
+                    "InsulationColor": "Various",
+                    "Gauge": "17",
+                    "ConductorMaterial": "Copper"
+                }
+            ],
+            "JacketColor": "Various",
+            "Manufacturer": "Generic Aliexpress",
+            "IsFiller": false,
+            "PartNumber": "17AWG",
+            "Type": 0,
+            "Name": "UL Flexible Silicone Wire 17AWG",
+            "ShieldThickness": 0,
+            "HasDrainWire": false,
+            "ShieldCoverage": 0,
+            "CableId": "aliexpress-17awg",
+            "Description": "UL Flexible Silicone Wire, 210/0.08mm stranding, 2.7mm OD",
+            "HasShield": false,
+            "JacketThickness": 0,
+            "ShieldType": 0,
+            "SpecifiedOuterDiameter": 2.7
+        },
+        {
+            "Cores": [
+                {
+                    "CoreId": "1",
+                    "ConductorDiameter": 1.47,
+                    "InsulationThickness": 0.765,
+                    "InsulationColor": "Various",
+                    "Gauge": "16",
+                    "ConductorMaterial": "Copper"
+                }
+            ],
+            "JacketColor": "Various",
+            "Manufacturer": "Generic Aliexpress",
+            "IsFiller": false,
+            "PartNumber": "16AWG",
+            "Type": 0,
+            "Name": "UL Flexible Silicone Wire 16AWG",
+            "ShieldThickness": 0,
+            "HasDrainWire": false,
+            "ShieldCoverage": 0,
+            "CableId": "aliexpress-16awg",
+            "Description": "UL Flexible Silicone Wire, 252/0.08mm stranding, 3.0mm OD",
+            "HasShield": false,
+            "JacketThickness": 0,
+            "ShieldType": 0,
+            "SpecifiedOuterDiameter": 3.0
+        },
+        {
+            "Cores": [
+                {
+                    "CoreId": "1",
+                    "ConductorDiameter": 1.55,
+                    "InsulationThickness": 0.8250000000000001,
+                    "InsulationColor": "Various",
+                    "Gauge": "15",
+                    "ConductorMaterial": "Copper"
+                }
+            ],
+            "JacketColor": "Various",
+            "Manufacturer": "Generic Aliexpress",
+            "IsFiller": false,
+            "PartNumber": "15AWG",
+            "Type": 0,
+            "Name": "UL Flexible Silicone Wire 15AWG",
+            "ShieldThickness": 0,
+            "HasDrainWire": false,
+            "ShieldCoverage": 0,
+            "CableId": "aliexpress-15awg",
+            "Description": "UL Flexible Silicone Wire, 300/0.08mm stranding, 3.2mm OD",
+            "HasShield": false,
+            "JacketThickness": 0,
+            "ShieldType": 0,
+            "SpecifiedOuterDiameter": 3.2
+        },
+        {
+            "Cores": [
+                {
+                    "CoreId": "1",
+                    "ConductorDiameter": 1.85,
+                    "InsulationThickness": 0.825,
+                    "InsulationColor": "Various",
+                    "Gauge": "14",
+                    "ConductorMaterial": "Copper"
+                }
+            ],
+            "JacketColor": "Various",
+            "Manufacturer": "Generic Aliexpress",
+            "IsFiller": false,
+            "PartNumber": "14AWG",
+            "Type": 0,
+            "Name": "UL Flexible Silicone Wire 14AWG",
+            "ShieldThickness": 0,
+            "HasDrainWire": false,
+            "ShieldCoverage": 0,
+            "CableId": "aliexpress-14awg",
+            "Description": "UL Flexible Silicone Wire, 400/0.08mm stranding, 3.5mm OD",
+            "HasShield": false,
+            "JacketThickness": 0,
+            "ShieldType": 0,
+            "SpecifiedOuterDiameter": 3.5
+        },
+        {
+            "Cores": [
+                {
+                    "CoreId": "1",
+                    "ConductorDiameter": 2.0,
+                    "InsulationThickness": 1.0,
+                    "InsulationColor": "Various",
+                    "Gauge": "13",
+                    "ConductorMaterial": "Copper"
+                }
+            ],
+            "JacketColor": "Various",
+            "Manufacturer": "Generic Aliexpress",
+            "IsFiller": false,
+            "PartNumber": "13AWG",
+            "Type": 0,
+            "Name": "UL Flexible Silicone Wire 13AWG",
+            "ShieldThickness": 0,
+            "HasDrainWire": false,
+            "ShieldCoverage": 0,
+            "CableId": "aliexpress-13awg",
+            "Description": "UL Flexible Silicone Wire, 500/0.08mm stranding, 4.0mm OD",
+            "HasShield": false,
+            "JacketThickness": 0,
+            "ShieldType": 0,
+            "SpecifiedOuterDiameter": 4.0
+        },
+        {
+            "Cores": [
+                {
+                    "CoreId": "1",
+                    "ConductorDiameter": 2.41,
+                    "InsulationThickness": 1.045,
+                    "InsulationColor": "Various",
+                    "Gauge": "12",
+                    "ConductorMaterial": "Copper"
+                }
+            ],
+            "JacketColor": "Various",
+            "Manufacturer": "Generic Aliexpress",
+            "IsFiller": false,
+            "PartNumber": "12AWG",
+            "Type": 0,
+            "Name": "UL Flexible Silicone Wire 12AWG",
+            "ShieldThickness": 0,
+            "HasDrainWire": false,
+            "ShieldCoverage": 0,
+            "CableId": "aliexpress-12awg",
+            "Description": "UL Flexible Silicone Wire, 680/0.08mm stranding, 4.5mm OD",
+            "HasShield": false,
+            "JacketThickness": 0,
+            "ShieldType": 0,
+            "SpecifiedOuterDiameter": 4.5
+        },
+        {
+            "Cores": [
+                {
+                    "CoreId": "1",
+                    "ConductorDiameter": 2.53,
+                    "InsulationThickness": 1.235,
+                    "InsulationColor": "Various",
+                    "Gauge": "11",
+                    "ConductorMaterial": "Copper"
+                }
+            ],
+            "JacketColor": "Various",
+            "Manufacturer": "Generic Aliexpress",
+            "IsFiller": false,
+            "PartNumber": "11AWG",
+            "Type": 0,
+            "Name": "UL Flexible Silicone Wire 11AWG",
+            "ShieldThickness": 0,
+            "HasDrainWire": false,
+            "ShieldCoverage": 0,
+            "CableId": "aliexpress-11awg",
+            "Description": "UL Flexible Silicone Wire, 750/0.08mm stranding, 5.0mm OD",
+            "HasShield": false,
+            "JacketThickness": 0,
+            "ShieldType": 0,
+            "SpecifiedOuterDiameter": 5.0
+        },
+        {
+            "Cores": [
+                {
+                    "CoreId": "1",
+                    "ConductorDiameter": 2.9,
+                    "InsulationThickness": 1.2,
+                    "InsulationColor": "Various",
+                    "Gauge": "10",
+                    "ConductorMaterial": "Copper"
+                }
+            ],
+            "JacketColor": "Various",
+            "Manufacturer": "Generic Aliexpress",
+            "IsFiller": false,
+            "PartNumber": "10AWG",
+            "Type": 0,
+            "Name": "UL Flexible Silicone Wire 10AWG",
+            "ShieldThickness": 0,
+            "HasDrainWire": false,
+            "ShieldCoverage": 0,
+            "CableId": "aliexpress-10awg",
+            "Description": "UL Flexible Silicone Wire, 1050/0.08mm stranding, 5.3mm OD",
+            "HasShield": false,
+            "JacketThickness": 0,
+            "ShieldType": 0,
+            "SpecifiedOuterDiameter": 5.3
+        },
+        {
+            "Cores": [
+                {
+                    "CoreId": "1",
+                    "ConductorDiameter": 3.5,
+                    "InsulationThickness": 1.5,
+                    "InsulationColor": "Various",
+                    "Gauge": "8",
+                    "ConductorMaterial": "Copper"
+                }
+            ],
+            "JacketColor": "Various",
+            "Manufacturer": "Generic Aliexpress",
+            "IsFiller": false,
+            "PartNumber": "8AWG",
+            "Type": 0,
+            "Name": "UL Flexible Silicone Wire 8AWG",
+            "ShieldThickness": 0,
+            "HasDrainWire": false,
+            "ShieldCoverage": 0,
+            "CableId": "aliexpress-8awg",
+            "Description": "UL Flexible Silicone Wire, 1650/0.08mm stranding, 6.5mm OD",
+            "HasShield": false,
+            "JacketThickness": 0,
+            "ShieldType": 0,
+            "SpecifiedOuterDiameter": 6.5
+        },
+        {
+            "Cores": [
+                {
+                    "CoreId": "1",
+                    "ConductorDiameter": 4.5,
+                    "InsulationThickness": 1.35,
+                    "InsulationColor": "Various",
+                    "Gauge": "7",
+                    "ConductorMaterial": "Copper"
+                }
+            ],
+            "JacketColor": "Various",
+            "Manufacturer": "Generic Aliexpress",
+            "IsFiller": false,
+            "PartNumber": "7AWG",
+            "Type": 0,
+            "Name": "UL Flexible Silicone Wire 7AWG",
+            "ShieldThickness": 0,
+            "HasDrainWire": false,
+            "ShieldCoverage": 0,
+            "CableId": "aliexpress-7awg",
+            "Description": "UL Flexible Silicone Wire, 2400/0.08mm stranding, 7.2mm OD",
+            "HasShield": false,
+            "JacketThickness": 0,
+            "ShieldType": 0,
+            "SpecifiedOuterDiameter": 7.2
+        },
+        {
+            "Cores": [
+                {
+                    "CoreId": "1",
+                    "ConductorDiameter": 5.2,
+                    "InsulationThickness": 1.65,
+                    "InsulationColor": "Various",
+                    "Gauge": "6",
+                    "ConductorMaterial": "Copper"
+                }
+            ],
+            "JacketColor": "Various",
+            "Manufacturer": "Generic Aliexpress",
+            "IsFiller": false,
+            "PartNumber": "6AWG",
+            "Type": 0,
+            "Name": "UL Flexible Silicone Wire 6AWG",
+            "ShieldThickness": 0,
+            "HasDrainWire": false,
+            "ShieldCoverage": 0,
+            "CableId": "aliexpress-6awg",
+            "Description": "UL Flexible Silicone Wire, 3200/0.08mm stranding, 8.5mm OD",
+            "HasShield": false,
+            "JacketThickness": 0,
+            "ShieldType": 0,
+            "SpecifiedOuterDiameter": 8.5
+        },
+        {
+            "Cores": [
+                {
+                    "CoreId": "1",
+                    "ConductorDiameter": 7.2,
+                    "InsulationThickness": 2.4,
+                    "InsulationColor": "Various",
+                    "Gauge": "4",
+                    "ConductorMaterial": "Copper"
+                }
+            ],
+            "JacketColor": "Various",
+            "Manufacturer": "Generic Aliexpress",
+            "IsFiller": false,
+            "PartNumber": "4AWG",
+            "Type": 0,
+            "Name": "UL Flexible Silicone Wire 4AWG",
+            "ShieldThickness": 0,
+            "HasDrainWire": false,
+            "ShieldCoverage": 0,
+            "CableId": "aliexpress-4awg",
+            "Description": "UL Flexible Silicone Wire, 5000/0.08mm stranding, 12.0mm OD",
+            "HasShield": false,
+            "JacketThickness": 0,
+            "ShieldType": 0,
+            "SpecifiedOuterDiameter": 12.0
+        },
+        {
+            "Cores": [
+                {
+                    "CoreId": "1",
+                    "ConductorDiameter": 9.24,
+                    "InsulationThickness": 1.88,
+                    "InsulationColor": "Various",
+                    "Gauge": "2",
+                    "ConductorMaterial": "Copper"
+                }
+            ],
+            "JacketColor": "Various",
+            "Manufacturer": "Generic Aliexpress",
+            "IsFiller": false,
+            "PartNumber": "2AWG",
+            "Type": 0,
+            "Name": "UL Flexible Silicone Wire 2AWG",
+            "ShieldThickness": 0,
+            "HasDrainWire": false,
+            "ShieldCoverage": 0,
+            "CableId": "aliexpress-2awg",
+            "Description": "UL Flexible Silicone Wire, 10000/0.08mm stranding, 13.0mm OD",
+            "HasShield": false,
+            "JacketThickness": 0,
+            "ShieldType": 0,
+            "SpecifiedOuterDiameter": 13.0
         }
     ]
 }
