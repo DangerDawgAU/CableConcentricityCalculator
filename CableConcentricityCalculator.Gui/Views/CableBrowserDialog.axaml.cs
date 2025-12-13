@@ -183,7 +183,6 @@ public partial class CableBrowserDialog : Window
         }
 
         _filteredCables = filtered
-            .Take(500)
             .Select(c => new CableDisplayItem(c))
             .OrderBy(c => c.PartNumber)
             .ToList();
@@ -283,6 +282,7 @@ public partial class CableBrowserDialog : Window
             PartNumber = source.PartNumber,
             Manufacturer = source.Manufacturer,
             Name = source.Name,
+            Description = source.Description,
             Type = source.Type,
             JacketThickness = source.JacketThickness,
             JacketColor = source.JacketColor,

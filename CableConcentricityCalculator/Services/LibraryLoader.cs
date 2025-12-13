@@ -42,8 +42,11 @@ public static class LibraryLoader
             {
                 foreach (var cable in data.Cables)
                 {
-                    // Generate unique ID for each cable
-                    cable.CableId = Guid.NewGuid().ToString("N")[..8];
+                    // Use CableId from JSON if present, otherwise generate one
+                    if (string.IsNullOrEmpty(cable.CableId))
+                    {
+                        cable.CableId = Guid.NewGuid().ToString("N")[..8];
+                    }
                     library[cable.PartNumber] = cable;
                 }
             }
