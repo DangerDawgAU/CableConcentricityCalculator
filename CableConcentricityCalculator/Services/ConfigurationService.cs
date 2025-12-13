@@ -95,6 +95,9 @@ public class ConfigurationService
                             c.Value.Name.Contains("ETHERLINE", StringComparison.OrdinalIgnoreCase) ||
                             c.Value.Name.Contains("Ethernet", StringComparison.OrdinalIgnoreCase))
                 .ToDictionary(c => c.Key, c => c.Value),
+            "GENERIC ALIEXPRESS" => allCables
+                .Where(c => c.Value.Manufacturer.Contains("Generic Aliexpress", StringComparison.OrdinalIgnoreCase))
+                .ToDictionary(c => c.Key, c => c.Value),
             _ => allCables
         };
     }
@@ -104,7 +107,7 @@ public class ConfigurationService
     /// </summary>
     public static string[] GetCableCategories()
     {
-        return new[] { "All", "MIL-W-22759", "MIL-C-27500", "OLFLEX", "UNITRONIC", "ETHERLINE" };
+        return new[] { "All", "MIL-W-22759", "MIL-C-27500", "OLFLEX", "UNITRONIC", "ETHERLINE", "Generic Aliexpress" };
     }
 
     /// <summary>
