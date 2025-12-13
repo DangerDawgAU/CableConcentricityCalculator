@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using CableConcentricityCalculator.Utilities;
 
 namespace CableConcentricityCalculator.Models;
 
@@ -182,7 +183,7 @@ public class CableAssembly
     /// <summary>
     /// Total cross-sectional area in mm²
     /// </summary>
-    public double TotalCrossSectionalArea => Math.PI * Math.Pow(OverallDiameter / 2, 2);
+    public double TotalCrossSectionalArea => CableUtilities.GetCircularArea(OverallDiameter);
 
     /// <summary>
     /// Total conductor count (all cores in all cables)
@@ -248,8 +249,8 @@ public class CableAssembly
 
     private static double CalculateGeneralBundleDiameter(int count, double elementDiameter)
     {
-        double totalArea = count * Math.PI * Math.Pow(elementDiameter / 2, 2);
-        double bundleArea = totalArea / 0.785;
+        double totalArea = count * CableUtilities.GetCircularArea(elementDiameter);
+        double bundleArea = totalArea / CableUtilities.PackingEfficiency;
         return 2 * Math.Sqrt(bundleArea / Math.PI);
     }
 

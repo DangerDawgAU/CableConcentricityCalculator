@@ -1,25 +1,13 @@
 using Avalonia.Controls;
 using Avalonia.Interactivity;
 using CableConcentricityCalculator.Models;
+using CableConcentricityCalculator.Services;
+using CableConcentricityCalculator.Utilities;
 
 namespace CableConcentricityCalculator.Gui.Views;
 
 public partial class CustomCableDialog : Window
 {
-    private static readonly Dictionary<string, (double Diameter, double Insulation)> AwgSizes = new()
-    {
-        { "30 AWG", (0.254, 0.10) },
-        { "28 AWG", (0.320, 0.10) },
-        { "26 AWG", (0.405, 0.15) },
-        { "24 AWG", (0.511, 0.15) },
-        { "22 AWG", (0.644, 0.20) },
-        { "20 AWG", (0.812, 0.20) },
-        { "18 AWG", (1.024, 0.25) },
-        { "16 AWG", (1.291, 0.30) },
-        { "14 AWG", (1.628, 0.35) },
-        { "12 AWG", (2.053, 0.40) },
-        { "10 AWG", (2.588, 0.45) }
-    };
 
     public Cable? CreatedCable { get; private set; }
 
@@ -45,10 +33,12 @@ public partial class CustomCableDialog : Window
     {
         if (GaugeCombo.SelectedItem is ComboBoxItem item && item.Content is string gauge)
         {
-            if (AwgSizes.TryGetValue(gauge, out var sizes))
+            // Remove " AWG" suffix to match CableLibrary keys
+            var awgKey = gauge.Replace(" AWG", "");
+            if (CableLibrary.AwgSizes.TryGetValue(awgKey, out var sizes))
             {
-                ConductorDiaUpDown.Value = (decimal)sizes.Diameter;
-                InsulationThickUpDown.Value = (decimal)sizes.Insulation;
+                ConductorDiaUpDown.Value = (decimal)sizes.ConductorDia;
+                InsulationThickUpDown.Value = (decimal)sizes.InsulationThick;
             }
         }
         UpdateCalculatedOd(null, null!);
@@ -98,8 +88,8 @@ public partial class CustomCableDialog : Window
 
     private static double CalculateGeneralBundleDiameter(int count, double elementDiameter)
     {
-        double totalArea = count * Math.PI * Math.Pow(elementDiameter / 2, 2);
-        double bundleArea = totalArea / 0.785;
+        double totalArea = count * CableUtilities.GetCircularArea(elementDiameter);
+        double bundleArea = totalArea / CableUtilities.PackingEfficiency;
         return 2 * Math.Sqrt(bundleArea / Math.PI);
     }
 

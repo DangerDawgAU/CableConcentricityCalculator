@@ -1,5 +1,6 @@
 using CableConcentricityCalculator.Models;
 using CableConcentricityCalculator.Services;
+using CableConcentricityCalculator.Utilities;
 using SkiaSharp;
 
 namespace CableConcentricityCalculator.Visualization;
@@ -13,31 +14,6 @@ public class CableVisualizer
     private const float MinImageSize = 400f;
     private const float MaxImageSize = 2000f;
     private const float Padding = 50f;
-
-    /// <summary>
-    /// Color mapping for common cable colors
-    /// </summary>
-    private static readonly Dictionary<string, SKColor> ColorMap = new(StringComparer.OrdinalIgnoreCase)
-    {
-        { "White", SKColors.White },
-        { "Black", SKColors.Black },
-        { "Red", new SKColor(220, 20, 20) },
-        { "Green", new SKColor(0, 150, 0) },
-        { "Blue", new SKColor(0, 80, 180) },
-        { "Yellow", new SKColor(240, 220, 0) },
-        { "Orange", new SKColor(255, 140, 0) },
-        { "Brown", new SKColor(139, 90, 43) },
-        { "Violet", new SKColor(148, 0, 211) },
-        { "Purple", new SKColor(148, 0, 211) },
-        { "Gray", new SKColor(128, 128, 128) },
-        { "Grey", new SKColor(128, 128, 128) },
-        { "Pink", new SKColor(255, 182, 193) },
-        { "Natural", new SKColor(245, 240, 220) },
-        { "Clear", new SKColor(220, 220, 220) },
-        { "Silver", new SKColor(192, 192, 192) },
-        { "Tan", new SKColor(210, 180, 140) },
-        { "Nylon", new SKColor(245, 245, 220) }
-    };
 
     /// <summary>
     /// Generate a cross-section image of the cable assembly
@@ -639,7 +615,7 @@ public class CableVisualizer
     /// </summary>
     private static SKColor GetColor(string colorName)
     {
-        if (ColorMap.TryGetValue(colorName, out var color))
+        if (ColorUtilities.ColorMapSK.TryGetValue(colorName, out var color))
         {
             return color;
         }

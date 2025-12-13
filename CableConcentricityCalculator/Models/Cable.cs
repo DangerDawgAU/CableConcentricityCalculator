@@ -1,3 +1,5 @@
+using CableConcentricityCalculator.Utilities;
+
 namespace CableConcentricityCalculator.Models;
 
 /// <summary>
@@ -139,7 +141,7 @@ public class Cable
     /// <summary>
     /// Cross-sectional area of the cable in mm²
     /// </summary>
-    public double CrossSectionalArea => Math.PI * Math.Pow(OuterDiameter / 2, 2);
+    public double CrossSectionalArea => CableUtilities.GetCircularArea(OuterDiameter);
 
     /// <summary>
     /// Total conductor cross-sectional area in mm²
@@ -171,9 +173,8 @@ public class Cable
     private static double CalculateGeneralBundleDiameter(int coreCount, double coreDiameter)
     {
         // For larger counts, use approximate formula based on packing efficiency
-        // Assumes ~78.5% packing efficiency for random packing
-        double totalArea = coreCount * Math.PI * Math.Pow(coreDiameter / 2, 2);
-        double bundleArea = totalArea / 0.785;
+        double totalArea = coreCount * CableUtilities.GetCircularArea(coreDiameter);
+        double bundleArea = totalArea / CableUtilities.PackingEfficiency;
         return 2 * Math.Sqrt(bundleArea / Math.PI);
     }
 
