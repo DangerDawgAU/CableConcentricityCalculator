@@ -6,10 +6,9 @@
 CableConcentricityCalculator/Libraries/*.json filter=lfs diff=lfs merge=lfs -text
 Datasheets/*.json filter=lfs diff=lfs merge=lfs -text
 
-# Release executables
-publish/**/*.exe filter=lfs diff=lfs merge=lfs -text
-publish/**/*.dll filter=lfs diff=lfs merge=lfs -text
-publish/**/CableConcentricityCalculator.Gui filter=lfs diff=lfs merge=lfs -text
+# Release executables (new structure)
+Publish/Release/CableConcentricityCalculator_*.exe filter=lfs diff=lfs merge=lfs -text
+Publish/Release/CableConcentricityCalculator_* filter=lfs diff=lfs merge=lfs -text
 
 # Ensure consistent line endings for source code
 *.cs text eol=lf
