@@ -77,18 +77,14 @@ python build.py --clean --target win-x64 --configuration Release
 
 ### Output Locations
 ```
-publish/
-├── win-x64/
-│   └── CableConcentricityCalculator.Gui.exe        (~80-100 MB)
-├── linux-x64/
-│   └── CableConcentricityCalculator.Gui            (~80-100 MB)
-├── osx-x64/
-│   └── CableConcentricityCalculator.Gui            (~70-90 MB)
-└── osx-arm64/
-    └── CableConcentricityCalculator.Gui            (~70-90 MB)
+Publish/Release/
+├── CableConcentricityCalculator_win_x64.exe        (~80-100 MB)
+├── CableConcentricityCalculator_linux_x64          (~80-100 MB)
+├── CableConcentricityCalculator_osx_x64            (~70-90 MB)
+└── CableConcentricityCalculator_osx_arm64          (~70-90 MB)
 ```
 
-All executables are self-contained (include .NET runtime and dependencies).
+All executables are self-contained (include .NET runtime and dependencies) and require no supporting files.
 
 ## Manual Production Builds
 
@@ -146,22 +142,26 @@ dotnet publish CableConcentricityCalculator.Gui/CableConcentricityCalculator.Gui
 
 ## Deployment
 
+All executables are located in `Publish/Release/` with architecture-specific naming.
+
 ### Windows
-Distribute `.exe` file from `publish/win-x64/`. No installation required. Users may need to approve security warning on first run (right-click > Properties > Unblock).
+Distribute `CableConcentricityCalculator_win_x64.exe`. No installation or supporting files required. Users may need to approve security warning on first run (right-click > Properties > Unblock).
 
 ### macOS
-1. Distribute executable from `publish/osx-x64/` (Intel) or `publish/osx-arm64/` (Apple Silicon)
+1. Distribute `CableConcentricityCalculator_osx_x64` (Intel) or `CableConcentricityCalculator_osx_arm64` (Apple Silicon)
 2. Grant execution permission:
    ```bash
-   chmod +x CableConcentricityCalculator.Gui
+   chmod +x CableConcentricityCalculator_osx_x64
+   # or
+   chmod +x CableConcentricityCalculator_osx_arm64
    ```
 3. First run: Right-click > Open (to bypass Gatekeeper)
 
 ### Linux
-1. Distribute executable from `publish/linux-x64/`
+1. Distribute `CableConcentricityCalculator_linux_x64`
 2. Grant execution permission:
    ```bash
-   chmod +x CableConcentricityCalculator.Gui
+   chmod +x CableConcentricityCalculator_linux_x64
    ```
 3. Install dependencies (Debian/Ubuntu):
    ```bash
@@ -271,7 +271,7 @@ dotnet clean && dotnet build
 dotnet test
 
 # Verify executables
-ls -lh publish/*/CableConcentricityCalculator.Gui*
+ls -lh Publish/Release/CableConcentricityCalculator_*
 ```
 
 ## CI/CD Integration

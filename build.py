@@ -41,12 +41,12 @@ def print_header(text):
 
 def print_success(text):
     """Print a success message"""
-    print(colored(f"✓ {text}", Colors.GREEN))
+    print(colored(f"[OK] {text}", Colors.GREEN))
 
 
 def print_error(text):
     """Print an error message"""
-    print(colored(f"✗ {text}", Colors.RED))
+    print(colored(f"[ERROR] {text}", Colors.RED))
 
 
 def print_info(text):
@@ -78,13 +78,26 @@ def run_command(cmd, cwd=None):
         return False, e.stderr
 
 
-def clean_build(output_dir, configuration):
+def clean_build(output_dir, release_dir, configuration):
     """Clean previous build artifacts"""
     print_info("Cleaning previous builds...")
 
     if output_dir.exists():
-        shutil.rmtree(output_dir)
-        print_success("Removed publish directory")
+        try:
+            shutil.rmtree(output_dir, ignore_errors=True)
+            # Ensure it's really gone
+            if output_dir.exists():
+                shutil.rmtree(output_dir, onerror=lambda func, path, exc: os.chmod(path, 0o777) or func(path))
+            print_success("Removed publish directory")
+        except Exception as e:
+            print_error(f"Failed to remove publish directory: {e}")
+
+    if release_dir.exists() and release_dir != output_dir:
+        try:
+            shutil.rmtree(release_dir, ignore_errors=True)
+            print_success("Removed release directory")
+        except Exception as e:
+            print_error(f"Failed to remove release directory: {e}")
 
     success, _ = run_command(f"dotnet clean --configuration {configuration}")
     if success:
@@ -95,11 +108,12 @@ def clean_build(output_dir, configuration):
     print()
 
 
-def build_target(project_path, runtime, name, configuration, output_dir):
+def build_target(project_path, runtime, name, configuration, output_dir, release_dir):
     """Build for a specific target platform"""
     print(colored(f"Building for {name} ({runtime})...", Colors.CYAN))
 
-    target_output = output_dir / runtime
+    # Temporary build directory
+    temp_output = output_dir / "temp" / runtime
 
     # Build command
     cmd = [
@@ -108,7 +122,7 @@ def build_target(project_path, runtime, name, configuration, output_dir):
         f"--configuration {configuration}",
         f"--runtime {runtime}",
         "--self-contained true",
-        f'--output "{target_output}"',
+        f'--output "{temp_output}"',
         "-p:PublishSingleFile=true",
         "-p:PublishTrimmed=false",
         "-p:IncludeNativeLibrariesForSelfExtract=true",
@@ -120,14 +134,26 @@ def build_target(project_path, runtime, name, configuration, output_dir):
     if success:
         print_success(f"{name} build successful")
 
-        # Get executable name
-        exe_name = "CableConcentricityCalculator.Gui.exe" if runtime.startswith("win") else "CableConcentricityCalculator.Gui"
-        exe_path = target_output / exe_name
+        # Get source and target executable names
+        source_exe_name = "CableConcentricityCalculator.Gui.exe" if runtime.startswith("win") else "CableConcentricityCalculator.Gui"
+        source_exe_path = temp_output / source_exe_name
 
-        # Display size
-        if exe_path.exists():
-            size_mb = get_file_size_mb(exe_path)
+        # Architecture-specific naming
+        arch_name = runtime.replace("-", "_")
+        extension = ".exe" if runtime.startswith("win") else ""
+        target_exe_name = f"CableConcentricityCalculator_{arch_name}{extension}"
+        target_exe_path = release_dir / target_exe_name
+
+        # Copy executable to release directory
+        if source_exe_path.exists():
+            release_dir.mkdir(parents=True, exist_ok=True)
+            shutil.copy2(source_exe_path, target_exe_path)
+            size_mb = get_file_size_mb(target_exe_path)
             print(colored(f"  Size: {size_mb:.2f} MB", Colors.WHITE))
+            print(colored(f"  Output: {target_exe_name}", Colors.WHITE))
+        else:
+            print_error(f"Executable not found: {source_exe_path}")
+            return False
 
         return True
     else:
@@ -149,7 +175,8 @@ def main():
     # Paths
     script_dir = Path(__file__).parent.absolute()
     gui_project = script_dir / "CableConcentricityCalculator.Gui" / "CableConcentricityCalculator.Gui.csproj"
-    output_dir = script_dir / "publish"
+    output_dir = script_dir / "Publish"
+    release_dir = output_dir / "Release"
 
     # Print header
     print_header("Cable Concentricity Calculator Build Script")
@@ -163,10 +190,11 @@ def main():
 
     # Clean if requested
     if args.clean:
-        clean_build(output_dir, args.configuration)
+        clean_build(output_dir, release_dir, args.configuration)
 
-    # Create output directory
+    # Create output directories
     output_dir.mkdir(exist_ok=True)
+    release_dir.mkdir(exist_ok=True)
 
     # Define build targets
     all_targets = [
@@ -188,19 +216,34 @@ def main():
 
     # Build each target
     failed_builds = []
+    built_executables = []
     for target in targets:
         success = build_target(
             gui_project,
             target["runtime"],
             target["name"],
             args.configuration,
-            output_dir
+            output_dir,
+            release_dir
         )
 
         if not success:
             failed_builds.append(target["name"])
+        else:
+            arch_name = target["runtime"].replace("-", "_")
+            extension = ".exe" if target["runtime"].startswith("win") else ""
+            exe_name = f"CableConcentricityCalculator_{arch_name}{extension}"
+            built_executables.append((target["name"], exe_name))
 
         print()
+
+    # Clean up temporary build directory
+    temp_dir = output_dir / "temp"
+    if temp_dir.exists():
+        try:
+            shutil.rmtree(temp_dir, ignore_errors=True)
+        except:
+            pass  # Ignore cleanup errors
 
     # Print summary
     if failed_builds:
@@ -211,11 +254,14 @@ def main():
         sys.exit(1)
     else:
         print_header("Build Complete")
-        print_info(f"Output directory: {output_dir}")
+        print_info(f"Output directory: {release_dir}")
         print()
         print(colored("Built executables:", Colors.CYAN))
-        for target in targets:
-            print(colored(f"  - {target['name']} : publish/{target['runtime']}", Colors.WHITE))
+        for name, exe_name in built_executables:
+            exe_path = release_dir / exe_name
+            if exe_path.exists():
+                size_mb = get_file_size_mb(exe_path)
+                print(colored(f"  - {name}: {exe_name} ({size_mb:.2f} MB)", Colors.WHITE))
         print()
         print_success("All builds completed successfully!")
 
