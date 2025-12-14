@@ -8,9 +8,9 @@ namespace CableConcentricityCalculator.Services;
 public static class CableLibrary
 {
     /// <summary>
-    /// Standard AWG wire gauges with conductor diameters
+    /// Standard AWG wire gauges with conductor diameters and typical insulation thickness
     /// </summary>
-    private static readonly Dictionary<string, (double ConductorDia, double InsulationThick)> AwgSizes = new()
+    public static readonly Dictionary<string, (double ConductorDia, double InsulationThick)> AwgSizes = new()
     {
         { "30", (0.254, 0.10) },
         { "28", (0.320, 0.10) },

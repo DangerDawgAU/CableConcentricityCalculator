@@ -1,3 +1,5 @@
+using CableConcentricityCalculator.Utilities;
+
 namespace CableConcentricityCalculator.Models;
 
 /// <summary>
@@ -73,7 +75,7 @@ public class CableCore
     /// <summary>
     /// Cross-sectional area of conductor in mm²
     /// </summary>
-    public double ConductorArea => Math.PI * Math.Pow(ConductorDiameter / 2, 2);
+    public double ConductorArea => CableUtilities.GetCircularArea(ConductorDiameter);
 
     /// <summary>
     /// Gets a display string for the signal assignment

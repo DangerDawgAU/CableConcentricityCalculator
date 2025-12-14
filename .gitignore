@@ -48,9 +48,27 @@ msbuild.binlog
 
 # Generated output
 output/
-publish/
+publish/*
 *.pdf
 *.png
+
+# Allow publish platform directories
+!publish/win-x64/
+!publish/linux-x64/
+!publish/osx-x64/
+!publish/osx-arm64/
+
+# But ignore everything in them
+publish/win-x64/*
+publish/linux-x64/*
+publish/osx-x64/*
+publish/osx-arm64/*
+
+# Except the standalone executables (tracked with LFS)
+!publish/win-x64/CableConcentricityCalculator.Gui.exe
+!publish/linux-x64/CableConcentricityCalculator.Gui
+!publish/osx-x64/CableConcentricityCalculator.Gui
+!publish/osx-arm64/CableConcentricityCalculator.Gui
 
 # OS files
 .DS_Store
@@ -63,5 +81,7 @@ Thumbs.db
 
 # Libraries
 *.pdf
-*.py
 *.pyc
+
+# Allow build script
+!build.py

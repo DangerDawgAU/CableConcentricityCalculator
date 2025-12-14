@@ -79,6 +79,7 @@ public partial class MainWindow : Window
                         IsEnabled = false
                     });
                     contextMenu.Items.Add(new Separator());
+                    contextMenu.Items.Add(CreateMenuItem("Edit Jacket Color...", () => ShowCableColorDialog(element.Cable)));
                     contextMenu.Items.Add(CreateMenuItem("Delete Cable", () => ViewModel.DeleteSelectedElementCommand.Execute(null)));
                     break;
 
@@ -151,6 +152,50 @@ public partial class MainWindow : Window
         {
             ViewModel.AddCustomCable(result);
         }
+    }
+
+    private void ShowCableColorDialog(Cable? cable)
+    {
+        if (cable == null || ViewModel == null) return;
+
+        var dialog = new Window
+        {
+            Title = $"Edit Jacket Color - {cable.PartNumber}",
+            Width = 300,
+            Height = 200,
+            WindowStartupLocation = WindowStartupLocation.CenterOwner,
+            CanResize = false
+        };
+
+        var colorCombo = new ComboBox
+        {
+            ItemsSource = new[] { "Black", "White", "Red", "Green", "Blue", "Yellow", "Orange", "Brown", "Violet", "Purple", "Gray", "Pink", "Natural", "Clear", "Silver", "Tan", "Nylon" },
+            SelectedItem = cable.JacketColor
+        };
+
+        var saveButton = new Button { Content = "Save", HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right };
+        saveButton.Click += (_, _) =>
+        {
+            cable.JacketColor = colorCombo.SelectedItem?.ToString() ?? cable.JacketColor;
+            ViewModel?.MarkChanged();
+            ViewModel?.UpdateCrossSectionImage();
+            dialog.Close();
+        };
+
+        dialog.Content = new StackPanel
+        {
+            Margin = new Avalonia.Thickness(16),
+            Spacing = 8,
+            Children =
+            {
+                new TextBlock { Text = "Jacket Color:", FontWeight = Avalonia.Media.FontWeight.SemiBold },
+                colorCombo,
+                new Border { Height = 16 },
+                saveButton
+            }
+        };
+
+        dialog.ShowDialog(this);
     }
 
     private void ShowSignalAssignmentDialog(CableCore? core)

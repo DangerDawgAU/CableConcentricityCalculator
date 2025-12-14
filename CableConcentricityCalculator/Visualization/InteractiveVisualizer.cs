@@ -451,6 +451,20 @@ public class InteractiveVisualizer
         float insulationRadius = (float)core.OverallDiameter / 2 * scale;
         float conductorRadius = (float)core.ConductorDiameter / 2 * scale;
 
+        // When availableRadius is less than insulationRadius, we're in "scaled down" mode
+        // Scale both insulation and conductor proportionally
+        float scaleFactor = availableRadius < insulationRadius ? availableRadius / insulationRadius : 1.0f;
+        float displayInsulationRadius = insulationRadius * scaleFactor;
+        float displayConductorRadius = conductorRadius * scaleFactor;
+
+        // Ensure minimum visible insulation ring (at least 2 pixels)
+        // Reduce conductor slightly more to make insulation visible
+        float minInsulationThickness = 2.0f;
+        if (displayInsulationRadius - displayConductorRadius < minInsulationThickness)
+        {
+            displayConductorRadius = Math.Max(1.0f, displayInsulationRadius - minInsulationThickness);
+        }
+
         // Track this core
         elements.Add(new VisualElement
         {
@@ -458,7 +472,7 @@ public class InteractiveVisualizer
             Type = VisualElementType.Core,
             CenterX = x,
             CenterY = y,
-            Radius = Math.Min(insulationRadius, availableRadius),
+            Radius = displayInsulationRadius,
             Core = core
         });
 
@@ -467,59 +481,113 @@ public class InteractiveVisualizer
             Style = SKPaintStyle.Fill,
             Color = GetColor(core.InsulationColor)
         };
-        canvas.DrawCircle(x, y, Math.Min(insulationRadius, availableRadius), insulationPaint);
+        canvas.DrawCircle(x, y, displayInsulationRadius, insulationPaint);
+
+        // Add black outline around insulation
+        var outlinePaint = new SKPaint
+        {
+            Style = SKPaintStyle.Stroke,
+            Color = SKColors.Black,
+            StrokeWidth = 1.0f,
+            IsAntialias = true
+        };
+        canvas.DrawCircle(x, y, displayInsulationRadius, outlinePaint);
 
         var conductorPaint = new SKPaint
         {
             Style = SKPaintStyle.Fill,
             Color = new SKColor(184, 115, 51)
         };
-        canvas.DrawCircle(x, y, conductorRadius, conductorPaint);
+        canvas.DrawCircle(x, y, displayConductorRadius, conductorPaint);
     }
 
     private static void DrawMultipleCores(SKCanvas canvas, List<CableCore> cores,
         float centerX, float centerY, float bundleRadius, float scale, List<VisualElement> elements, string cableId)
     {
-        var positions = GetCorePositions(cores.Count, bundleRadius);
+        // Calculate core radius - use the first core as reference (they should all be similar size)
+        float coreRadius = cores.Count > 0 ? (float)cores[0].OverallDiameter / 2 * scale : bundleRadius;
+
+        var positions = GetCorePositions(cores.Count, coreRadius);
 
         for (int i = 0; i < cores.Count && i < positions.Count; i++)
         {
-            float coreRadius = (float)cores[i].OverallDiameter / 2 * scale * 0.8f;
-            DrawCore(canvas, cores[i], centerX + positions[i].x, centerY + positions[i].y, coreRadius, scale, elements, cableId);
+            // Render cores at full size (100%)
+            float actualCoreRadius = (float)cores[i].OverallDiameter / 2 * scale;
+            DrawCore(canvas, cores[i], centerX + positions[i].x, centerY + positions[i].y, actualCoreRadius, scale, elements, cableId);
         }
     }
 
-    private static List<(float x, float y)> GetCorePositions(int count, float bundleRadius)
+    private static List<(float x, float y)> GetCorePositions(int count, float coreRadius)
     {
         var positions = new List<(float x, float y)>();
-        float spacing = bundleRadius * 0.6f;
+
+        // Calculate positions using proper geometry for circular packing
+        // coreRadius is the radius of individual cores
 
         switch (count)
         {
+            case 1:
+                positions.Add((0, 0));
+                break;
             case 2:
-                positions.Add((-spacing / 2, 0));
-                positions.Add((spacing / 2, 0));
+                // Two cores side by side, touching
+                positions.Add((-coreRadius, 0));
+                positions.Add((coreRadius, 0));
                 break;
             case 3:
+                // Triangle: distance from center to core center is coreRadius / sin(60°) = coreRadius / 0.866
+                float r3 = coreRadius / MathF.Sin(MathF.PI / 3);
                 for (int i = 0; i < 3; i++)
                 {
                     float angle = (i * 2 * MathF.PI / 3) - (MathF.PI / 2);
-                    positions.Add((spacing * 0.6f * MathF.Cos(angle), spacing * 0.6f * MathF.Sin(angle)));
+                    positions.Add((r3 * MathF.Cos(angle), r3 * MathF.Sin(angle)));
                 }
                 break;
             case 4:
+                // Square: distance from center is coreRadius / sin(45°) = coreRadius * √2
+                float r4 = coreRadius * MathF.Sqrt(2);
                 for (int i = 0; i < 4; i++)
                 {
                     float angle = (i * MathF.PI / 2) + (MathF.PI / 4);
-                    positions.Add((spacing * 0.5f * MathF.Cos(angle), spacing * 0.5f * MathF.Sin(angle)));
+                    positions.Add((r4 * MathF.Cos(angle), r4 * MathF.Sin(angle)));
+                }
+                break;
+            case 5:
+                // Pentagon
+                float r5 = coreRadius / MathF.Sin(MathF.PI / 5);
+                for (int i = 0; i < 5; i++)
+                {
+                    float angle = (i * 2 * MathF.PI / 5) - (MathF.PI / 2);
+                    positions.Add((r5 * MathF.Cos(angle), r5 * MathF.Sin(angle)));
+                }
+                break;
+            case 6:
+                // Hexagon: 6 cores around perimeter
+                float r6 = coreRadius * 2; // Distance from center for hexagon
+                for (int i = 0; i < 6; i++)
+                {
+                    float angle = i * MathF.PI / 3;
+                    positions.Add((r6 * MathF.Cos(angle), r6 * MathF.Sin(angle)));
+                }
+                break;
+            case 7:
+                // 1 center + 6 surrounding in hexagon
+                positions.Add((0, 0));
+                float r7 = coreRadius * 2;
+                for (int i = 0; i < 6; i++)
+                {
+                    float angle = i * MathF.PI / 3;
+                    positions.Add((r7 * MathF.Cos(angle), r7 * MathF.Sin(angle)));
                 }
                 break;
             default:
+                // For larger counts, arrange in ring
+                // Use approximation: circumference = n * 2 * coreRadius, so radius = n * coreRadius / π
+                float rDefault = count * coreRadius / MathF.PI;
                 for (int i = 0; i < count; i++)
                 {
                     float angle = i * 2 * MathF.PI / count;
-                    float r = count <= 6 ? spacing * 0.5f : spacing * 0.6f;
-                    positions.Add((r * MathF.Cos(angle), r * MathF.Sin(angle)));
+                    positions.Add((rDefault * MathF.Cos(angle), rDefault * MathF.Sin(angle)));
                 }
                 break;
         }
@@ -638,6 +706,9 @@ public class InteractiveVisualizer
 
     private static SKColor GetColor(string colorName)
     {
+        if (string.IsNullOrWhiteSpace(colorName))
+            return SKColors.White; // White is visible against gray background
+
         if (ColorMap.TryGetValue(colorName, out var color))
             return color;
 
@@ -653,6 +724,6 @@ public class InteractiveVisualizer
             catch { }
         }
 
-        return SKColors.Gray;
+        return SKColors.White; // White for unrecognized colors
     }
 }
