@@ -1,3 +1,5 @@
+using CableConcentricityCalculator.Utilities;
+
 namespace CableConcentricityCalculator.Models;
 
 /// <summary>
@@ -139,7 +141,7 @@ public class Cable
     /// <summary>
     /// Cross-sectional area of the cable in mm²
     /// </summary>
-    public double CrossSectionalArea => Math.PI * Math.Pow(OuterDiameter / 2, 2);
+    public double CrossSectionalArea => CableUtilities.GetCircularArea(OuterDiameter);
 
     /// <summary>
     /// Total conductor cross-sectional area in mm²
@@ -151,16 +153,17 @@ public class Cable
     /// </summary>
     private static double CalculateBundleDiameter(int coreCount, double coreDiameter)
     {
-        // Standard formulas for wire bundle diameters
+        // Geometric formulas for optimal wire bundle packing
+        // Based on standard circular packing arrangements
         return coreCount switch
         {
-            1 => coreDiameter,
-            2 => 2 * coreDiameter,
-            3 => 2.155 * coreDiameter,
-            4 => 2.414 * coreDiameter,
-            5 => 2.701 * coreDiameter,
-            6 => 3 * coreDiameter,
-            7 => 3 * coreDiameter,
+            1 => coreDiameter,                              // Single wire
+            2 => 2 * coreDiameter,                          // Two wires side-by-side
+            3 => 2.155 * coreDiameter,                      // Triangle: 1 + 2/√3 ≈ 2.155
+            4 => 2.414 * coreDiameter,                      // Square diagonal: 1 + √2 ≈ 2.414
+            5 => 2.701 * coreDiameter,                      // Pentagon (empirical)
+            6 => 2.155 * coreDiameter,                      // Hexagon (6 around perimeter, no center): same as triangle
+            7 => 3 * coreDiameter,                          // 1 center + 6 hexagon ring
             _ => CalculateGeneralBundleDiameter(coreCount, coreDiameter)
         };
     }
@@ -171,9 +174,8 @@ public class Cable
     private static double CalculateGeneralBundleDiameter(int coreCount, double coreDiameter)
     {
         // For larger counts, use approximate formula based on packing efficiency
-        // Assumes ~78.5% packing efficiency for random packing
-        double totalArea = coreCount * Math.PI * Math.Pow(coreDiameter / 2, 2);
-        double bundleArea = totalArea / 0.785;
+        double totalArea = coreCount * CableUtilities.GetCircularArea(coreDiameter);
+        double bundleArea = totalArea / CableUtilities.PackingEfficiency;
         return 2 * Math.Sqrt(bundleArea / Math.PI);
     }
 

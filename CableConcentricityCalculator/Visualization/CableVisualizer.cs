@@ -1,5 +1,6 @@
 using CableConcentricityCalculator.Models;
 using CableConcentricityCalculator.Services;
+using CableConcentricityCalculator.Utilities;
 using SkiaSharp;
 
 namespace CableConcentricityCalculator.Visualization;
@@ -13,31 +14,6 @@ public class CableVisualizer
     private const float MinImageSize = 400f;
     private const float MaxImageSize = 2000f;
     private const float Padding = 50f;
-
-    /// <summary>
-    /// Color mapping for common cable colors
-    /// </summary>
-    private static readonly Dictionary<string, SKColor> ColorMap = new(StringComparer.OrdinalIgnoreCase)
-    {
-        { "White", SKColors.White },
-        { "Black", SKColors.Black },
-        { "Red", new SKColor(220, 20, 20) },
-        { "Green", new SKColor(0, 150, 0) },
-        { "Blue", new SKColor(0, 80, 180) },
-        { "Yellow", new SKColor(240, 220, 0) },
-        { "Orange", new SKColor(255, 140, 0) },
-        { "Brown", new SKColor(139, 90, 43) },
-        { "Violet", new SKColor(148, 0, 211) },
-        { "Purple", new SKColor(148, 0, 211) },
-        { "Gray", new SKColor(128, 128, 128) },
-        { "Grey", new SKColor(128, 128, 128) },
-        { "Pink", new SKColor(255, 182, 193) },
-        { "Natural", new SKColor(245, 240, 220) },
-        { "Clear", new SKColor(220, 220, 220) },
-        { "Silver", new SKColor(192, 192, 192) },
-        { "Tan", new SKColor(210, 180, 140) },
-        { "Nylon", new SKColor(245, 245, 220) }
-    };
 
     /// <summary>
     /// Generate a cross-section image of the cable assembly
@@ -239,12 +215,14 @@ public class CableVisualizer
     }
 
     /// <summary>
-    /// Get positions for center layer elements
+    /// Get positions for center layer elements with visual spacing
     /// </summary>
     private static List<(float x, float y)> GetCenterPositions(List<LayerElement> elements, float scale)
     {
         var positions = new List<(float x, float y)>();
-        float d = elements.Max(e => (float)e.Diameter) * scale;
+        // Add modest visual spacing so cables/elements are clearly separated but not too spread out
+        const float visualSpacingMultiplier = 1.3f; // 30% extra space between elements
+        float d = elements.Max(e => (float)e.Diameter) * scale * visualSpacingMultiplier;
 
         switch (elements.Count)
         {
@@ -422,8 +400,8 @@ public class CableVisualizer
         }
         else if (cable.Cores.Count > 1)
         {
-            // Multiple cores - arranged concentrically
-            DrawMultipleCores(canvas, cable.Cores, x, y, currentRadius, scale);
+            // Multiple cores - use cable OD for spacing reference
+            DrawMultipleCores(canvas, cable.Cores, x, y, currentRadius, scale, (float)cable.OuterDiameter);
         }
     }
 
@@ -453,35 +431,48 @@ public class CableVisualizer
     }
 
     /// <summary>
-    /// Draw multiple cores
+    /// Draw multiple cores with spacing based on cable outer diameter
     /// </summary>
     private static void DrawMultipleCores(SKCanvas canvas, List<CableCore> cores,
-        float centerX, float centerY, float bundleRadius, float scale)
+        float centerX, float centerY, float bundleRadius, float scale, float cableOuterDiameter)
     {
-        var positions = GetCorePositions(cores.Count, bundleRadius);
+        // Use the cable's outer diameter as reference for spacing
+        // This ensures cores are well-separated regardless of their actual size
+        var positions = GetCorePositionsByCableOD(cores.Count, cableOuterDiameter, scale);
 
         for (int i = 0; i < cores.Count && i < positions.Count; i++)
         {
-            float coreRadius = (float)cores[i].OverallDiameter / 2 * scale * 0.8f;
+            // Draw cores much smaller so they don't touch/overlap
+            float coreRadius = (float)cores[i].OverallDiameter / 2 * scale * 0.35f;
             DrawCore(canvas, cores[i], centerX + positions[i].x, centerY + positions[i].y, coreRadius, scale);
         }
     }
 
     /// <summary>
-    /// Get positions for multiple cores
+    /// Get positions for multiple cores based on cable outer diameter
+    /// Uses cable OD as reference to ensure consistent, well-separated visualization
     /// </summary>
-    private static List<(float x, float y)> GetCorePositions(int count, float bundleRadius)
+    private static List<(float x, float y)> GetCorePositionsByCableOD(int count, float cableOD, float scale)
     {
         var positions = new List<(float x, float y)>();
-        float spacing = bundleRadius * 0.6f;
+
+        // Use a larger fraction of the cable's outer diameter for spacing
+        // This ensures cores are clearly separated and not touching/overlapping
+        // 0.35 = cores positioned at 35% of cable diameter from center
+        float spacing = cableOD * scale * 0.35f;
 
         switch (count)
         {
+            case 1:
+                positions.Add((0, 0));
+                break;
             case 2:
+                // Two cores side-by-side with clear separation
                 positions.Add((-spacing / 2, 0));
                 positions.Add((spacing / 2, 0));
                 break;
             case 3:
+                // Triangle arrangement - spread out for visibility
                 for (int i = 0; i < 3; i++)
                 {
                     float angle = (i * 2 * MathF.PI / 3) - (MathF.PI / 2);
@@ -489,19 +480,59 @@ public class CableVisualizer
                 }
                 break;
             case 4:
+                // Square arrangement - well separated
                 for (int i = 0; i < 4; i++)
                 {
                     float angle = (i * MathF.PI / 2) + (MathF.PI / 4);
-                    positions.Add((spacing * 0.5f * MathF.Cos(angle), spacing * 0.5f * MathF.Sin(angle)));
+                    positions.Add((spacing * 0.6f * MathF.Cos(angle), spacing * 0.6f * MathF.Sin(angle)));
+                }
+                break;
+            case 5:
+                // Pentagon arrangement
+                for (int i = 0; i < 5; i++)
+                {
+                    float angle = (i * 2 * MathF.PI / 5) - (MathF.PI / 2);
+                    positions.Add((spacing * 0.65f * MathF.Cos(angle), spacing * 0.65f * MathF.Sin(angle)));
+                }
+                break;
+            case 6:
+                // Hexagon arrangement - 6 cores around perimeter
+                for (int i = 0; i < 6; i++)
+                {
+                    float angle = i * MathF.PI / 3;
+                    positions.Add((spacing * 0.7f * MathF.Cos(angle), spacing * 0.7f * MathF.Sin(angle)));
+                }
+                break;
+            case 7:
+                // 1 center + 6 surrounding
+                positions.Add((0, 0));
+                for (int i = 0; i < 6; i++)
+                {
+                    float angle = i * MathF.PI / 3;
+                    positions.Add((spacing * 0.75f * MathF.Cos(angle), spacing * 0.75f * MathF.Sin(angle)));
                 }
                 break;
             default:
-                // Arrange in a circle
-                for (int i = 0; i < count; i++)
+                // For larger counts, arrange in rings
+                if (count <= 12)
                 {
-                    float angle = i * 2 * MathF.PI / count;
-                    float r = count <= 6 ? spacing * 0.5f : spacing * 0.6f;
-                    positions.Add((r * MathF.Cos(angle), r * MathF.Sin(angle)));
+                    // Single ring
+                    for (int i = 0; i < count; i++)
+                    {
+                        float angle = i * 2 * MathF.PI / count;
+                        positions.Add((spacing * 0.8f * MathF.Cos(angle), spacing * 0.8f * MathF.Sin(angle)));
+                    }
+                }
+                else
+                {
+                    // Center + ring
+                    positions.Add((0, 0));
+                    int remaining = count - 1;
+                    for (int i = 0; i < remaining; i++)
+                    {
+                        float angle = i * 2 * MathF.PI / remaining;
+                        positions.Add((spacing * 0.9f * MathF.Cos(angle), spacing * 0.9f * MathF.Sin(angle)));
+                    }
                 }
                 break;
         }
@@ -639,7 +670,7 @@ public class CableVisualizer
     /// </summary>
     private static SKColor GetColor(string colorName)
     {
-        if (ColorMap.TryGetValue(colorName, out var color))
+        if (ColorUtilities.ColorMapSK.TryGetValue(colorName, out var color))
         {
             return color;
         }

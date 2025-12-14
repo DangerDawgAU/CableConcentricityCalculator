@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using CableConcentricityCalculator.Utilities;
 
 namespace CableConcentricityCalculator.Models;
 
@@ -182,7 +183,7 @@ public class CableAssembly
     /// <summary>
     /// Total cross-sectional area in mm²
     /// </summary>
-    public double TotalCrossSectionalArea => Math.PI * Math.Pow(OverallDiameter / 2, 2);
+    public double TotalCrossSectionalArea => CableUtilities.GetCircularArea(OverallDiameter);
 
     /// <summary>
     /// Total conductor count (all cores in all cables)
@@ -233,23 +234,25 @@ public class CableAssembly
     /// </summary>
     private static double CalculateBundleDiameter(int count, double elementDiameter)
     {
+        // Geometric formulas for optimal wire bundle packing
+        // Based on standard circular packing arrangements
         return count switch
         {
-            1 => elementDiameter,
-            2 => 2 * elementDiameter,
-            3 => 2.155 * elementDiameter,
-            4 => 2.414 * elementDiameter,
-            5 => 2.701 * elementDiameter,
-            6 => 3 * elementDiameter,
-            7 => 3 * elementDiameter,
+            1 => elementDiameter,                              // Single element
+            2 => 2 * elementDiameter,                          // Two elements side-by-side
+            3 => 2.155 * elementDiameter,                      // Triangle: 1 + 2/√3 ≈ 2.155
+            4 => 2.414 * elementDiameter,                      // Square diagonal: 1 + √2 ≈ 2.414
+            5 => 2.701 * elementDiameter,                      // Pentagon (empirical)
+            6 => 2.155 * elementDiameter,                      // Hexagon (6 around perimeter, no center): same as triangle
+            7 => 3 * elementDiameter,                          // 1 center + 6 surrounding (hexagon ring)
             _ => CalculateGeneralBundleDiameter(count, elementDiameter)
         };
     }
 
     private static double CalculateGeneralBundleDiameter(int count, double elementDiameter)
     {
-        double totalArea = count * Math.PI * Math.Pow(elementDiameter / 2, 2);
-        double bundleArea = totalArea / 0.785;
+        double totalArea = count * CableUtilities.GetCircularArea(elementDiameter);
+        double bundleArea = totalArea / CableUtilities.PackingEfficiency;
         return 2 * Math.Sqrt(bundleArea / Math.PI);
     }
 
