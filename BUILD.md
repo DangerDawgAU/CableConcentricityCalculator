@@ -1,91 +1,96 @@
 # Build Instructions
 
-This document describes how to build self-contained executables for Cable Concentricity Calculator.
+Build procedures for Cable Concentricity Calculator. Produces self-contained executables for Windows, macOS, and Linux.
 
 ## Prerequisites
 
-- .NET 9.0 SDK or later
-- Python 3.6 or later
+### Required
+- .NET 9.0 SDK ([download](https://dotnet.microsoft.com/download/dotnet/9.0))
+- Python 3.6+ (for automated builds)
 
-## Quick Start
+### Verification
+```bash
+dotnet --version    # Should show 9.x.x
+python --version    # Should show 3.6 or higher
+```
 
-### All Platforms (Python)
+## Quick Build
 
+### Automated (All Platforms)
 ```bash
 python build.py
 ```
 
-or on Linux/macOS:
-
+### Automated (Single Platform)
 ```bash
-./build.py
+python build.py --target win-x64
+python build.py --target linux-x64
+python build.py --target osx-x64
+python build.py --target osx-arm64
 ```
 
-## Build Options
-
-### Basic Usage
-
+### Manual (Development)
 ```bash
-# Build all platforms
-python build.py
+# Build all projects
+dotnet build
 
+# Build specific project
+dotnet build CableConcentricityCalculator.Gui
+dotnet build CableConcentricityCalculator
+
+# Release configuration
+dotnet build -c Release
+```
+
+## Running During Development
+
+### GUI Application
+```bash
+dotnet run --project CableConcentricityCalculator.Gui
+```
+
+### Console Application
+```bash
+# Interactive mode
+dotnet run --project CableConcentricityCalculator
+
+# Demo mode
+dotnet run --project CableConcentricityCalculator -- --demo
+
+# Load configuration
+dotnet run --project CableConcentricityCalculator -- --load Samples/sample-7-conductor.json
+```
+
+## Production Builds
+
+### Build Script Options
+```bash
 # Clean build
 python build.py --clean
 
 # Debug configuration
 python build.py --configuration Debug
 
-# Build specific platform only
-python build.py --target win-x64
-python build.py --target osx-x64
-python build.py --target osx-arm64
-python build.py --target linux-x64
-
-# Combined options
-python build.py --clean --configuration Release
+# Specific platform with clean
+python build.py --clean --target win-x64 --configuration Release
 ```
 
-### Available Arguments
-
-| Argument | Description | Values |
-|----------|-------------|--------|
-| `--clean` | Clean previous builds before building | Flag |
-| `--configuration` | Build configuration | `Debug`, `Release` (default) |
-| `--target` | Build specific platform only | `win-x64`, `osx-x64`, `osx-arm64`, `linux-x64` |
-| `--skip-tests` | Skip running tests (not implemented) | Flag |
-
-### Examples
-
-```bash
-# Release build for Windows only
-python build.py --target win-x64
-
-# Clean debug build for all platforms
-python build.py --clean --configuration Debug
-
-# Build macOS Apple Silicon only
-python build.py --target osx-arm64
-```
-
-## Output
-
-Executables are published to the `publish/` directory:
-
+### Output Locations
 ```
 publish/
-├── win-x64/                  # Windows x64
-│   └── CableConcentricityCalculator.Gui.exe
-├── osx-x64/                  # macOS Intel
-│   └── CableConcentricityCalculator.Gui
-├── osx-arm64/                # macOS Apple Silicon
-│   └── CableConcentricityCalculator.Gui
-└── linux-x64/                # Linux x64
-    └── CableConcentricityCalculator.Gui
+├── win-x64/
+│   └── CableConcentricityCalculator.Gui.exe        (~80-100 MB)
+├── linux-x64/
+│   └── CableConcentricityCalculator.Gui            (~80-100 MB)
+├── osx-x64/
+│   └── CableConcentricityCalculator.Gui            (~70-90 MB)
+└── osx-arm64/
+    └── CableConcentricityCalculator.Gui            (~70-90 MB)
 ```
 
-## Platform-Specific Builds (Manual)
+All executables are self-contained (include .NET runtime and dependencies).
 
-To build for a specific platform using the dotnet CLI directly:
+## Manual Production Builds
 
 ### Windows x64
 ```bash
@@ -94,6 +99,19 @@ dotnet publish CableConcentricityCalculator.Gui/CableConcentricityCalculator.Gui
   --runtime win-x64 \
   --self-contained true \
   --output publish/win-x64 \
+  -p:PublishSingleFile=true \
+  -p:PublishTrimmed=false \
+  -p:IncludeNativeLibrariesForSelfExtract=true \
+  -p:EnableCompressionInSingleFile=true
+```
+
+### Linux x64
+```bash
+dotnet publish CableConcentricityCalculator.Gui/CableConcentricityCalculator.Gui.csproj \
+  --configuration Release \
+  --runtime linux-x64 \
+  --self-contained true \
+  --output publish/linux-x64 \
   -p:PublishSingleFile=true \
   -p:PublishTrimmed=false \
   -p:IncludeNativeLibrariesForSelfExtract=true \
@@ -126,101 +144,156 @@ dotnet publish CableConcentricityCalculator.Gui/CableConcentricityCalculator.Gui
   -p:EnableCompressionInSingleFile=true
 ```
 
-### Linux x64
-```bash
-dotnet publish CableConcentricityCalculator.Gui/CableConcentricityCalculator.Gui.csproj \
-  --configuration Release \
-  --runtime linux-x64 \
-  --self-contained true \
-  --output publish/linux-x64 \
-  -p:PublishSingleFile=true \
-  -p:PublishTrimmed=false \
-  -p:IncludeNativeLibrariesForSelfExtract=true \
-  -p:EnableCompressionInSingleFile=true
-```
-
 ## Deployment
 
-The generated executables are self-contained and include all necessary dependencies. Users do not need to install .NET runtime to run them.
-
 ### Windows
-Simply distribute the `.exe` file from `publish/win-x64/`
+Distribute `.exe` file from `publish/win-x64/`. No installation required. Users may need to approve security warning on first run (right-click > Properties > Unblock).
 
 ### macOS
-1. Distribute the executable from `publish/osx-x64/` or `publish/osx-arm64/`
-2. Users may need to grant execution permissions:
+1. Distribute executable from `publish/osx-x64/` (Intel) or `publish/osx-arm64/` (Apple Silicon)
+2. Grant execution permission:
    ```bash
    chmod +x CableConcentricityCalculator.Gui
    ```
-3. On first run, macOS may show a security warning. Users should right-click and select "Open"
+3. First run: Right-click > Open (to bypass Gatekeeper)
 
 ### Linux
-1. Distribute the executable from `publish/linux-x64/`
-2. Users may need to grant execution permissions:
+1. Distribute executable from `publish/linux-x64/`
+2. Grant execution permission:
    ```bash
    chmod +x CableConcentricityCalculator.Gui
    ```
+3. Install dependencies (Debian/Ubuntu):
+   ```bash
+   sudo apt-get install libfontconfig1 libice6 libsm6 libx11-6 libxext6
+   ```
+
+## Dependencies
+
+### Core Library (CableConcentricityCalculator)
+| Package | Version | Purpose |
+|---------|---------|---------|
+| QuestPDF | 2024.10.2 | PDF document generation |
+| SkiaSharp | 2.88.8 | 2D graphics rendering |
+| System.Text.Json | 9.0.0 | JSON serialisation |
+| Spectre.Console | 0.49.1 | Console UI |
+
+### GUI Application (CableConcentricityCalculator.Gui)
+| Package | Version | Purpose |
+|---------|---------|---------|
+| Avalonia | 11.2.1 | Cross-platform UI framework |
+| Avalonia.Desktop | 11.2.1 | Desktop platform support |
+| Avalonia.Themes.Fluent | 11.2.1 | Fluent design theme |
+| Avalonia.ReactiveUI | 11.2.1 | Reactive MVVM extensions |
+| CommunityToolkit.Mvvm | 8.3.2 | MVVM toolkit |
+
+All dependencies are automatically included in self-contained builds.
 
 ## Troubleshooting
 
-### Build fails with "SDK not found"
-Ensure .NET 9.0 SDK is installed:
+### Build Failures
+
+**SDK not found**
 ```bash
+# Install .NET 9 SDK from https://dotnet.microsoft.com/download/dotnet/9.0
 dotnet --version
 ```
 
-### Python not found
-Ensure Python 3.6+ is installed:
+**Python not found**
 ```bash
+# Windows: Install from https://www.python.org/downloads/
+# Linux: sudo apt-get install python3
+# macOS: brew install python3
 python --version
-# or
-python3 --version
 ```
 
-### Permission denied on Linux/macOS
-Make the build script executable:
+**Permission denied (Linux/macOS)**
 ```bash
 chmod +x build.py
+./build.py
 ```
 
-### Large executable size
-The executables are self-contained and include the .NET runtime, SkiaSharp, Avalonia UI, and all dependencies. This is normal for self-contained applications.
+**Disk space errors**
+- Self-contained builds require ~500MB free space per platform
+- Clear previous builds: `python build.py --clean`
 
-Typical sizes:
-- Windows: ~80-100 MB
-- macOS: ~70-90 MB
-- Linux: ~80-100 MB
+### Runtime Errors
 
-To reduce size, you can enable trimming (may cause runtime issues):
+**SkiaSharp native library missing**
+- Windows: Install Visual C++ Redistributable
+- Linux: `sudo apt-get install libfontconfig1`
+- macOS: Native library included automatically
+
+**Avalonia display issues (Linux)**
+```bash
+sudo apt-get install libfontconfig1 libice6 libsm6 libx11-6 libxext6
+```
+
+**QuestPDF licence exception**
+- Community Licence is configured in code
+- For commercial deployment, verify QuestPDF licence requirements
+
+### Large Executable Size
+Self-contained executables include the .NET runtime, Avalonia UI, SkiaSharp, and all dependencies. This is normal for self-contained applications. To reduce size:
+
+**Enable trimming (may cause runtime issues):**
 ```bash
 -p:PublishTrimmed=true
 ```
 
+**Framework-dependent build (requires .NET runtime installed):**
+```bash
+dotnet publish --self-contained false
+```
+
+## Build Optimisation
+
+### Parallel Builds
+```bash
+dotnet build -m    # Use all CPU cores
+```
+
+### Clean Builds
+```bash
+# Remove all build artefacts
+dotnet clean
+
+# Restore NuGet packages
+dotnet restore
+
+# Clean and rebuild
+dotnet clean && dotnet build
+```
+
+### Build Verification
+```bash
+# Run tests (if present)
+dotnet test
+
+# Verify executables
+ls -lh publish/*/CableConcentricityCalculator.Gui*
+```
+
 ## CI/CD Integration
 
-The build script can be integrated into CI/CD pipelines:
-
-### GitHub Actions Example
+### GitHub Actions
 ```yaml
 - name: Build all platforms
   run: python build.py --clean --configuration Release
 ```
 
-### GitLab CI Example
+### GitLab CI
 ```yaml
 build:
   script:
     - python build.py --clean --configuration Release
 ```
 
-## Features
+## Licence Compliance
 
-- ✅ Cross-platform (Windows, macOS, Linux)
-- ✅ Single-file executables
-- ✅ Self-contained (includes .NET runtime)
-- ✅ Compressed for smaller size
-- ✅ Color-coded console output
-- ✅ Shows executable size after build
-- ✅ Clean option to remove previous builds
-- ✅ Target-specific builds
-- ✅ Progress indicators
+Verify licence requirements before commercial deployment:
+- QuestPDF: Community Licence (free for non-commercial use)
+- Avalonia: MIT Licence
+- SkiaSharp: MIT Licence
+
+For commercial use, review QuestPDF Professional Licence at [questpdf.com](https://www.questpdf.com).
