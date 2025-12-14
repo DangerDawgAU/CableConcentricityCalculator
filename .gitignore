@@ -55,11 +55,14 @@ output/
 Publish/temp/
 Publish/Release/*
 
-# Allow release executables (tracked with LFS)
+# Allow release executables and Libraries folder
 !Publish/Release/CableConcentricityCalculator_win_x64.exe
 !Publish/Release/CableConcentricityCalculator_linux_x64
 !Publish/Release/CableConcentricityCalculator_osx_x64
 !Publish/Release/CableConcentricityCalculator_osx_arm64
+!Publish/Release/Libraries/
+Publish/Release/Libraries/*
+!Publish/Release/Libraries/*.json
 
 # Legacy publish directory (remove after migration)
 publish/

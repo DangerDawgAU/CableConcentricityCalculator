@@ -148,6 +148,31 @@ def build_target(project_path, runtime, name, configuration, output_dir, release
         if source_exe_path.exists():
             release_dir.mkdir(parents=True, exist_ok=True)
             shutil.copy2(source_exe_path, target_exe_path)
+
+            # Copy Libraries folder from source project (not build output, as Git LFS files may not be copied)
+            source_libraries = project_path.parent.parent / "CableConcentricityCalculator" / "Libraries"
+            target_libraries = release_dir / "Libraries"
+
+            if source_libraries.exists():
+                # Remove existing Libraries folder
+                if target_libraries.exists():
+                    try:
+                        shutil.rmtree(target_libraries, ignore_errors=True)
+                    except:
+                        pass
+
+                # Copy Libraries folder
+                try:
+                    shutil.copytree(source_libraries, target_libraries, dirs_exist_ok=True)
+                    # Verify JSON files were copied
+                    json_files = list(target_libraries.glob("*.json"))
+                    if json_files:
+                        print(colored(f"  Copied Libraries folder ({len(json_files)} JSON files)", Colors.WHITE))
+                    else:
+                        print_error(f"Warning: No JSON files found in Libraries folder")
+                except Exception as e:
+                    print_error(f"Failed to copy Libraries: {e}")
+
             size_mb = get_file_size_mb(target_exe_path)
             print(colored(f"  Size: {size_mb:.2f} MB", Colors.WHITE))
             print(colored(f"  Output: {target_exe_name}", Colors.WHITE))

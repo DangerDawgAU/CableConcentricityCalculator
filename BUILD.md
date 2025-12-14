@@ -78,13 +78,17 @@ python build.py --clean --target win-x64 --configuration Release
 ### Output Locations
 ```
 Publish/Release/
-├── CableConcentricityCalculator_win_x64.exe        (~80-100 MB)
-├── CableConcentricityCalculator_linux_x64          (~80-100 MB)
-├── CableConcentricityCalculator_osx_x64            (~70-90 MB)
-└── CableConcentricityCalculator_osx_arm64          (~70-90 MB)
+├── CableConcentricityCalculator_win_x64.exe        (~56 MB)
+├── CableConcentricityCalculator_linux_x64          (~50 MB)
+├── CableConcentricityCalculator_osx_x64            (~44 MB)
+├── CableConcentricityCalculator_osx_arm64          (~42 MB)
+└── Libraries/
+    ├── CableLibrary.json                           (~3.2 MB)
+    ├── HeatShrinkLibrary.json                      (~8.5 KB)
+    └── OverBraidLibrary.json                       (~7.2 KB)
 ```
 
-All executables are self-contained (include .NET runtime and dependencies) and require no supporting files.
+All executables are self-contained (include .NET runtime and dependencies). The `Libraries/` folder must be distributed alongside the executable.
 
 ## Manual Production Builds
 
@@ -142,13 +146,25 @@ dotnet publish CableConcentricityCalculator.Gui/CableConcentricityCalculator.Gui
 
 ## Deployment
 
-All executables are located in `Publish/Release/` with architecture-specific naming.
+All executables are located in `Publish/Release/` with architecture-specific naming. The `Libraries/` folder containing component databases must be distributed in the same directory as the executable.
+
+### Distribution Package Structure
+```
+Release Package/
+├── CableConcentricityCalculator_{architecture}{extension}
+└── Libraries/
+    ├── CableLibrary.json
+    ├── HeatShrinkLibrary.json
+    └── OverBraidLibrary.json
+```
 
 ### Windows
-Distribute `CableConcentricityCalculator_win_x64.exe`. No installation or supporting files required. Users may need to approve security warning on first run (right-click > Properties > Unblock).
+1. Distribute both `CableConcentricityCalculator_win_x64.exe` and `Libraries/` folder
+2. Users may need to approve security warning on first run (right-click > Properties > Unblock)
+3. No .NET runtime installation required
 
 ### macOS
-1. Distribute `CableConcentricityCalculator_osx_x64` (Intel) or `CableConcentricityCalculator_osx_arm64` (Apple Silicon)
+1. Distribute `CableConcentricityCalculator_osx_x64` (Intel) or `CableConcentricityCalculator_osx_arm64` (Apple Silicon) with `Libraries/` folder
 2. Grant execution permission:
    ```bash
    chmod +x CableConcentricityCalculator_osx_x64
@@ -158,7 +174,7 @@ Distribute `CableConcentricityCalculator_win_x64.exe`. No installation or suppor
 3. First run: Right-click > Open (to bypass Gatekeeper)
 
 ### Linux
-1. Distribute `CableConcentricityCalculator_linux_x64`
+1. Distribute `CableConcentricityCalculator_linux_x64` with `Libraries/` folder
 2. Grant execution permission:
    ```bash
    chmod +x CableConcentricityCalculator_linux_x64
