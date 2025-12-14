@@ -8,9 +8,11 @@ namespace CableConcentricityCalculator.Utilities;
 public static class CableUtilities
 {
     /// <summary>
-    /// Standard packing efficiency for random circular packing (78.5%)
+    /// Random circular packing efficiency (~63.7%)
+    /// Based on empirical studies of random close packing of circles.
+    /// Note: Optimal hexagonal packing achieves ~90.69%, but random packing is more realistic for cable bundles.
     /// </summary>
-    public const double PackingEfficiency = 0.785;
+    public const double PackingEfficiency = 0.637;
 
     /// <summary>
     /// Calculate the cross-sectional area of a circle given its diameter
