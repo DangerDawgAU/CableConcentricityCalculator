@@ -48,27 +48,21 @@ msbuild.binlog
 
 # Generated output
 output/
-publish/*
 *.pdf
 *.png
 
-# Allow publish platform directories
-!publish/win-x64/
-!publish/linux-x64/
-!publish/osx-x64/
-!publish/osx-arm64/
+# Publish directory structure
+Publish/temp/
+Publish/Release/*
 
-# But ignore everything in them
-publish/win-x64/*
-publish/linux-x64/*
-publish/osx-x64/*
-publish/osx-arm64/*
+# Allow release executables (tracked with LFS)
+!Publish/Release/CableConcentricityCalculator_win_x64.exe
+!Publish/Release/CableConcentricityCalculator_linux_x64
+!Publish/Release/CableConcentricityCalculator_osx_x64
+!Publish/Release/CableConcentricityCalculator_osx_arm64
 
-# Except the standalone executables (tracked with LFS)
-!publish/win-x64/CableConcentricityCalculator.Gui.exe
-!publish/linux-x64/CableConcentricityCalculator.Gui
-!publish/osx-x64/CableConcentricityCalculator.Gui
-!publish/osx-arm64/CableConcentricityCalculator.Gui
+# Legacy publish directory (remove after migration)
+publish/
 
 # OS files
 .DS_Store
