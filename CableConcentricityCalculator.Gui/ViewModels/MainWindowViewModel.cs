@@ -376,8 +376,8 @@ public partial class MainWindowViewModel : ObservableObject
             if (result != null)
             {
                 var filePath = result.Path.LocalPath;
-                var imageBytes = CableVisualizer.GenerateCrossSectionImage(Assembly, 1200, 1200);
-                await File.WriteAllBytesAsync(filePath, imageBytes);
+                var interactiveResult = InteractiveVisualizer.GenerateInteractiveImage(Assembly, 1200, 1200);
+                await File.WriteAllBytesAsync(filePath, interactiveResult.ImageData);
                 StatusMessage = $"Image exported: {filePath}";
             }
         }

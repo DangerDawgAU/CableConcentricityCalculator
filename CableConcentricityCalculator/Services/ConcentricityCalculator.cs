@@ -112,11 +112,94 @@ public class ConcentricityCalculator
     }
 
     /// <summary>
-    /// Calculate positions (x, y) of cables in a layer
+    /// Calculate positions (x, y) of cables in a layer (with assembly context for optimization)
     /// </summary>
     public static List<(double X, double Y, double Diameter)> CalculateCablePositions(
+        CableAssembly assembly,
+        int layerNumber)
+    {
+        if (layerNumber >= assembly.Layers.Count)
+            return new List<(double, double, double)>();
+
+        var layer = assembly.Layers[layerNumber];
+        var cables = layer.Cables.ToList();
+
+        if (cables.Count == 0)
+            return new List<(double, double, double)>();
+
+        DebugLogger.Log($"[CALC_POS] Layer {layerNumber}: LayerNumber={layerNumber}, UsePartialLayerOptimization={layer.UsePartialLayerOptimization}, CableCount={cables.Count}");
+
+        // Check if optimization is enabled for this layer (not applicable to layer 0)
+        if (layerNumber > 0 && layer.UsePartialLayerOptimization && cables.Count > 0)
+        {
+            DebugLogger.Log($"[OPTIMIZATION ACTIVE] Layer {layerNumber}: Valley packing optimization ENABLED, {cables.Count} cables");
+
+            // Get positions from the previous layer
+            var previousLayerPositions = CalculateCablePositions(assembly, layerNumber - 1);
+            DebugLogger.Log($"[OPTIMIZATION ACTIVE] Layer {layerNumber}: Got {previousLayerPositions.Count} previous layer positions");
+
+            if (previousLayerPositions.Count > 0)
+            {
+                var optimizedCablePositions = OptimizeLayerPacking(cables, previousLayerPositions);
+                DebugLogger.Log($"[OPTIMIZATION ACTIVE] Layer {layerNumber}: OptimizeLayerPacking returned {optimizedCablePositions.Count} positions");
+
+                // Create a mapping from Cable to position
+                var cableToPosition = optimizedCablePositions.ToDictionary(p => p.Cable, p => (p.X, p.Y, p.Diameter));
+
+                // Build result in the SAME ORDER as layer.GetElements() expects
+                var result = new List<(double, double, double)>();
+                var elements = layer.GetElements();
+
+                foreach (var element in elements)
+                {
+                    if (element.Cable != null && cableToPosition.ContainsKey(element.Cable))
+                    {
+                        result.Add(cableToPosition[element.Cable]);
+                        DebugLogger.Log($"[OPTIMIZATION ACTIVE] Layer {layerNumber}: Mapped cable to position ({cableToPosition[element.Cable].X:F2}, {cableToPosition[element.Cable].Y:F2})");
+                    }
+                    else
+                    {
+                        DebugLogger.Log($"[OPTIMIZATION ACTIVE] Layer {layerNumber}: WARNING - Element has no matching position!");
+                    }
+                }
+
+                // Add fillers at standard positions on outer ring if there are any
+                if (layer.FillerCount > 0)
+                {
+                    // Calculate outer radius from optimized cable positions
+                    double maxRadius = optimizedCablePositions.Max(p =>
+                        Math.Sqrt(p.X * p.X + p.Y * p.Y) + p.Diameter / 2);
+
+                    double fillerPitchRadius = maxRadius + layer.FillerDiameter / 2;
+                    var fillerAngles = CalculateAngularPositions(layer.FillerCount);
+
+                    for (int i = 0; i < layer.FillerCount; i++)
+                    {
+                        double x = fillerPitchRadius * Math.Cos(fillerAngles[i]);
+                        double y = fillerPitchRadius * Math.Sin(fillerAngles[i]);
+                        result.Add((x, y, layer.FillerDiameter));
+                    }
+                }
+
+                return result;
+            }
+        }
+
+        // Standard concentric packing
+        DebugLogger.Log($"[STANDARD PACKING] Layer {layerNumber}: Using standard concentric packing (optimization disabled or layer 0)");
+        // Get the outer boundary of the previous layer (where cables should touch)
+        double innerBoundary = CalculateInnerBoundaryRadius(assembly, layerNumber);
+        return CalculateCablePositions(layer, innerBoundary);
+    }
+
+    /// <summary>
+    /// Calculate positions (x, y) of cables in a layer
+    /// </summary>
+    /// <param name="layer">The layer to calculate positions for</param>
+    /// <param name="innerBoundaryRadius">The radius where cables should touch (outer surface of previous layer)</param>
+    public static List<(double X, double Y, double Diameter)> CalculateCablePositions(
         CableLayer layer,
-        double layerCenterRadius)
+        double innerBoundaryRadius)
     {
         var positions = new List<(double X, double Y, double Diameter)>();
         var elements = layer.GetElements();
@@ -132,15 +215,85 @@ public class ConcentricityCalculator
         // Calculate angular positions
         var angles = CalculateAngularPositions(elements.Count);
 
-        // The pitch circle is at layerCenterRadius
+        // All cables should touch the inner boundary (outer surface of previous layer)
+        // Each cable's center is positioned at innerBoundary + (cable's radius)
+        DebugLogger.Log($"[STANDARD PACKING DETAIL] Layer {layer.LayerNumber}: InnerBoundary={innerBoundaryRadius:F2}mm");
+
         for (int i = 0; i < elements.Count; i++)
         {
-            double x = layerCenterRadius * Math.Cos(angles[i]);
-            double y = layerCenterRadius * Math.Sin(angles[i]);
+            // Each cable's center should be positioned so its inner surface touches the inner boundary
+            double cableRadius = elements[i].Diameter / 2;
+            double centerRadius = innerBoundaryRadius + cableRadius;
+
+            double x = centerRadius * Math.Cos(angles[i]);
+            double y = centerRadius * Math.Sin(angles[i]);
             positions.Add((x, y, elements[i].Diameter));
+
+            DebugLogger.Log($"[STANDARD PACKING DETAIL] Layer {layer.LayerNumber} Cable {i}: Diameter={elements[i].Diameter:F2}mm, CenterRadius={centerRadius:F2}mm, Position=({x:F2}, {y:F2})");
         }
 
         return positions;
+    }
+
+    /// <summary>
+    /// Calculate the inner boundary radius for a layer (where cables should touch the previous layer)
+    /// </summary>
+    private static double CalculateInnerBoundaryRadius(CableAssembly assembly, int layerNumber)
+    {
+        if (layerNumber == 0) return 0;
+
+        double radius = 0;
+
+        DebugLogger.Log($"[INNER BOUNDARY] Calculating for layer {layerNumber}");
+
+        for (int i = 0; i < layerNumber && i < assembly.Layers.Count; i++)
+        {
+            var layer = assembly.Layers[i];
+
+            if (i == 0)
+            {
+                // Center layer - calculate its outer radius from actual positions
+                var elements = layer.GetElements();
+                if (elements.Count == 1)
+                {
+                    radius = elements[0].Diameter / 2;
+                    DebugLogger.Log($"[INNER BOUNDARY] Layer 0 (single): radius = {radius:F2}mm");
+                }
+                else
+                {
+                    var positions = CalculateCenterLayerPositions(elements);
+                    if (positions.Count > 0)
+                    {
+                        radius = positions.Max(p => Math.Sqrt(p.X * p.X + p.Y * p.Y) + p.Diameter / 2);
+                        DebugLogger.Log($"[INNER BOUNDARY] Layer 0 (bundle): outer radius = {radius:F2}mm");
+                    }
+                }
+            }
+            else
+            {
+                // Calculate actual outer radius from this layer's cable positions
+                // IMPORTANT: Use CalculateCablePositions(assembly, layerNumber) to respect optimization settings
+                var positions = CalculateCablePositions(assembly, i);
+                if (positions.Count > 0)
+                {
+                    double outerRadius = positions.Max(p => Math.Sqrt(p.X * p.X + p.Y * p.Y) + p.Diameter / 2);
+                    double prevRadius = radius;
+                    radius = outerRadius;
+                    DebugLogger.Log($"[INNER BOUNDARY] Layer {i}: Calculated from actual positions, radius {prevRadius:F2} -> {radius:F2}mm");
+                }
+            }
+
+            // Add tape wrap if present
+            if (layer.TapeWrap != null)
+            {
+                double prevRadius = radius;
+                radius += layer.TapeWrap.EffectiveThickness;
+                DebugLogger.Log($"[INNER BOUNDARY] Layer {i}: Adding tape={layer.TapeWrap.EffectiveThickness:F2}mm, radius {prevRadius:F2} -> {radius:F2}mm");
+            }
+        }
+
+        DebugLogger.Log($"[INNER BOUNDARY] Layer {layerNumber} inner boundary radius = {radius:F2}mm");
+        return radius;
     }
 
     /// <summary>
@@ -170,12 +323,16 @@ public class ConcentricityCalculator
                 break;
 
             case 3:
-                // Triangular arrangement
+                // Triangular arrangement - cables touching each other
                 double r3 = d / Math.Sqrt(3);
+                DebugLogger.Log($"[CENTER LAYER] 3 cables: max diameter={d:F2}mm, center radius={r3:F2}mm");
                 for (int i = 0; i < 3; i++)
                 {
                     double angle = (i * 2 * Math.PI / 3) - (Math.PI / 2);
-                    positions.Add((r3 * Math.Cos(angle), r3 * Math.Sin(angle), elements[i].Diameter));
+                    double x = r3 * Math.Cos(angle);
+                    double y = r3 * Math.Sin(angle);
+                    positions.Add((x, y, elements[i].Diameter));
+                    DebugLogger.Log($"[CENTER LAYER] Cable {i}: pos=({x:F2}, {y:F2}), diameter={elements[i].Diameter:F2}mm");
                 }
                 break;
 
@@ -275,17 +432,20 @@ public class ConcentricityCalculator
 
         double radius = 0;
 
+        DebugLogger.Log($"[PITCH RADIUS] Calculating for layer {layerNumber}");
+
         for (int i = 0; i < layerNumber && i < assembly.Layers.Count; i++)
         {
             var layer = assembly.Layers[i];
 
             if (i == 0)
             {
-                // Center layer - calculate its outer radius
+                // Center layer - calculate its outer radius from actual positions
                 var elements = layer.GetElements();
                 if (elements.Count == 1)
                 {
                     radius = elements[0].Diameter / 2;
+                    DebugLogger.Log($"[PITCH RADIUS] Layer 0 (single): radius = {radius:F2}mm");
                 }
                 else
                 {
@@ -293,28 +453,43 @@ public class ConcentricityCalculator
                     if (positions.Count > 0)
                     {
                         radius = positions.Max(p => Math.Sqrt(p.X * p.X + p.Y * p.Y) + p.Diameter / 2);
+                        DebugLogger.Log($"[PITCH RADIUS] Layer 0 (bundle): outer radius = {radius:F2}mm");
                     }
                 }
             }
             else
             {
-                // Add this layer's cable diameter
-                radius += layer.MaxCableDiameter;
+                // Calculate actual outer radius from this layer's cable positions
+                // This ensures cables touch regardless of size variation
+                var positions = CalculateCablePositions(layer, radius + layer.MaxCableDiameter / 2);
+                if (positions.Count > 0)
+                {
+                    double outerRadius = positions.Max(p => Math.Sqrt(p.X * p.X + p.Y * p.Y) + p.Diameter / 2);
+                    double prevRadius = radius;
+                    radius = outerRadius;
+                    DebugLogger.Log($"[PITCH RADIUS] Layer {i}: Calculated from actual positions, radius {prevRadius:F2} -> {radius:F2}mm");
+                }
             }
 
             // Add tape wrap if present
             if (layer.TapeWrap != null)
             {
+                double prevRadius = radius;
                 radius += layer.TapeWrap.EffectiveThickness;
+                DebugLogger.Log($"[PITCH RADIUS] Layer {i}: Adding tape={layer.TapeWrap.EffectiveThickness:F2}mm, radius {prevRadius:F2} -> {radius:F2}mm");
             }
         }
 
         // Add half the next layer's cable diameter for pitch circle
         if (layerNumber < assembly.Layers.Count)
         {
-            radius += assembly.Layers[layerNumber].MaxCableDiameter / 2;
+            double halfDiameter = assembly.Layers[layerNumber].MaxCableDiameter / 2;
+            double prevRadius = radius;
+            radius += halfDiameter;
+            DebugLogger.Log($"[PITCH RADIUS] Final: Adding half of layer {layerNumber} diameter ({halfDiameter:F2}mm), radius {prevRadius:F2} -> {radius:F2}mm");
         }
 
+        DebugLogger.Log($"[PITCH RADIUS] Layer {layerNumber} final pitch radius = {radius:F2}mm");
         return radius;
     }
 
@@ -452,5 +627,254 @@ public class ConcentricityCalculator
         }
 
         return issues;
+    }
+
+    /// <summary>
+    /// Check if a proposed cable position overlaps with any existing cables
+    /// </summary>
+    private static bool OverlapsAny(
+        (double x, double y) position,
+        double diameter,
+        List<(double X, double Y, double Diameter, Cable Cable)> existingCables,
+        double tolerance = 0.01)
+    {
+        foreach (var cable in existingCables)
+        {
+            double distance = Math.Sqrt(
+                Math.Pow(position.x - cable.X, 2) +
+                Math.Pow(position.y - cable.Y, 2));
+
+            double minDistance = (diameter + cable.Diameter) / 2 + tolerance;
+
+            if (distance < minDistance)
+                return true;
+        }
+
+        return false;
+    }
+
+    /// <summary>
+    /// Calculate the optimal position for a cable in the valley between two adjacent cables
+    /// Uses circle tangency geometry to find where the new cable touches both adjacent cables
+    /// </summary>
+    private static (double x, double y)? CalculateValleyPosition(
+        (double X, double Y, double Diameter, Cable Cable) cable1,
+        (double X, double Y, double Diameter, Cable Cable) cable2,
+        double valleyDiameter,
+        double innerBoundaryRadius)
+    {
+        // Get radii
+        double r1 = cable1.Diameter / 2;  // Radius of cable 1
+        double r2 = cable2.Diameter / 2;  // Radius of cable 2
+        double r3 = valleyDiameter / 2;   // Radius of new cable to place
+
+        // Distance between centers of cable1 and cable2
+        double d12 = Math.Sqrt(Math.Pow(cable2.X - cable1.X, 2) + Math.Pow(cable2.Y - cable1.Y, 2));
+
+        // For the new cable to touch both cables externally (tangent), the distances are:
+        // dist(center3, center1) = r1 + r3  (touching externally)
+        // dist(center3, center2) = r2 + r3  (touching externally)
+
+        double d13 = r1 + r3;  // Required distance from cable1 center to new cable center
+        double d23 = r2 + r3;  // Required distance from cable2 center to new cable center
+
+        // Use triangle formula to find position
+        // We have a triangle with sides d12, d13, d23
+        // Check if such a triangle can exist
+        if (d13 + d23 < d12 || d12 + d13 < d23 || d12 + d23 < d13)
+        {
+            DebugLogger.Log($"[DEBUG] CalculateValleyPosition: Triangle inequality violated - cables too far apart");
+            return null;  // No valid position (cables too far apart)
+        }
+
+        // Calculate angle from cable1 to cable2
+        double angleBetween = Math.Atan2(cable2.Y - cable1.Y, cable2.X - cable1.X);
+
+        // Use law of cosines to find angle at cable1
+        // d23^2 = d12^2 + d13^2 - 2*d12*d13*cos(angle)
+        double cosAngle = (d12 * d12 + d13 * d13 - d23 * d23) / (2 * d12 * d13);
+
+        // Clamp to valid range for acos
+        cosAngle = Math.Max(-1, Math.Min(1, cosAngle));
+        double angleOffset = Math.Acos(cosAngle);
+
+        // The valley position is along the angle that makes angleOffset with the line to cable2
+        // We want the position that nestles into the valley (lower radius)
+        double angle3 = angleBetween - angleOffset;
+
+        // Calculate position
+        double x3 = cable1.X + d13 * Math.Cos(angle3);
+        double y3 = cable1.Y + d13 * Math.Sin(angle3);
+
+        // Check if this position is at least at the inner boundary
+        double radius3 = Math.Sqrt(x3 * x3 + y3 * y3);
+
+        // Verify the position is valid (touching both cables)
+        double checkDist1 = Math.Sqrt(Math.Pow(x3 - cable1.X, 2) + Math.Pow(y3 - cable1.Y, 2));
+        double checkDist2 = Math.Sqrt(Math.Pow(x3 - cable2.X, 2) + Math.Pow(y3 - cable2.Y, 2));
+
+        DebugLogger.Log($"[DEBUG] CalculateValleyPosition: valley r={r3:F2}, cable1 r={r1:F2}, cable2 r={r2:F2}");
+        DebugLogger.Log($"[DEBUG] CalculateValleyPosition: d12={d12:F2}, d13={d13:F2}, d23={d23:F2}");
+        DebugLogger.Log($"[DEBUG] CalculateValleyPosition: Position ({x3:F2}, {y3:F2}) at radius {radius3:F2}");
+        DebugLogger.Log($"[DEBUG] CalculateValleyPosition: Actual distances: d1={checkDist1:F2} (expect {d13:F2}), d2={checkDist2:F2} (expect {d23:F2})");
+
+        return (x3, y3);
+    }
+
+    /// <summary>
+    /// Find the best valley position for a cable among all available valleys
+    /// </summary>
+    private static (double x, double y)? FindBestValley(
+        List<(double X, double Y, double Diameter, Cable Cable)> existingCables,
+        double newCableDiameter,
+        double innerBoundaryRadius)
+    {
+        if (existingCables.Count < 2)
+            return null;
+
+        // Sort cables by angle to ensure we check adjacent pairs
+        var sortedCables = existingCables
+            .Select(c => (
+                Cable: c,
+                Angle: Math.Atan2(c.Y, c.X)
+            ))
+            .OrderBy(c => c.Angle)
+            .Select(c => c.Cable)
+            .ToList();
+
+        DebugLogger.Log($"[DEBUG] FindBestValley: Checking {sortedCables.Count} valleys for cable diameter {newCableDiameter:F2}mm");
+
+        // Try positions between each pair of adjacent cables
+        List<(double x, double y, double score)> validPositions = new();
+
+        for (int i = 0; i < sortedCables.Count; i++)
+        {
+            int j = (i + 1) % sortedCables.Count;
+
+            var pos = CalculateValleyPosition(
+                sortedCables[i],
+                sortedCables[j],
+                newCableDiameter,
+                innerBoundaryRadius);
+
+            if (pos.HasValue)
+            {
+                DebugLogger.Log($"[DEBUG] Valley {i}: Found position at ({pos.Value.x:F2}, {pos.Value.y:F2})");
+
+                // Exclude the two cables we're nestling between from overlap check (they're supposed to touch!)
+                // Compare by position since sortedCables contains new tuple instances
+                var cable1 = sortedCables[i];
+                var cable2 = sortedCables[j];
+                var cablesToCheck = existingCables.Where(c =>
+                    !(Math.Abs(c.X - cable1.X) < 0.001 && Math.Abs(c.Y - cable1.Y) < 0.001) &&
+                    !(Math.Abs(c.X - cable2.X) < 0.001 && Math.Abs(c.Y - cable2.Y) < 0.001)).ToList();
+
+                DebugLogger.Log($"[DEBUG] Valley {i}: Excluding cables at ({cable1.X:F2},{cable1.Y:F2}) and ({cable2.X:F2},{cable2.Y:F2}) from overlap check");
+                DebugLogger.Log($"[DEBUG] Valley {i}: Checking {cablesToCheck.Count} cables for overlap (was {existingCables.Count} total)");
+
+                if (!OverlapsAny(pos.Value, newCableDiameter, cablesToCheck))
+                {
+                    // Score based on how close to inner boundary (prefer inner positions)
+                    double radius = Math.Sqrt(pos.Value.x * pos.Value.x + pos.Value.y * pos.Value.y);
+                    double score = 1.0 / (radius + 1.0); // Lower radius = higher score
+
+                    validPositions.Add((pos.Value.x, pos.Value.y, score));
+                    DebugLogger.Log($"[DEBUG] Valley {i}: Valid (touching cables {i} and {j}), score={score:F4}");
+                }
+                else
+                {
+                    DebugLogger.Log($"[DEBUG] Valley {i}: Position overlaps OTHER cables (not {i},{j})");
+                }
+            }
+            else
+            {
+                DebugLogger.Log($"[DEBUG] Valley {i}: No valid position calculated");
+            }
+        }
+
+        DebugLogger.Log($"[DEBUG] FindBestValley: Found {validPositions.Count} valid positions");
+
+        // Return the best position (highest score)
+        if (validPositions.Count > 0)
+        {
+            var best = validPositions.OrderByDescending(p => p.score).First();
+            return (best.x, best.y);
+        }
+
+        return null;
+    }
+
+    /// <summary>
+    /// Optimize layer packing by placing cables in valleys between cables from the previous layer
+    /// </summary>
+    public static List<(double X, double Y, double Diameter, Cable Cable)> OptimizeLayerPacking(
+        List<Cable> currentLayerCables,
+        List<(double X, double Y, double Diameter)> previousLayerPositions)
+    {
+        DebugLogger.Log($"[DEBUG] OptimizeLayerPacking: {currentLayerCables.Count} cables to place, {previousLayerPositions.Count} previous positions");
+
+        if (currentLayerCables.Count == 0)
+            return new List<(double, double, double, Cable)>();
+
+        var positions = new List<(double X, double Y, double Diameter, Cable Cable)>();
+
+        // Convert previous layer positions to the format needed for valley detection
+        var prevCables = previousLayerPositions
+            .Select(p => (p.X, p.Y, p.Diameter, (Cable?)null!))
+            .ToList();
+
+        // Find the inner boundary (outermost extent of previous layer)
+        double innerBoundaryRadius = 0;
+        if (prevCables.Count > 0)
+        {
+            innerBoundaryRadius = prevCables.Max(c =>
+                Math.Sqrt(c.X * c.X + c.Y * c.Y) + c.Diameter / 2);
+        }
+        DebugLogger.Log($"[DEBUG] OptimizeLayerPacking: Inner boundary radius = {innerBoundaryRadius:F2}mm");
+
+        // Try to place each cable in a valley between previous layer cables
+        foreach (var cable in currentLayerCables)
+        {
+            DebugLogger.Log($"[DEBUG] Placing cable diameter {cable.OuterDiameter:F2}mm");
+            (double x, double y)? valleyPos = null;
+
+            // Try to find a valley position
+            if (prevCables.Count >= 2)
+            {
+                valleyPos = FindBestValley(prevCables, cable.OuterDiameter, innerBoundaryRadius);
+            }
+
+            if (valleyPos.HasValue)
+            {
+                // Place in valley
+                DebugLogger.Log($"[DEBUG] Found valley at ({valleyPos.Value.x:F2}, {valleyPos.Value.y:F2})");
+                positions.Add((valleyPos.Value.x, valleyPos.Value.y, cable.OuterDiameter, cable));
+
+                // Add this cable to the list so subsequent cables avoid it
+                prevCables.Add((valleyPos.Value.x, valleyPos.Value.y, cable.OuterDiameter, cable));
+            }
+            else
+            {
+                // No valley found - place on standard pitch circle
+                DebugLogger.Log($"[DEBUG] No valley found - using standard pitch circle");
+                double pitchRadius = innerBoundaryRadius + cable.OuterDiameter / 2;
+
+                // Calculate angle to avoid existing cables in this layer
+                double bestAngle = 0;
+                if (positions.Count > 0)
+                {
+                    // Evenly distribute around circle
+                    bestAngle = 2 * Math.PI * positions.Count / currentLayerCables.Count;
+                }
+
+                double x = pitchRadius * Math.Cos(bestAngle);
+                double y = pitchRadius * Math.Sin(bestAngle);
+
+                positions.Add((x, y, cable.OuterDiameter, cable));
+                prevCables.Add((x, y, cable.OuterDiameter, cable));
+            }
+        }
+
+        return positions;
     }
 }
