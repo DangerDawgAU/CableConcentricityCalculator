@@ -24,20 +24,23 @@ Calculates and visualises cable assemblies with multiple concentric layers of tw
  #### 97 Conductors with Over-Braid
  ![Sample 97 Conductors OverBraid](Samples/97ConductorsOverBraid.png)
  
+ #### Cable Browser
+ ![Sample Cable Browser](Samples/CableBrowser.png)
+
+ #### Cable Menu
+ ![Sample Cable Menu](Samples/CableMenu.png)
+
+ #### Over-Braids Configuration
+ ![Sample OverBraids](Samples/OverBraids.png)
+
+ #### Heat Shrink Application
+ ![Sample Heatshrink](Samples/Heatshrink.png)
+
  #### Annotations and Notes
  ![Sample Annotations Notes](Samples/Annotations-Notes.png)
  
- #### Cable Browser
- ![Sample Cable Browser](Samples/CableBrowser.png)
- 
- #### Cable Menu
- ![Sample Cable Menu](Samples/CableMenu.png)
- 
  #### Dimensions Window
  ![Sample Dimensions Window](Samples/DImmensionsWIndow.png)
- 
- #### Heat Shrink Application
- ![Sample Heatshrink](Samples/Heatshrink.png)
  
  #### Layers Menu
  ![Sample Layers Menu](Samples/LayersMenu.png)
@@ -47,9 +50,7 @@ Calculates and visualises cable assemblies with multiple concentric layers of tw
  
  #### Output Report Page 2
  ![Sample Output Report 2](Samples/OutputReport2.png)
- 
- #### Over-Braids Configuration
- ![Sample OverBraids](Samples/OverBraids.png)
+
 
 ## System Requirements
 
