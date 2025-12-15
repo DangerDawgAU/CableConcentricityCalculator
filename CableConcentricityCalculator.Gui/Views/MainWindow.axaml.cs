@@ -3,6 +3,7 @@ using Avalonia.Input;
 using Avalonia.Interactivity;
 using CableConcentricityCalculator.Gui.ViewModels;
 using CableConcentricityCalculator.Models;
+using CableConcentricityCalculator.Services;
 using CableConcentricityCalculator.Visualization;
 
 namespace CableConcentricityCalculator.Gui.Views;
@@ -441,6 +442,32 @@ public partial class MainWindow : Window
 
     private void OnLayerPropertyChanged(object? sender, SelectionChangedEventArgs e)
     {
+        ViewModel?.MarkChanged();
+        ViewModel?.UpdateCrossSectionImage();
+    }
+
+    private void OnPartialLayerToggled(object? sender, RoutedEventArgs e)
+    {
+        // When checkbox is toggled, recalculate and update visualization
+        if (sender is CheckBox checkbox && ViewModel?.SelectedLayer != null)
+        {
+            // CRITICAL FIX: Manually set the property because the binding hasn't updated yet
+            ViewModel.SelectedLayer.UsePartialLayerOptimization = checkbox.IsChecked ?? false;
+
+            DebugLogger.Log($"[UI] Partial layer checkbox toggled for Layer {ViewModel.SelectedLayer.LayerNumber}, IsChecked={checkbox.IsChecked}, UsePartialLayerOptimization={ViewModel.SelectedLayer.UsePartialLayerOptimization}");
+
+            // Valley packing requires same twist direction as previous layer
+            if (checkbox.IsChecked == true && ViewModel.SelectedLayer.LayerNumber > 0)
+            {
+                var prevLayer = ViewModel.Assembly.Layers.FirstOrDefault(l => l.LayerNumber == ViewModel.SelectedLayer.LayerNumber - 1);
+                if (prevLayer != null && prevLayer.TwistDirection != ViewModel.SelectedLayer.TwistDirection)
+                {
+                    DebugLogger.Log($"[UI] Auto-correcting twist direction for valley packing: {ViewModel.SelectedLayer.TwistDirection} -> {prevLayer.TwistDirection}");
+                    ViewModel.SelectedLayer.TwistDirection = prevLayer.TwistDirection;
+                    ViewModel.StatusMessage = $"Layer {ViewModel.SelectedLayer.LayerNumber} twist direction auto-corrected to {prevLayer.TwistDirection} to match previous layer (required for valley packing)";
+                }
+            }
+        }
         ViewModel?.MarkChanged();
         ViewModel?.UpdateCrossSectionImage();
     }
