@@ -14,19 +14,42 @@ Calculates and visualises cable assemblies with multiple concentric layers of tw
 - Heat shrink and over-braid sizing
 
 ### Sample Visualisations
-
-![Sample 121 Conductors Heatshrink](Samples/121ConductorsHeatshrink.png)
-![Sample 128 Conductors](Samples/128Conductors.png)
-![Sample 97 Conductors OverBraid](Samples/97ConductorsOverBraid.png)
-![Sample Annotations Notes](Samples/Annotations-Notes.png)
-![Sample Cable Browser](Samples/Cable Browser.png)
-![Sample Cable Menu](Samples/CableMenu.png)
-![Sample Dimensions Window](Samples/DImmensionsWIndow.png)
-![Sample Heatshrink](Samples/Heatshrink.png)
-![Sample Layers Menu](Samples/Layers Menu.png)
-![Sample Output Report 1](Samples/OutputReport1.png)
-![Sample Output Report 2](Samples/OutputReport2.png)
-![Sample OverBraids](Samples/OverBraids.png)
+ 
+ #### 121 Conductors with Heat Shrink
+ ![Sample 121 Conductors Heatshrink](Samples/121ConductorsHeatshrink.png)
+ 
+ #### 128 Conductors
+ ![Sample 128 Conductors](Samples/128Conductors.png)
+ 
+ #### 97 Conductors with Over-Braid
+ ![Sample 97 Conductors OverBraid](Samples/97ConductorsOverBraid.png)
+ 
+ #### Annotations and Notes
+ ![Sample Annotations Notes](Samples/Annotations-Notes.png)
+ 
+ #### Cable Browser
+ ![Sample Cable Browser](Samples/CableBrowser.png)
+ 
+ #### Cable Menu
+ ![Sample Cable Menu](Samples/CableMenu.png)
+ 
+ #### Dimensions Window
+ ![Sample Dimensions Window](Samples/DImmensionsWIndow.png)
+ 
+ #### Heat Shrink Application
+ ![Sample Heatshrink](Samples/Heatshrink.png)
+ 
+ #### Layers Menu
+ ![Sample Layers Menu](Samples/LayersMenu.png)
+ 
+ #### Output Report Page 1
+ ![Sample Output Report 1](Samples/OutputReport1.png)
+ 
+ #### Output Report Page 2
+ ![Sample Output Report 2](Samples/OutputReport2.png)
+ 
+ #### Over-Braids Configuration
+ ![Sample OverBraids](Samples/OverBraids.png)
 
 ## System Requirements
 
