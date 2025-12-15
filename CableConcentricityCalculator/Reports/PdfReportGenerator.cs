@@ -147,7 +147,7 @@ public class PdfReportGenerator
                 imgContainer.Border(1).BorderColor(Colors.Grey.Lighten1)
                     .Background(Colors.White)
                     .Padding(5)
-                    .Image(CableVisualizer.GenerateCrossSectionImage(assembly, 540, 540));
+                    .Image(InteractiveVisualizer.GenerateInteractiveImage(assembly, 540, 540).ImageData);
             });
         });
     }

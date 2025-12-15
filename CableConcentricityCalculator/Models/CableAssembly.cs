@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using CableConcentricityCalculator.Services;
 using CableConcentricityCalculator.Utilities;
 
 namespace CableConcentricityCalculator.Models;
@@ -113,12 +114,43 @@ public class CableAssembly
                 }
                 else
                 {
-                    // Add this layer's contribution
-                    var maxCableDia = layer.MaxCableDiameter;
-                    var fillerDia = layer.FillerDiameter;
-                    var effectiveDia = Math.Max(maxCableDia, fillerDia);
+                    // Check if optimization is enabled for this layer
+                    if (layer.LayerNumber > 0 && layer.UsePartialLayerOptimization && layer.Cables.Count > 0)
+                    {
+                        // Calculate actual maximum extent from optimized positions
+                        var positions = ConcentricityCalculator.CalculateCablePositions(this, layer.LayerNumber);
 
-                    diameter += 2 * effectiveDia;
+                        if (positions.Count > 0)
+                        {
+                            double maxExtent = 0;
+                            foreach (var pos in positions)
+                            {
+                                double extent = Math.Sqrt(pos.X * pos.X + pos.Y * pos.Y) + pos.Diameter / 2;
+                                maxExtent = Math.Max(maxExtent, extent);
+                            }
+
+                            // Set diameter to the actual extent (not add to it, since positions are absolute)
+                            diameter = maxExtent * 2;
+                        }
+                        else
+                        {
+                            // Fallback to standard calculation
+                            var maxCableDia = layer.MaxCableDiameter;
+                            var fillerDia = layer.FillerDiameter;
+                            var effectiveDia = Math.Max(maxCableDia, fillerDia);
+
+                            diameter += 2 * effectiveDia;
+                        }
+                    }
+                    else
+                    {
+                        // Standard calculation: Add this layer's contribution
+                        var maxCableDia = layer.MaxCableDiameter;
+                        var fillerDia = layer.FillerDiameter;
+                        var effectiveDia = Math.Max(maxCableDia, fillerDia);
+
+                        diameter += 2 * effectiveDia;
+                    }
                 }
 
                 // Add tape wrap if present

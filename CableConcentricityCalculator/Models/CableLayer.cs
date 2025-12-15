@@ -194,6 +194,27 @@ public class CableLayer : INotifyPropertyChanged
         }
     }
 
+    private bool _usePartialLayerOptimization;
+    /// <summary>
+    /// Enable partial layer optimization - places smaller cables in valleys between larger cables
+    /// for improved space efficiency and reduced filler material usage
+    /// </summary>
+    public bool UsePartialLayerOptimization
+    {
+        get => _usePartialLayerOptimization;
+        set
+        {
+            if (_usePartialLayerOptimization != value)
+            {
+                _usePartialLayerOptimization = value;
+                OnPropertyChanged(nameof(UsePartialLayerOptimization));
+                // Trigger recalculation when optimization changes
+                OnPropertyChanged(nameof(LayerDiameter));
+                OnPropertyChanged(nameof(CumulativeDiameter));
+            }
+        }
+    }
+
     /// <summary>
     /// Maximum cable diameter in this layer
     /// </summary>

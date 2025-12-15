@@ -99,11 +99,16 @@ public class InteractiveVisualizer
         float assemblyDiameter = (float)assembly.OverallDiameter;
         if (assemblyDiameter <= 0) assemblyDiameter = 10f;
 
+        // Calculate scale to ensure assembly always fits within viewport
         float availableSize = Math.Min(width, height) - 2 * Padding;
         float scale = availableSize / assemblyDiameter;
-        scale = Math.Min(scale, 100f);
-        scale = Math.Max(scale, 5f);
+
+        // Only set a minimum scale to prevent extremely small assemblies from being invisible
+        // No maximum scale - let it zoom as needed to fit
+        scale = Math.Max(scale, 0.1f);
         result.Scale = scale;
+
+        DebugLogger.Log($"[VISUALIZER] Assembly diameter={assemblyDiameter:F2}mm, viewport={width}x{height}px, availableSize={availableSize:F2}px, scale={scale:F2}px/mm");
 
         using var surface = SKSurface.Create(new SKImageInfo(width, height));
         var canvas = surface.Canvas;
@@ -249,34 +254,39 @@ public class InteractiveVisualizer
     private static void DrawLayers(SKCanvas canvas, CableAssembly assembly,
         float centerX, float centerY, float scale, List<VisualElement> elements)
     {
+        DebugLogger.Log($"[REWRITTEN VISUALIZER] Starting render for {assembly.Layers.Count} layers");
+
         foreach (var layer in assembly.Layers.OrderBy(l => l.LayerNumber))
         {
-            float pitchRadius = (float)ConcentricityCalculator.CalculateLayerPitchRadius(assembly, layer.LayerNumber) * scale;
-            var layerElements = layer.GetElements();
-            var angles = ConcentricityCalculator.CalculateAngularPositions(layerElements.Count);
+            DebugLogger.Log($"[REWRITTEN VISUALIZER] ========== LAYER {layer.LayerNumber} ==========");
+            DebugLogger.Log($"[REWRITTEN VISUALIZER] Layer {layer.LayerNumber}: UsePartialLayerOptimization = {layer.UsePartialLayerOptimization}");
 
-            for (int i = 0; i < layerElements.Count; i++)
+            var layerElements = layer.GetElements();
+            DebugLogger.Log($"[REWRITTEN VISUALIZER] Layer {layer.LayerNumber}: Has {layerElements.Count} elements total");
+
+            // ALWAYS get positions from CalculateCablePositions - it handles optimization internally
+            var positions = ConcentricityCalculator.CalculateCablePositions(assembly, layer.LayerNumber);
+
+            DebugLogger.Log($"[REWRITTEN VISUALIZER] Layer {layer.LayerNumber}: CalculateCablePositions returned {positions.Count} positions");
+
+            // CRITICAL CHECK: positions count MUST match elements count
+            if (positions.Count != layerElements.Count)
+            {
+                DebugLogger.Log($"[REWRITTEN VISUALIZER] ERROR: Position count mismatch! {positions.Count} positions for {layerElements.Count} elements");
+            }
+
+            // Draw each element at its calculated position
+            for (int i = 0; i < layerElements.Count && i < positions.Count; i++)
             {
                 var element = layerElements[i];
-                float cableRadius = (float)element.Diameter / 2 * scale;
+                var position = positions[i];
 
-                float x, y;
-                if (layer.LayerNumber == 0 && layerElements.Count == 1)
-                {
-                    x = centerX;
-                    y = centerY;
-                }
-                else if (layer.LayerNumber == 0)
-                {
-                    var positions = GetCenterPositions(layerElements, scale);
-                    x = centerX + positions[i].x;
-                    y = centerY + positions[i].y;
-                }
-                else
-                {
-                    x = centerX + pitchRadius * MathF.Cos((float)angles[i]);
-                    y = centerY + pitchRadius * MathF.Sin((float)angles[i]);
-                }
+                // Calculate screen coordinates from mm coordinates
+                float x = centerX + (float)position.X * scale;
+                float y = centerY + (float)position.Y * scale;
+                float cableRadius = (float)position.Diameter / 2 * scale;
+
+                DebugLogger.Log($"[REWRITTEN VISUALIZER] Layer {layer.LayerNumber} Element {i}: Position=({position.X:F3}, {position.Y:F3})mm, Diameter={position.Diameter:F3}mm, Screen=({x:F1}, {y:F1})px, Radius={cableRadius:F1}px");
 
                 // Track this element
                 var visualElement = new VisualElement
