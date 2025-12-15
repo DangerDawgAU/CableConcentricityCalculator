@@ -13,6 +13,21 @@ Calculates and visualises cable assemblies with multiple concentric layers of tw
 - Concentricity and filler wire calculations
 - Heat shrink and over-braid sizing
 
+### Sample Visualisations
+
+![Sample 121 Conductors Heatshrink](Samples/121ConductorsHeatshrink.png)
+![Sample 128 Conductors](Samples/128Conductors.png)
+![Sample 97 Conductors OverBraid](Samples/97ConductorsOverBraid.png)
+![Sample Annotations Notes](Samples/Annotations-Notes.png)
+![Sample Cable Browser](Samples/Cable Browser.png)
+![Sample Cable Menu](Samples/CableMenu.png)
+![Sample Dimensions Window](Samples/DImmensionsWIndow.png)
+![Sample Heatshrink](Samples/Heatshrink.png)
+![Sample Layers Menu](Samples/Layers Menu.png)
+![Sample Output Report 1](Samples/OutputReport1.png)
+![Sample Output Report 2](Samples/OutputReport2.png)
+![Sample OverBraids](Samples/OverBraids.png)
+
 ## System Requirements
 
 - .NET 9.0 Runtime

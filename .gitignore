@@ -49,7 +49,6 @@ msbuild.binlog
 # Generated output
 output/
 *.pdf
-*.png
 
 # Publish directory structure
 Publish/temp/
