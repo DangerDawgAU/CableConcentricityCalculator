@@ -84,51 +84,64 @@ public class InteractiveVisualizer
     };
 
     /// <summary>
-    /// Generate an interactive cross-section image with element tracking
+    /// Generate an interactive cross-section image with element tracking (synchronous wrapper)
     /// </summary>
     public static InteractiveImageResult GenerateInteractiveImage(CableAssembly assembly, int width = 800, int height = 800)
     {
-        var result = new InteractiveImageResult
+        return GenerateInteractiveImageAsync(assembly, width, height).GetAwaiter().GetResult();
+    }
+
+    /// <summary>
+    /// Generate an interactive cross-section image with element tracking (async version)
+    /// Runs image generation on background thread to avoid UI freezing
+    /// </summary>
+    public static async Task<InteractiveImageResult> GenerateInteractiveImageAsync(CableAssembly assembly, int width = 800, int height = 800)
+    {
+        // Offload rendering to thread pool
+        return await Task.Run(() =>
         {
-            Width = width,
-            Height = height,
-            CenterX = width / 2f,
-            CenterY = height / 2f
-        };
+            var result = new InteractiveImageResult
+            {
+                Width = width,
+                Height = height,
+                CenterX = width / 2f,
+                CenterY = height / 2f
+            };
 
-        float assemblyDiameter = (float)assembly.OverallDiameter;
-        if (assemblyDiameter <= 0) assemblyDiameter = 10f;
+            float assemblyDiameter = (float)assembly.OverallDiameter;
+            if (assemblyDiameter <= 0) assemblyDiameter = 10f;
 
-        // Calculate scale to ensure assembly always fits within viewport
-        float availableSize = Math.Min(width, height) - 2 * Padding;
-        float scale = availableSize / assemblyDiameter;
+            // Calculate scale to ensure assembly always fits within viewport
+            float availableSize = Math.Min(width, height) - 2 * Padding;
+            float scale = availableSize / assemblyDiameter;
 
-        // Only set a minimum scale to prevent extremely small assemblies from being invisible
-        // No maximum scale - let it zoom as needed to fit
-        scale = Math.Max(scale, 0.1f);
-        result.Scale = scale;
+            // Only set a minimum scale to prevent extremely small assemblies from being invisible
+            // No maximum scale - let it zoom as needed to fit
+            scale = Math.Max(scale, 0.1f);
+            result.Scale = scale;
 
-        DebugLogger.Log($"[VISUALIZER] Assembly diameter={assemblyDiameter:F2}mm, viewport={width}x{height}px, availableSize={availableSize:F2}px, scale={scale:F2}px/mm");
+            DebugLogger.Log($"[VISUALIZER] Assembly diameter={assemblyDiameter:F2}mm, viewport={width}x{height}px, availableSize={availableSize:F2}px, scale={scale:F2}px/mm");
 
-        using var surface = SKSurface.Create(new SKImageInfo(width, height));
-        var canvas = surface.Canvas;
-        canvas.Clear(SKColors.White);
+            using var surface = SKSurface.Create(new SKImageInfo(width, height));
+            var canvas = surface.Canvas;
+            canvas.Clear(SKColors.White);
 
-        float centerX = width / 2f;
-        float centerY = height / 2f;
+            float centerX = width / 2f;
+            float centerY = height / 2f;
 
-        // Draw and track elements
-        DrawOuterElements(canvas, assembly, centerX, centerY, scale, result.Elements);
-        DrawLayers(canvas, assembly, centerX, centerY, scale, result.Elements);
-        DrawAnnotations(canvas, assembly, centerX, centerY, scale, result.Elements);
-        DrawLegend(canvas, assembly, width, height);
-        DrawDimensionInfo(canvas, assembly, width, height);
+            // Draw and track elements
+            DrawOuterElements(canvas, assembly, centerX, centerY, scale, result.Elements);
+            DrawLayers(canvas, assembly, centerX, centerY, scale, result.Elements);
+            DrawAnnotations(canvas, assembly, centerX, centerY, scale, result.Elements);
+            DrawLegend(canvas, assembly, width, height);
+            DrawDimensionInfo(canvas, assembly, width, height);
 
-        using var image = surface.Snapshot();
-        using var data = image.Encode(SKEncodedImageFormat.Png, 100);
-        result.ImageData = data.ToArray();
+            using var image = surface.Snapshot();
+            using var data = image.Encode(SKEncodedImageFormat.Png, 100);
+            result.ImageData = data.ToArray();
 
-        return result;
+            return result;
+        });
     }
 
     /// <summary>
@@ -514,10 +527,8 @@ public class InteractiveVisualizer
     private static void DrawMultipleCores(SKCanvas canvas, List<CableCore> cores,
         float centerX, float centerY, float bundleRadius, float scale, List<VisualElement> elements, string cableId)
     {
-        // Calculate core radius - use the first core as reference (they should all be similar size)
-        float coreRadius = cores.Count > 0 ? (float)cores[0].OverallDiameter / 2 * scale : bundleRadius;
-
-        var positions = GetCorePositions(cores.Count, coreRadius);
+        // Get positions for cores with their actual diameters
+        var positions = GetCorePositionsForDifferentSizes(cores, scale);
 
         for (int i = 0; i < cores.Count && i < positions.Count; i++)
         {
@@ -599,6 +610,87 @@ public class InteractiveVisualizer
                     float angle = i * 2 * MathF.PI / count;
                     positions.Add((rDefault * MathF.Cos(angle), rDefault * MathF.Sin(angle)));
                 }
+                break;
+        }
+
+        return positions;
+    }
+
+    private static List<(float x, float y)> GetCorePositionsForDifferentSizes(List<CableCore> cores, float scale)
+    {
+        var positions = new List<(float x, float y)>();
+
+        if (cores.Count == 0)
+            return positions;
+
+        if (cores.Count == 1)
+        {
+            positions.Add((0, 0));
+            return positions;
+        }
+
+        // Convert cores to radii in screen coordinates
+        var radii = cores.Select(c => (float)c.OverallDiameter / 2 * scale).ToList();
+
+        switch (cores.Count)
+        {
+            case 2:
+                // Two cores touching - position based on their actual radii
+                positions.Add((-radii[0], 0));
+                positions.Add((radii[1], 0));
+                break;
+
+            case 3:
+                // Triangular arrangement - three circles touching each other
+                float r0 = radii[0];
+                float r1 = radii[1];
+                float r2 = radii[2];
+
+                // Core 0 at origin, Core 1 to the right touching Core 0
+                float x0 = 0;
+                float y0 = 0;
+                float x1 = r0 + r1;
+                float y1 = 0;
+
+                // Core 2: positioned to touch both Core 0 and Core 1
+                float d01 = x1; // Distance between centers of core 0 and 1
+                float d02 = r0 + r2; // Required distance from 0 to 2
+                float d12 = r1 + r2; // Required distance from 1 to 2
+
+                // Using triangle law of cosines
+                float x2 = (d01 * d01 + d02 * d02 - d12 * d12) / (2 * d01);
+                float y2 = MathF.Sqrt(d02 * d02 - x2 * x2);
+
+                // Center the triangle at origin
+                float centerX = (x0 + x1 + x2) / 3;
+                float centerY = (y0 + y1 + y2) / 3;
+
+                positions.Add((x0 - centerX, y0 - centerY));
+                positions.Add((x1 - centerX, y1 - centerY));
+                positions.Add((x2 - centerX, y2 - centerY));
+                break;
+
+            case 4:
+                // Four cores arranged in square/diamond pattern
+                float sqrt2 = MathF.Sqrt(2);
+                float dist0 = radii[0] * sqrt2;
+                float dist1 = radii[1] * sqrt2;
+                float dist2 = radii[2] * sqrt2;
+                float dist3 = radii[3] * sqrt2;
+
+                // 45°, 135°, 225°, 315° - each touches 2 neighbors
+                positions.Add((dist0 / sqrt2, dist0 / sqrt2));
+                positions.Add((-dist1 / sqrt2, dist1 / sqrt2));
+                positions.Add((-dist2 / sqrt2, -dist2 / sqrt2));
+                positions.Add((dist3 / sqrt2, -dist3 / sqrt2));
+                break;
+
+            default:
+                // For 5+ cores, use the simple approach with max diameter
+                // This maintains backward compatibility for complex cases
+                float maxRadius = radii.Max();
+                var simplePositions = GetCorePositions(cores.Count, maxRadius);
+                positions.AddRange(simplePositions);
                 break;
         }
 

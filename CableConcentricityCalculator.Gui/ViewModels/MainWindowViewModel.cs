@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 using Avalonia.Controls;
 using Avalonia.Platform.Storage;
@@ -17,6 +18,10 @@ namespace CableConcentricityCalculator.Gui.ViewModels;
 
 public partial class MainWindowViewModel : ObservableObject
 {
+    // Debouncing fields
+    private CancellationTokenSource? _updateCancellationTokenSource;
+    private readonly SemaphoreSlim _updateSemaphore = new(1, 1);
+    private const int DebounceDelayMs = 150; // Wait 150ms after last change before updating
     [ObservableProperty]
     private CableAssembly _assembly;
 
@@ -483,11 +488,23 @@ public partial class MainWindowViewModel : ObservableObject
     [RelayCommand]
     private void OptimizeFillers()
     {
-        ConcentricityCalculator.OptimizeFillers(Assembly);
+        if (SelectedLayer == null)
+        {
+            StatusMessage = "Please select a layer first";
+            return;
+        }
+
+        if (SelectedLayer.LayerNumber == 0)
+        {
+            StatusMessage = "Cannot optimize fillers for Layer 0 (center bundle)";
+            return;
+        }
+
+        ConcentricityCalculator.OptimizeFillers(Assembly, SelectedLayer.LayerNumber);
         MarkChanged();
         UpdateCrossSectionImage();
         ValidateAssembly();
-        StatusMessage = "Fillers optimized";
+        StatusMessage = $"Fillers optimized for Layer {SelectedLayer.LayerNumber}";
     }
 
     [RelayCommand]
@@ -591,36 +608,80 @@ public partial class MainWindowViewModel : ObservableObject
         StatusMessage = "Removed over-braid";
     }
 
+    /// <summary>
+    /// Update cross-section image (synchronous wrapper for async version)
+    /// </summary>
     public void UpdateCrossSectionImage()
     {
+        // Fire and forget - don't wait for the async operation
+        _ = UpdateCrossSectionImageAsync();
+    }
+
+    /// <summary>
+    /// Update cross-section image with debouncing to prevent excessive recalculations
+    /// Async version runs on background thread to avoid UI freezing
+    /// </summary>
+    public async Task UpdateCrossSectionImageAsync()
+    {
+        // Cancel any pending update
+        _updateCancellationTokenSource?.Cancel();
+        _updateCancellationTokenSource = new CancellationTokenSource();
+        var cancellationToken = _updateCancellationTokenSource.Token;
+
         try
         {
-            InteractiveImage = InteractiveVisualizer.GenerateInteractiveImage(Assembly, 600, 600);
-            CrossSectionImage = InteractiveImage.ImageData;
+            // Debounce: wait for a short period to see if more changes are coming
+            await Task.Delay(DebounceDelayMs, cancellationToken);
+
+            // Ensure only one update runs at a time
+            await _updateSemaphore.WaitAsync(cancellationToken);
+            try
+            {
+                DebugLogger.Log("[PERF] Starting async cross-section image generation");
+                var startTime = DateTime.Now;
+
+                // Generate interactive image on background thread
+                var interactiveImage = await InteractiveVisualizer.GenerateInteractiveImageAsync(Assembly, 600, 600);
+
+                if (!cancellationToken.IsCancellationRequested)
+                {
+                    InteractiveImage = interactiveImage;
+                    CrossSectionImage = interactiveImage.ImageData;
+
+                    // Generate isometric view (lightweight, async)
+                    await Task.Run(() =>
+                    {
+                        try
+                        {
+                            IsometricImage = Cable3DVisualizer.GenerateIsometricCrossSection(Assembly, 800, 600);
+                        }
+                        catch
+                        {
+                            IsometricImage = null;
+                        }
+                    }, cancellationToken);
+
+                    var elapsed = (DateTime.Now - startTime).TotalMilliseconds;
+                    DebugLogger.Log($"[PERF] Cross-section image generated in {elapsed:F0}ms");
+                    StatusMessage = $"Updated ({elapsed:F0}ms)";
+                }
+            }
+            finally
+            {
+                _updateSemaphore.Release();
+            }
         }
-        catch
+        catch (OperationCanceledException)
         {
+            // Update was cancelled - this is expected when rapid changes occur
+            DebugLogger.Log("[PERF] Image update cancelled (debounced)");
+        }
+        catch (Exception ex)
+        {
+            DebugLogger.Log($"[ERROR] Failed to update cross-section image: {ex.Message}");
             CrossSectionImage = null;
             InteractiveImage = null;
-        }
-
-        // Generate 3D views - Save STL file
-        try
-        {
-            var stlBytes = Cable3DSTLVisualizer.GenerateSTL(Assembly);
-            var outputDir = Path.Combine(Environment.CurrentDirectory, "output");
-            Directory.CreateDirectory(outputDir);
-            var stlPath = Path.Combine(outputDir, $"{Assembly.PartNumber}_3D.stl");
-            File.WriteAllBytes(stlPath, stlBytes);
-            
-            // Generate a preview image from the STL (isometric view)
-            IsometricImage = Cable3DVisualizer.GenerateIsometricCrossSection(Assembly, 800, 600);
-            StatusMessage = $"STL saved: {stlPath}";
-        }
-        catch
-        {
-            IsometricImage = null;
-            StatusMessage = "Error generating STL file";
+            StatusMessage = "Error generating image";
         }
     }
 
@@ -899,6 +960,37 @@ public partial class MainWindowViewModel : ObservableObject
                 WireLabel = c.WireLabel
             }).ToList()
         };
+    }
+
+    /// <summary>
+    /// Export STL file on demand (async to avoid UI freezing)
+    /// </summary>
+    [RelayCommand]
+    private async Task ExportStl()
+    {
+        try
+        {
+            StatusMessage = "Generating STL file...";
+
+            await Task.Run(() =>
+            {
+                var stlBytes = Cable3DSTLVisualizer.GenerateSTL(Assembly);
+                var outputDir = Path.Combine(Environment.CurrentDirectory, "output");
+                Directory.CreateDirectory(outputDir);
+                var stlPath = Path.Combine(outputDir, $"{Assembly.PartNumber}_3D.stl");
+                File.WriteAllBytes(stlPath, stlBytes);
+
+                // Generate isometric preview
+                IsometricImage = Cable3DVisualizer.GenerateIsometricCrossSection(Assembly, 800, 600);
+
+                StatusMessage = $"STL exported: {stlPath}";
+            });
+        }
+        catch (Exception ex)
+        {
+            StatusMessage = $"STL export failed: {ex.Message}";
+            DebugLogger.Log($"[ERROR] STL export failed: {ex.Message}");
+        }
     }
 }
 
