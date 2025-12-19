@@ -10,13 +10,30 @@ namespace CableConcentricityCalculator.Gui.Views;
 
 public partial class MainWindow : Window
 {
+    private Cable? _cableToMove;
+    private CableLayer? _cableToMoveLayer;
+    private bool _isMovingCable;
+
     public MainWindow()
     {
         InitializeComponent();
         KeyDown += OnKeyDown;
+
+        // Wire up Add to Library button
+        var addToLibraryButton = this.FindControl<Button>("AddToLibraryButton");
+        if (addToLibraryButton != null)
+        {
+            addToLibraryButton.Click += OnAddToLibraryClick;
+        }
     }
 
     private MainWindowViewModel? ViewModel => DataContext as MainWindowViewModel;
+
+    private async void OnAddToLibraryClick(object? sender, RoutedEventArgs e)
+    {
+        var dialog = new AddToLibraryDialog();
+        await dialog.ShowDialog(this);
+    }
 
     private void OnKeyDown(object? sender, KeyEventArgs e)
     {
@@ -47,13 +64,145 @@ public partial class MainWindow : Window
 
         if (props.IsLeftButtonPressed)
         {
-            // Left click - identify element
-            ViewModel.HandleImageClick((float)point.X, (float)point.Y);
+            // If we're in move mode, move the cable to the clicked position
+            if (_isMovingCable && _cableToMove != null && _cableToMoveLayer != null)
+            {
+                // Convert screen coordinates to assembly coordinates
+                if (ViewModel.InteractiveImage != null)
+                {
+                    var (mmX, mmY) = InteractiveVisualizer.ScreenToAssemblyCoords(
+                        ViewModel.InteractiveImage, (float)point.X, (float)point.Y);
+
+                    // Move the cable to nearest valley
+                    MoveCableToNearestValley(_cableToMove, _cableToMoveLayer, mmX, mmY);
+                }
+
+                // Exit move mode
+                _isMovingCable = false;
+                _cableToMove = null;
+                _cableToMoveLayer = null;
+            }
+            else
+            {
+                // Normal left click - identify element
+                ViewModel.HandleImageClick((float)point.X, (float)point.Y);
+            }
         }
         else if (props.IsRightButtonPressed)
         {
             // Right click - show context menu
             ShowElementContextMenu(image, point, e);
+        }
+    }
+
+    public void OnImagePointerMoved(object? sender, PointerEventArgs e)
+    {
+        if (sender is not Image img) return;
+
+        // Update cursor when in move mode
+        if (_isMovingCable)
+        {
+            img.Cursor = new Cursor(StandardCursorType.Cross);
+        }
+        else
+        {
+            img.Cursor = new Cursor(StandardCursorType.Hand);
+        }
+    }
+
+    public void OnImagePointerReleased(object? sender, PointerReleasedEventArgs e)
+    {
+        // No longer needed for move mode
+    }
+
+    private void StartMoveCable(Cable? cable)
+    {
+        if (cable == null || ViewModel?.SelectedLayer == null) return;
+
+        _cableToMove = cable;
+        _cableToMoveLayer = ViewModel.SelectedLayer;
+        _isMovingCable = true;
+
+        if (ViewModel != null)
+        {
+            ViewModel.StatusMessage = $"Click where you want to move {cable.PartNumber}";
+        }
+    }
+
+    private void MoveCableToNearestValley(Cable cable, CableLayer layer, double targetX, double targetY)
+    {
+        if (ViewModel == null) return;
+
+        // Get previous layer positions
+        var previousLayerIndex = layer.LayerNumber - 1;
+        if (previousLayerIndex < 0 || previousLayerIndex >= ViewModel.Assembly.Layers.Count)
+        {
+            ViewModel.StatusMessage = "Cannot move cable - no previous layer";
+            return;
+        }
+
+        var previousLayerPositions = ConcentricityCalculator.CalculateCablePositions(
+            ViewModel.Assembly, previousLayerIndex);
+
+        if (previousLayerPositions.Count == 0)
+        {
+            ViewModel.StatusMessage = "Cannot move cable - no previous layer positions";
+            return;
+        }
+
+        // Get all current cables except the one being dragged
+        var otherCables = layer.Cables.Where(c => c.CableId != cable.CableId).ToList();
+
+        // Calculate all possible valley positions
+        var validValleyPositions = new List<(double X, double Y, int Index1, int Index2)>();
+
+        for (int i = 0; i < previousLayerPositions.Count; i++)
+        {
+            for (int j = i + 1; j < previousLayerPositions.Count; j++)
+            {
+                var cable1 = previousLayerPositions[i];
+                var cable2 = previousLayerPositions[j];
+
+                // Try to calculate valley position for this cable
+                var valley = ConcentricityCalculator.CalculateValleyPosition(
+                    cable1.X, cable1.Y, cable1.Diameter,
+                    cable2.X, cable2.Y, cable2.Diameter,
+                    cable.OuterDiameter);
+
+                if (valley.HasValue)
+                {
+                    validValleyPositions.Add((valley.Value.x, valley.Value.y, i, j));
+                }
+            }
+        }
+
+        if (validValleyPositions.Count == 0)
+        {
+            ViewModel.StatusMessage = "No valid valley positions found";
+            return;
+        }
+
+        // Find the closest valley to the target position
+        var closestValley = validValleyPositions
+            .OrderBy(v =>
+            {
+                var dx = v.X - targetX;
+                var dy = v.Y - targetY;
+                return Math.Sqrt(dx * dx + dy * dy);
+            })
+            .First();
+
+        // Move the cable to the start of the list to give it priority in valley packing
+        // This will cause the optimization algorithm to place it first
+        var cableIndex = layer.Cables.IndexOf(cable);
+        if (cableIndex >= 0)
+        {
+            layer.Cables.RemoveAt(cableIndex);
+            layer.Cables.Insert(0, cable);
+
+            ViewModel.MarkChanged();
+            ViewModel.UpdateCrossSectionImage();
+            ViewModel.StatusMessage = $"Moved {cable.PartNumber} to valley at ({closestValley.X:F2}, {closestValley.Y:F2}) mm";
         }
     }
 
@@ -80,6 +229,16 @@ public partial class MainWindow : Window
                         IsEnabled = false
                     });
                     contextMenu.Items.Add(new Separator());
+
+                    // Add "Move Cable" option if partial layer optimization is enabled
+                    if (ViewModel.SelectedLayer != null &&
+                        ViewModel.SelectedLayer.UsePartialLayerOptimization &&
+                        ViewModel.SelectedLayer.LayerNumber > 0)
+                    {
+                        contextMenu.Items.Add(CreateMenuItem("Move Cable...", () => StartMoveCable(element.Cable)));
+                        contextMenu.Items.Add(new Separator());
+                    }
+
                     contextMenu.Items.Add(CreateMenuItem("Edit Jacket Color...", () => ShowCableColorDialog(element.Cable)));
                     contextMenu.Items.Add(CreateMenuItem("Delete Cable", () => ViewModel.DeleteSelectedElementCommand.Execute(null)));
                     break;
@@ -470,5 +629,254 @@ public partial class MainWindow : Window
         }
         ViewModel?.MarkChanged();
         ViewModel?.UpdateCrossSectionImage();
+    }
+
+    private async void OnDuplicateCableClick(object? sender, RoutedEventArgs e)
+    {
+        if (ViewModel?.SelectedLayer == null || ViewModel.SelectedCable == null)
+        {
+            ViewModel!.StatusMessage = "No cable selected to duplicate";
+            return;
+        }
+
+        var cableToDuplicate = ViewModel.SelectedCable;
+
+        // Create a simple dialog to get the quantity
+        var dialog = new Window
+        {
+            Title = $"Duplicate Cable: {cableToDuplicate.PartNumber}",
+            Width = 350,
+            Height = 200,
+            WindowStartupLocation = WindowStartupLocation.CenterOwner,
+            CanResize = false
+        };
+
+        var quantityUpDown = new NumericUpDown
+        {
+            Value = 1,
+            Minimum = 1,
+            Maximum = 50,
+            Increment = 1
+        };
+
+        var duplicateButton = new Button
+        {
+            Content = "Duplicate",
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right,
+            Margin = new Avalonia.Thickness(0, 0, 8, 0)
+        };
+
+        var cancelButton = new Button
+        {
+            Content = "Cancel",
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right
+        };
+
+        bool? dialogResult = null;
+
+        duplicateButton.Click += (_, _) =>
+        {
+            dialogResult = true;
+            dialog.Close();
+        };
+
+        cancelButton.Click += (_, _) =>
+        {
+            dialogResult = false;
+            dialog.Close();
+        };
+
+        var buttonPanel = new StackPanel
+        {
+            Orientation = Avalonia.Layout.Orientation.Horizontal,
+            HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right,
+            Spacing = 8,
+            Children = { duplicateButton, cancelButton }
+        };
+
+        dialog.Content = new StackPanel
+        {
+            Margin = new Avalonia.Thickness(16),
+            Spacing = 12,
+            Children =
+            {
+                new TextBlock
+                {
+                    Text = "How many copies would you like to add?",
+                    FontWeight = Avalonia.Media.FontWeight.SemiBold
+                },
+                new TextBlock
+                {
+                    Text = $"Cable: {cableToDuplicate.PartNumber}",
+                    Foreground = Avalonia.Media.Brushes.Gray,
+                    FontSize = 11
+                },
+                new Border { Height = 8 },
+                new TextBlock { Text = "Quantity:" },
+                quantityUpDown,
+                new Border { Height = 16 },
+                buttonPanel
+            }
+        };
+
+        await dialog.ShowDialog(this);
+
+        if (dialogResult == true)
+        {
+            int quantity = (int)quantityUpDown.Value;
+
+            for (int i = 0; i < quantity; i++)
+            {
+                // Create a deep clone of the cable
+                var clonedCable = CloneCable(cableToDuplicate);
+                ViewModel.SelectedLayer.Cables.Add(clonedCable);
+            }
+
+            ViewModel.MarkChanged();
+            ViewModel.UpdateCrossSectionImage();
+            ViewModel.StatusMessage = $"Added {quantity} duplicate(s) of {cableToDuplicate.PartNumber} to Layer {ViewModel.SelectedLayer.LayerNumber}";
+        }
+    }
+
+    private Cable CloneCable(Cable original)
+    {
+        // Create a deep clone of the cable with a new unique ID
+        var clone = new Cable
+        {
+            CableId = Guid.NewGuid().ToString("N")[..8], // New unique ID
+            PartNumber = original.PartNumber,
+            Manufacturer = original.Manufacturer,
+            Name = original.Name,
+            Type = original.Type,
+            JacketThickness = original.JacketThickness,
+            JacketColor = original.JacketColor,
+            HasShield = original.HasShield,
+            ShieldType = original.ShieldType,
+            ShieldThickness = original.ShieldThickness,
+            ShieldCoverage = original.ShieldCoverage,
+            HasDrainWire = original.HasDrainWire,
+            DrainWireDiameter = original.DrainWireDiameter,
+            IsFiller = original.IsFiller,
+            FillerMaterial = original.FillerMaterial,
+            Description = original.Description,
+            SpecifiedOuterDiameter = original.SpecifiedOuterDiameter
+        };
+
+        // Clone cores
+        foreach (var core in original.Cores)
+        {
+            var clonedCore = new CableCore
+            {
+                CoreId = Guid.NewGuid().ToString("N")[..6], // New unique ID
+                ConductorDiameter = core.ConductorDiameter,
+                InsulationThickness = core.InsulationThickness,
+                InsulationColor = core.InsulationColor,
+                SignalName = core.SignalName,
+                SignalDescription = core.SignalDescription,
+                SignalType = core.SignalType,
+                PinA = core.PinA,
+                PinB = core.PinB
+            };
+            clone.Cores.Add(clonedCore);
+        }
+
+        return clone;
+    }
+
+    private async void OnRotateLayerClick(object? sender, RoutedEventArgs e)
+    {
+        if (sender is MenuItem menuItem && menuItem.DataContext is CableLayer layer && ViewModel != null)
+        {
+            // Create rotation dialog
+            var dialog = new Window
+            {
+                Title = $"Rotate Layer {layer.LayerNumber}",
+                Width = 350,
+                Height = 220,
+                WindowStartupLocation = WindowStartupLocation.CenterOwner,
+                CanResize = false
+            };
+
+            var currentAngleText = new TextBlock
+            {
+                Text = $"Current rotation: {layer.RotationAngle:F1}°",
+                Foreground = Avalonia.Media.Brushes.Gray,
+                FontSize = 11,
+                Margin = new Avalonia.Thickness(0, 0, 0, 8)
+            };
+
+            var rotationUpDown = new NumericUpDown
+            {
+                Value = (decimal)layer.RotationAngle,
+                Minimum = 0,
+                Maximum = 360,
+                Increment = 1,
+                FormatString = "0.0°"
+            };
+
+            var applyButton = new Button
+            {
+                Content = "Apply",
+                HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right,
+                Margin = new Avalonia.Thickness(0, 0, 8, 0)
+            };
+
+            var cancelButton = new Button
+            {
+                Content = "Cancel",
+                HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right
+            };
+
+            bool? dialogResult = null;
+
+            applyButton.Click += (_, _) =>
+            {
+                dialogResult = true;
+                dialog.Close();
+            };
+
+            cancelButton.Click += (_, _) =>
+            {
+                dialogResult = false;
+                dialog.Close();
+            };
+
+            var buttonPanel = new StackPanel
+            {
+                Orientation = Avalonia.Layout.Orientation.Horizontal,
+                HorizontalAlignment = Avalonia.Layout.HorizontalAlignment.Right,
+                Spacing = 8,
+                Children = { applyButton, cancelButton }
+            };
+
+            dialog.Content = new StackPanel
+            {
+                Margin = new Avalonia.Thickness(16),
+                Spacing = 12,
+                Children =
+                {
+                    new TextBlock
+                    {
+                        Text = "Enter rotation angle (0-360°):",
+                        FontWeight = Avalonia.Media.FontWeight.SemiBold
+                    },
+                    currentAngleText,
+                    new TextBlock { Text = "New rotation angle:" },
+                    rotationUpDown,
+                    new Border { Height = 16 },
+                    buttonPanel
+                }
+            };
+
+            await dialog.ShowDialog(this);
+
+            if (dialogResult == true)
+            {
+                layer.RotationAngle = (double)(rotationUpDown.Value ?? 0);
+                ViewModel.MarkChanged();
+                ViewModel.UpdateCrossSectionImage();
+                ViewModel.StatusMessage = $"Layer {layer.LayerNumber} rotated to {layer.RotationAngle:F1}°";
+            }
+        }
     }
 }

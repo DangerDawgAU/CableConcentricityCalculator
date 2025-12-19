@@ -179,6 +179,11 @@
                         <TextBlock x:Name="CalculatedOdText" Text="0.00 mm" FontSize="18" Foreground="#0078D4"/>
                     </StackPanel>
                 </Border>
+
+                <Separator Margin="0,8"/>
+
+                <!-- Save to Library Option -->
+                <CheckBox x:Name="SaveToLibraryCheck" Content="Save this cable to my library for future use" IsChecked="True" Margin="0,8"/>
             </StackPanel>
         </ScrollViewer>
 

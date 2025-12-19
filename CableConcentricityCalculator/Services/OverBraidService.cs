@@ -4,22 +4,22 @@ namespace CableConcentricityCalculator.Services;
 
 /// <summary>
 /// Service for managing over-braid and sleeving selections and specifications.
-/// All over-braid data is loaded from OverBraidLibrary.json
+/// All over-braid data is loaded from user library
 /// </summary>
 public static class OverBraidService
 {
     /// <summary>
-    /// Get all available over-braids from JSON library
+    /// Get all available over-braids from user library
     /// </summary>
     public static List<OverBraid> GetAllAvailableBraids()
     {
-        // Load from JSON library
-        var library = LibraryLoader.LoadOverBraidLibrary();
+        // Load from user library
+        var library = UserLibraryService.LoadOverBraidLibrary();
 
         if (library.Count == 0)
         {
-            throw new InvalidOperationException(
-                "Over-braid library not found. Please ensure OverBraidLibrary.json exists in the Libraries folder.");
+            Console.WriteLine("Over-braid library is empty. Use the GUI to add over-braids to your library.");
+            return new List<OverBraid>();
         }
 
         return library.Values.OrderBy(b => b.Manufacturer).ThenBy(b => b.NominalInnerDiameter).ToList();

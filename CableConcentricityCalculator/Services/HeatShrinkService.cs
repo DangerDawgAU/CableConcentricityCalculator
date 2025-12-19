@@ -4,22 +4,22 @@ namespace CableConcentricityCalculator.Services;
 
 /// <summary>
 /// Service for managing heat shrink tubing selections and specifications.
-/// All heat shrink data is loaded from HeatShrinkLibrary.json
+/// All heat shrink data is loaded from user library
 /// </summary>
 public static class HeatShrinkService
 {
     /// <summary>
-    /// Get all available heat shrink options from JSON library
+    /// Get all available heat shrink options from user library
     /// </summary>
     public static List<HeatShrink> GetAvailableHeatShrinks()
     {
-        // Load from JSON library
-        var library = LibraryLoader.LoadHeatShrinkLibrary();
+        // Load from user library
+        var library = UserLibraryService.LoadHeatShrinkLibrary();
 
         if (library.Count == 0)
         {
-            throw new InvalidOperationException(
-                "Heat shrink library not found. Please ensure HeatShrinkLibrary.json exists in the Libraries folder.");
+            Console.WriteLine("Heat shrink library is empty. Use the GUI to add heat shrinks to your library.");
+            return new List<HeatShrink>();
         }
 
         return library.Values.OrderBy(h => h.SuppliedInnerDiameter).ToList();

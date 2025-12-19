@@ -9,13 +9,6 @@ class Program
 {
     static void Main(string[] args)
     {
-        // Generate JSON libraries if requested
-        if (args.Length > 0 && args[0] == "--export-libraries")
-        {
-            ExportLibrariesToJson();
-            return;
-        }
-
         // Handle command line arguments
         if (args.Length > 0)
         {
@@ -25,23 +18,6 @@ class Program
 
         // No args - show help and guidance
         ShowWelcomeAndHelp();
-    }
-
-    static void ExportLibrariesToJson()
-    {
-        AnsiConsole.MarkupLine("[yellow]Exporting all libraries to JSON...[/]");
-
-        // Load each library - this will trigger save if JSON doesn't exist
-        var cables = CableLibrary.GetCompleteCableLibrary();
-        AnsiConsole.MarkupLine($"[green]✓ Exported {cables.Count} cables[/]");
-
-        var heatShrinks = CableLibrary.GetCompleteHeatShrinkLibrary();
-        AnsiConsole.MarkupLine($"[green]✓ Exported {heatShrinks.Count} heat shrinks[/]");
-
-        var braids = OverBraidService.GetAllAvailableBraids();
-        AnsiConsole.MarkupLine($"[green]✓ Exported {braids.Count} over-braids[/]");
-
-        AnsiConsole.MarkupLine("[green bold]Library export complete![/]");
     }
 
     static void HandleCommandLineArgs(string[] args)
@@ -86,7 +62,6 @@ class Program
         table.AddColumn("Description");
 
         table.AddRow("--load, -l [[file]] [[output]]", "Load assembly from JSON and generate PDF");
-        table.AddRow("--export-libraries", "Export cable/heatshrink/braid libraries to JSON");
         table.AddRow("--help, -h", "Show this help");
         table.AddRow("(no args)", "Show this help (use GUI for interactive mode)");
 

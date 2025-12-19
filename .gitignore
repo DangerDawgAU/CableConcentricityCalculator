@@ -78,6 +78,7 @@ Thumbs.db
 # Libraries
 *.pdf
 *.pyc
+*.json
 
 # Allow build script
 !build.py
