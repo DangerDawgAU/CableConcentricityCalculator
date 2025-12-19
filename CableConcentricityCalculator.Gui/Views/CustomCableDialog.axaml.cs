@@ -11,9 +11,13 @@ public partial class CustomCableDialog : Window
 
     public Cable? CreatedCable { get; private set; }
 
+    private readonly CheckBox _saveToLibraryCheck;
+
     public CustomCableDialog()
     {
         InitializeComponent();
+
+        _saveToLibraryCheck = this.FindControl<CheckBox>("SaveToLibraryCheck")!;
 
         CancelButton.Click += (_, _) => Close();
         CreateButton.Click += OnCreateClick;
@@ -173,6 +177,20 @@ public partial class CustomCableDialog : Window
             IsFiller = cableType == CableType.Filler,
             Cores = cores
         };
+
+        // Save to user library if checkbox is checked
+        if (_saveToLibraryCheck.IsChecked == true)
+        {
+            try
+            {
+                UserLibraryService.AddCable(CreatedCable);
+            }
+            catch (Exception ex)
+            {
+                // Log error but don't block cable creation
+                Console.WriteLine($"Failed to save cable to library: {ex.Message}");
+            }
+        }
 
         Close(CreatedCable);
     }

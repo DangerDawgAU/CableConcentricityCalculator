@@ -68,6 +68,9 @@
                 <Button Command="{Binding AddLayerCommand}" ToolTip.Tip="Add Layer" Classes="icon-button">
                     <TextBlock Text="+ Layer" FontSize="12"/>
                 </Button>
+                <Button x:Name="AddToLibraryButton" ToolTip.Tip="Add to Library" Classes="icon-button">
+                    <TextBlock Text="Add..." FontSize="12"/>
+                </Button>
                 <Button Command="{Binding OptimizeFillersCommand}" ToolTip.Tip="Optimize Fillers" Classes="icon-button">
                     <TextBlock Text="Optimize" FontSize="12"/>
                 </Button>
@@ -122,6 +125,11 @@
                         <ListBox.ItemTemplate>
                             <DataTemplate x:DataType="models:CableLayer">
                                 <Border Padding="8" Background="#FAFAFA" CornerRadius="4" Margin="0,2" BorderBrush="#DDD" BorderThickness="1">
+                                    <Border.ContextMenu>
+                                        <ContextMenu>
+                                            <MenuItem Header="Rotate Layer..." Click="OnRotateLayerClick"/>
+                                        </ContextMenu>
+                                    </Border.ContextMenu>
                                     <Grid ColumnDefinitions="Auto,*" RowDefinitions="Auto,Auto,Auto,Auto">
                                         <Border Background="#0078D4" Width="28" Height="28" CornerRadius="14"
                                                 Grid.RowSpan="4" Margin="0,0,8,0" VerticalAlignment="Center">
@@ -193,6 +201,11 @@
                             <ListBox.ItemTemplate>
                                 <DataTemplate x:DataType="models:Cable">
                                     <Grid ColumnDefinitions="Auto,*">
+                                        <Grid.ContextMenu>
+                                            <ContextMenu>
+                                                <MenuItem Header="Duplicate Cable..." Click="OnDuplicateCableClick"/>
+                                            </ContextMenu>
+                                        </Grid.ContextMenu>
                                         <Ellipse Width="14" Height="14" Margin="0,0,8,0"
                                                  Stroke="#333" StrokeThickness="1">
                                             <Ellipse.Fill>
@@ -244,6 +257,8 @@
                         <Image Source="{Binding CrossSectionImage, Converter={StaticResource ByteArrayToImageConverter}}"
                                Stretch="Uniform" Margin="16"
                                PointerPressed="OnImagePointerPressed"
+                               PointerMoved="OnImagePointerMoved"
+                               PointerReleased="OnImagePointerReleased"
                                Cursor="Hand"/>
                         <TextBlock Text="Add layers and cables to see cross-section&#x0a;Click to identify elements | Right-click for options"
                                    HorizontalAlignment="Center" VerticalAlignment="Center"

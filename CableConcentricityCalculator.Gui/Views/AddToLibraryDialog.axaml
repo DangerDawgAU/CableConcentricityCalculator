@@ -1,0 +1,195 @@
+<Window xmlns="https://github.com/avaloniaui"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        x:Class="CableConcentricityCalculator.Gui.Views.AddToLibraryDialog"
+        Title="Add to Library"
+        Width="600" Height="550"
+        WindowStartupLocation="CenterOwner"
+        CanResize="False">
+
+    <Window.Styles>
+        <Style Selector="TextBlock.label">
+            <Setter Property="VerticalAlignment" Value="Center"/>
+            <Setter Property="Foreground" Value="#333"/>
+        </Style>
+        <Style Selector="TextBox, ComboBox, NumericUpDown">
+            <Setter Property="Margin" Value="0,0,0,8"/>
+        </Style>
+    </Window.Styles>
+
+    <Grid RowDefinitions="Auto,*,Auto">
+        <!-- Tab Control -->
+        <TabControl x:Name="TabControl" Grid.Row="1" Margin="16,0">
+            <!-- Cable Tab -->
+            <TabItem Header="Cable">
+                <ScrollViewer Padding="8">
+                    <StackPanel Spacing="8" Margin="0,0,0,50">
+                        <Grid ColumnDefinitions="150,*">
+                            <TextBlock Text="Part Number:" Classes="label"/>
+                            <TextBox Grid.Column="1" x:Name="CablePartNumberBox" Watermark="e.g., M22759/16-22-9"/>
+                        </Grid>
+
+                        <Grid ColumnDefinitions="150,*">
+                            <TextBlock Text="Manufacturer:" Classes="label"/>
+                            <TextBox Grid.Column="1" x:Name="CableManufacturerBox" Watermark="e.g., LAPP, MIL-SPEC"/>
+                        </Grid>
+
+                        <Grid ColumnDefinitions="150,*">
+                            <TextBlock Text="Number of Conductors:" Classes="label"/>
+                            <NumericUpDown Grid.Column="1" x:Name="CableConductorCountUpDown" Value="1" Minimum="1" Maximum="50"/>
+                        </Grid>
+
+                        <Separator Margin="0,8"/>
+                        <TextBlock Text="Conductor Size (choose one):" FontWeight="SemiBold"/>
+
+                        <Grid ColumnDefinitions="150,*">
+                            <TextBlock Text="AWG:" Classes="label"/>
+                            <ComboBox Grid.Column="1" x:Name="CableAwgCombo" SelectedIndex="0">
+                                <ComboBoxItem Content="-- Not specified --"/>
+                                <ComboBoxItem Content="30"/>
+                                <ComboBoxItem Content="28"/>
+                                <ComboBoxItem Content="26"/>
+                                <ComboBoxItem Content="24"/>
+                                <ComboBoxItem Content="22"/>
+                                <ComboBoxItem Content="20"/>
+                                <ComboBoxItem Content="18"/>
+                                <ComboBoxItem Content="16"/>
+                                <ComboBoxItem Content="14"/>
+                                <ComboBoxItem Content="12"/>
+                                <ComboBoxItem Content="10"/>
+                                <ComboBoxItem Content="8"/>
+                            </ComboBox>
+                        </Grid>
+
+                        <Grid ColumnDefinitions="150,*">
+                            <TextBlock Text="Diameter (mm):" Classes="label"/>
+                            <NumericUpDown Grid.Column="1" x:Name="CableConductorDiameterUpDown" Value="0" Minimum="0" Maximum="10" Increment="0.01" FormatString="0.000 mm"/>
+                        </Grid>
+
+                        <Grid ColumnDefinitions="150,*">
+                            <TextBlock Text="Cross-section (mm²):" Classes="label"/>
+                            <NumericUpDown Grid.Column="1" x:Name="CableConductorCsaUpDown" Value="0" Minimum="0" Maximum="50" Increment="0.1" FormatString="0.00 mm²"/>
+                        </Grid>
+
+                        <Separator Margin="0,8"/>
+
+                        <Grid ColumnDefinitions="150,*">
+                            <TextBlock Text="Core Colors:" Classes="label"/>
+                            <TextBox Grid.Column="1" x:Name="CableCoreColorsBox" Watermark="Red, Black, White (comma separated)"/>
+                        </Grid>
+
+                        <CheckBox x:Name="CableRandomColorsCheck" Content="Generate random colors automatically" Margin="150,0,0,8"/>
+
+                        <Grid ColumnDefinitions="150,*">
+                            <TextBlock Text="Insulation Thickness:" Classes="label"/>
+                            <NumericUpDown Grid.Column="1" x:Name="CableInsulationThicknessUpDown" Value="0.20" Minimum="0" Maximum="5" Increment="0.01" FormatString="0.00 mm"/>
+                        </Grid>
+
+                        <CheckBox x:Name="CableAutoInsulationCheck" Content="Generate insulation thickness automatically" Margin="150,0,0,8"/>
+
+                        <Grid ColumnDefinitions="150,*">
+                            <TextBlock Text="Shielding:" Classes="label"/>
+                            <ComboBox Grid.Column="1" x:Name="CableShieldingCombo" SelectedIndex="0">
+                                <ComboBoxItem Content="N/A"/>
+                                <ComboBoxItem Content="Foil"/>
+                                <ComboBoxItem Content="Braid"/>
+                                <ComboBoxItem Content="Both"/>
+                            </ComboBox>
+                        </Grid>
+
+                        <Grid ColumnDefinitions="150,*">
+                            <TextBlock Text="Cable OD (mm):" Classes="label"/>
+                            <NumericUpDown Grid.Column="1" x:Name="CableOdUpDown" Value="0" Minimum="0" Maximum="50" Increment="0.1" FormatString="0.00 mm"/>
+                        </Grid>
+
+                        <Grid ColumnDefinitions="150,*">
+                            <TextBlock Text="Cable Color:" Classes="label"/>
+                            <ComboBox Grid.Column="1" x:Name="CableColorCombo" SelectedIndex="1">
+                                <ComboBoxItem Content="White"/>
+                                <ComboBoxItem Content="Black"/>
+                                <ComboBoxItem Content="Red"/>
+                                <ComboBoxItem Content="Green"/>
+                                <ComboBoxItem Content="Blue"/>
+                                <ComboBoxItem Content="Yellow"/>
+                                <ComboBoxItem Content="Orange"/>
+                                <ComboBoxItem Content="Brown"/>
+                                <ComboBoxItem Content="Gray"/>
+                            </ComboBox>
+                        </Grid>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- Heat Shrink Tab -->
+            <TabItem Header="Heat Shrink">
+                <ScrollViewer Padding="8">
+                    <StackPanel Spacing="8" Margin="0,0,0,50">
+                        <Grid ColumnDefinitions="200,*">
+                            <TextBlock Text="Part Number:" Classes="label"/>
+                            <TextBox Grid.Column="1" x:Name="HeatShrinkPartNumberBox" Watermark="e.g., DR-25-12"/>
+                        </Grid>
+
+                        <Grid ColumnDefinitions="200,*">
+                            <TextBlock Text="Manufacturer:" Classes="label"/>
+                            <TextBox Grid.Column="1" x:Name="HeatShrinkManufacturerBox" Watermark="e.g., Raychem, TE"/>
+                        </Grid>
+
+                        <Grid ColumnDefinitions="200,*">
+                            <TextBlock Text="Un-recovered Diameter (mm):" Classes="label"/>
+                            <NumericUpDown Grid.Column="1" x:Name="HeatShrinkUnrecoveredDiameterUpDown" Value="0" Minimum="0" Maximum="100" Increment="0.1" FormatString="0.00 mm"/>
+                        </Grid>
+
+                        <Grid ColumnDefinitions="200,*">
+                            <TextBlock Text="Recovered Diameter (mm):" Classes="label"/>
+                            <NumericUpDown Grid.Column="1" x:Name="HeatShrinkRecoveredDiameterUpDown" Value="0" Minimum="0" Maximum="100" Increment="0.1" FormatString="0.00 mm"/>
+                        </Grid>
+
+                        <TextBlock Text="Un-recovered diameter is the maximum size before heat is applied."
+                                   TextWrapping="Wrap" Foreground="#666" FontSize="11" Margin="0,8,0,0"/>
+                        <TextBlock Text="Recovered diameter is the minimum size after fully shrinking."
+                                   TextWrapping="Wrap" Foreground="#666" FontSize="11"/>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+
+            <!-- Over-Braid Tab -->
+            <TabItem Header="Over-Braid">
+                <ScrollViewer Padding="8">
+                    <StackPanel Spacing="8" Margin="0,0,0,50">
+                        <Grid ColumnDefinitions="200,*">
+                            <TextBlock Text="Part Number:" Classes="label"/>
+                            <TextBox Grid.Column="1" x:Name="OverBraidPartNumberBox" Watermark="e.g., TC-1/4"/>
+                        </Grid>
+
+                        <Grid ColumnDefinitions="200,*">
+                            <TextBlock Text="Manufacturer:" Classes="label"/>
+                            <TextBox Grid.Column="1" x:Name="OverBraidManufacturerBox" Watermark="e.g., Alpha Wire, Techflex"/>
+                        </Grid>
+
+                        <Grid ColumnDefinitions="200,*">
+                            <TextBlock Text="Un-recovered Diameter (mm):" Classes="label"/>
+                            <NumericUpDown Grid.Column="1" x:Name="OverBraidUnrecoveredDiameterUpDown" Value="0" Minimum="0" Maximum="100" Increment="0.1" FormatString="0.00 mm"/>
+                        </Grid>
+
+                        <Grid ColumnDefinitions="200,*">
+                            <TextBlock Text="Recovered Diameter (mm):" Classes="label"/>
+                            <NumericUpDown Grid.Column="1" x:Name="OverBraidRecoveredDiameterUpDown" Value="0" Minimum="0" Maximum="100" Increment="0.1" FormatString="0.00 mm"/>
+                        </Grid>
+
+                        <TextBlock Text="Un-recovered diameter is the maximum expandable size."
+                                   TextWrapping="Wrap" Foreground="#666" FontSize="11" Margin="0,8,0,0"/>
+                        <TextBlock Text="Recovered diameter is the minimum contracted size."
+                                   TextWrapping="Wrap" Foreground="#666" FontSize="11"/>
+                    </StackPanel>
+                </ScrollViewer>
+            </TabItem>
+        </TabControl>
+
+        <!-- Buttons -->
+        <Border Grid.Row="2" Background="#F5F5F5" Padding="16">
+            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Spacing="8">
+                <Button x:Name="CancelButton" Content="Cancel" Padding="16,8"/>
+                <Button x:Name="AddButton" Content="Add to Library" Padding="16,8" Classes="accent"/>
+            </StackPanel>
+        </Border>
+    </Grid>
+</Window>

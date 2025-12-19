@@ -215,6 +215,28 @@ public class CableLayer : INotifyPropertyChanged
         }
     }
 
+    private double _rotationAngle;
+    /// <summary>
+    /// Rotation angle for this layer in degrees (0-360)
+    /// Allows manual rotation of the layer orientation
+    /// </summary>
+    public double RotationAngle
+    {
+        get => _rotationAngle;
+        set
+        {
+            // Normalize to 0-360 range
+            double normalized = value % 360;
+            if (normalized < 0) normalized += 360;
+
+            if (Math.Abs(_rotationAngle - normalized) > 0.001)
+            {
+                _rotationAngle = normalized;
+                OnPropertyChanged(nameof(RotationAngle));
+            }
+        }
+    }
+
     /// <summary>
     /// Maximum cable diameter in this layer
     /// </summary>

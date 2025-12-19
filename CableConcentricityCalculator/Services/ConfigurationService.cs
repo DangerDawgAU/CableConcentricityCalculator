@@ -56,133 +56,54 @@ public class ConfigurationService
     }
 
     /// <summary>
-    /// Create a sample cable library (uses comprehensive CableLibrary)
+    /// Create a sample cable library (now loads from user library)
     /// </summary>
     public static Dictionary<string, Cable> CreateSampleCableLibrary()
     {
-        // Return the complete cable library with all MIL-W-22759, LAPP, OLFLEX, UNITRONIC, and ETHERLINE cables
         return CableLibrary.GetCompleteCableLibrary();
     }
 
     /// <summary>
-    /// Get cables filtered by category (filters by both PartNumber and Name fields)
+    /// Get cables filtered by category (deprecated - categories removed in favor of manufacturer filtering)
     /// </summary>
+    [Obsolete("Categories are deprecated. Use manufacturer filtering instead.")]
     public static Dictionary<string, Cable> GetCablesByCategory(string category)
     {
-        var allCables = CableLibrary.GetCompleteCableLibrary();
-
-        return category.ToUpperInvariant() switch
-        {
-            "MIL-W-22759" or "MILSPEC" => allCables
-                .Where(c => c.Value.PartNumber.Contains("22759", StringComparison.OrdinalIgnoreCase) ||
-                            c.Value.Name.Contains("22759", StringComparison.OrdinalIgnoreCase))
-                .ToDictionary(c => c.Key, c => c.Value),
-            "MIL-C-27500" or "MIL-DTL-27500" => allCables
-                .Where(c => c.Value.PartNumber.Contains("27500", StringComparison.OrdinalIgnoreCase) ||
-                            c.Value.Name.Contains("27500", StringComparison.OrdinalIgnoreCase))
-                .ToDictionary(c => c.Key, c => c.Value),
-            "OLFLEX" => allCables
-                .Where(c => c.Value.PartNumber.Contains("OLFLEX", StringComparison.OrdinalIgnoreCase) ||
-                            c.Value.Name.Contains("OLFLEX", StringComparison.OrdinalIgnoreCase) ||
-                            c.Value.Name.Contains("ÖLFLEX", StringComparison.OrdinalIgnoreCase))
-                .ToDictionary(c => c.Key, c => c.Value),
-            "UNITRONIC" => allCables
-                .Where(c => c.Value.PartNumber.Contains("UNITRONIC", StringComparison.OrdinalIgnoreCase) ||
-                            c.Value.Name.Contains("UNITRONIC", StringComparison.OrdinalIgnoreCase))
-                .ToDictionary(c => c.Key, c => c.Value),
-            "ETHERLINE" => allCables
-                .Where(c => c.Value.PartNumber.Contains("ETHERLINE", StringComparison.OrdinalIgnoreCase) ||
-                            c.Value.Name.Contains("ETHERLINE", StringComparison.OrdinalIgnoreCase) ||
-                            c.Value.Name.Contains("Ethernet", StringComparison.OrdinalIgnoreCase))
-                .ToDictionary(c => c.Key, c => c.Value),
-            "GENERIC ALIEXPRESS" => allCables
-                .Where(c => c.Value.Manufacturer.Contains("Generic Aliexpress", StringComparison.OrdinalIgnoreCase))
-                .ToDictionary(c => c.Key, c => c.Value),
-            _ => allCables
-        };
+        // Return all cables - categories are no longer used
+        return CableLibrary.GetCompleteCableLibrary();
     }
 
     /// <summary>
-    /// Get available cable categories
+    /// Get available cable categories (deprecated - returns empty list)
     /// </summary>
+    [Obsolete("Categories are deprecated. Filter by manufacturer instead.")]
     public static string[] GetCableCategories()
     {
-        return new[] { "All", "MIL-W-22759", "MIL-C-27500", "OLFLEX", "UNITRONIC", "ETHERLINE", "Generic Aliexpress" };
+        return new[] { "All" };
     }
 
     /// <summary>
-    /// Create sample heat shrink library (uses comprehensive DR25 library)
+    /// Create sample heat shrink library (deprecated - use UserLibraryService)
     /// </summary>
+    [Obsolete("Use UserLibraryService.LoadHeatShrinkLibrary() instead")]
     public static Dictionary<string, HeatShrink> CreateSampleHeatShrinkLibrary()
     {
-        // Return the complete DR25 heat shrink library
         return CableLibrary.GetCompleteHeatShrinkLibrary();
     }
 
     /// <summary>
-    /// Create sample over-braid library
+    /// Create sample over-braid library (deprecated - use UserLibraryService)
     /// </summary>
+    [Obsolete("Use UserLibraryService.LoadOverBraidLibrary() instead")]
     public static Dictionary<string, OverBraid> CreateSampleOverBraidLibrary()
     {
-        var library = new Dictionary<string, OverBraid>();
-
-        // Expandable braided sleeving sizes
-        var sizes = new[]
-        {
-            ("1/8", 3.2, 1.6, 6.4),
-            ("1/4", 6.4, 3.2, 12.7),
-            ("3/8", 9.5, 4.8, 19.0),
-            ("1/2", 12.7, 6.4, 25.4),
-            ("3/4", 19.0, 9.5, 38.0),
-            ("1", 25.4, 12.7, 50.8)
-        };
-
-        // Tinned copper braids
-        foreach (var (name, nominal, min, max) in sizes)
-        {
-            var braid = new OverBraid
-            {
-                PartNumber = $"TC-{name}",
-                Name = $"Tinned Copper Braid {name}\"",
-                Manufacturer = "Alpha Wire",
-                Type = BraidType.ExpandableSleeving,
-                Material = "Tinned Copper",
-                CoveragePercent = 85,
-                NominalInnerDiameter = nominal,
-                MinInnerDiameter = min,
-                MaxInnerDiameter = max,
-                WallThickness = 0.5,
-                IsShielding = true
-            };
-            library[$"TC-{name}"] = braid;
-        }
-
-        // PET expandable sleeving
-        foreach (var (name, nominal, min, max) in sizes)
-        {
-            var braid = new OverBraid
-            {
-                PartNumber = $"PET-{name}",
-                Name = $"PET Expandable Sleeving {name}\"",
-                Manufacturer = "Techflex",
-                Type = BraidType.ExpandableSleeving,
-                Material = "Polyester (PET)",
-                CoveragePercent = 90,
-                NominalInnerDiameter = nominal,
-                MinInnerDiameter = min,
-                MaxInnerDiameter = max,
-                WallThickness = 0.3,
-                IsShielding = false,
-                Color = "Black"
-            };
-            library[$"PET-{name}"] = braid;
-        }
-
-        return library;
+        return UserLibraryService.LoadOverBraidLibrary();
     }
 
     /// <summary>
     /// Create a sample assembly for demonstration
+    /// NOTE: This creates a basic assembly with generic cables for demonstration purposes.
+    /// In production, users should create assemblies using cables from their user library.
     /// </summary>
     public static CableAssembly CreateSampleAssembly()
     {
@@ -194,14 +115,37 @@ public class ConfigurationService
             ProjectReference = "DEMO-001",
             DesignedBy = "Cable Designer",
             Length = 1000,
-            Notes = "Demonstration cable assembly showing concentric layup",
+            Notes = "Demonstration cable assembly. Add your own cables via the GUI.",
             TemperatureRating = 125,
             VoltageRating = 300,
-            ApplicableStandards = new List<string> { "MIL-DTL-27500", "SAE AS22759" }
+            ApplicableStandards = new List<string> { "User-defined assembly" }
         };
 
-        // Create cables
-        var cableLibrary = CreateSampleCableLibrary();
+        // Create a simple generic cable for demonstration
+        var CreateGenericCable = (string color) => new Cable
+        {
+            CableId = Guid.NewGuid().ToString("N")[..8],
+            PartNumber = $"GENERIC-22AWG-{color}",
+            Name = $"Generic 22 AWG Wire - {color}",
+            Manufacturer = "Generic",
+            Type = CableType.SingleCore,
+            JacketColor = color,
+            JacketThickness = 0.20,
+            HasShield = false,
+            ShieldType = ShieldType.None,
+            Cores = new List<CableCore>
+            {
+                new CableCore
+                {
+                    CoreId = "1",
+                    ConductorDiameter = 0.644,
+                    InsulationThickness = 0.20,
+                    InsulationColor = color,
+                    Gauge = "22",
+                    ConductorMaterial = "Copper"
+                }
+            }
+        };
 
         // Layer 0: Center - 1 cable
         var layer0 = new CableLayer
@@ -210,7 +154,7 @@ public class ConfigurationService
             TwistDirection = TwistDirection.None,
             Cables = new System.Collections.ObjectModel.ObservableCollection<Cable>
             {
-                CloneCable(cableLibrary["M22759-22-White"])
+                CreateGenericCable("White")
             }
         };
         assembly.Layers.Add(layer0);
@@ -223,12 +167,12 @@ public class ConfigurationService
             LayLength = 30,
             Cables = new System.Collections.ObjectModel.ObservableCollection<Cable>
             {
-                CloneCable(cableLibrary["M22759-22-Black"]),
-                CloneCable(cableLibrary["M22759-22-Red"]),
-                CloneCable(cableLibrary["M22759-22-Green"]),
-                CloneCable(cableLibrary["M22759-22-Blue"]),
-                CloneCable(cableLibrary["M22759-22-Yellow"]),
-                CloneCable(cableLibrary["M22759-22-Orange"])
+                CreateGenericCable("Black"),
+                CreateGenericCable("Red"),
+                CreateGenericCable("Green"),
+                CreateGenericCable("Blue"),
+                CreateGenericCable("Yellow"),
+                CreateGenericCable("Orange")
             }
         };
         assembly.Layers.Add(layer1);
@@ -246,7 +190,7 @@ public class ConfigurationService
                                   "Orange", "Brown", "Violet", "Gray", "White", "Black" };
         foreach (var color in layer2Colors)
         {
-            layer2.Cables.Add(CloneCable(cableLibrary[$"M22759-22-{color}"]));
+            layer2.Cables.Add(CreateGenericCable(color));
         }
         assembly.Layers.Add(layer2);
 

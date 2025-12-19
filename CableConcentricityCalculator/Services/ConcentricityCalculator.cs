@@ -171,7 +171,9 @@ public class ConcentricityCalculator
                         Math.Sqrt(p.X * p.X + p.Y * p.Y) + p.Diameter / 2);
 
                     double fillerPitchRadius = maxRadius + layer.FillerDiameter / 2;
-                    var fillerAngles = CalculateAngularPositions(layer.FillerCount);
+                    // Apply layer rotation angle (convert degrees to radians)
+                    double startAngle = layer.RotationAngle * Math.PI / 180.0;
+                    var fillerAngles = CalculateAngularPositions(layer.FillerCount, startAngle);
 
                     for (int i = 0; i < layer.FillerCount; i++)
                     {
@@ -212,12 +214,14 @@ public class ConcentricityCalculator
             return CalculateCenterLayerPositions(elements);
         }
 
-        // Calculate angular positions
-        var angles = CalculateAngularPositions(elements.Count);
+        // Calculate angular positions with layer rotation
+        // Apply layer rotation angle (convert degrees to radians)
+        double startAngle = layer.RotationAngle * Math.PI / 180.0;
+        var angles = CalculateAngularPositions(elements.Count, startAngle);
 
         // All cables should touch the inner boundary (outer surface of previous layer)
         // Each cable's center is positioned at innerBoundary + (cable's radius)
-        DebugLogger.Log($"[STANDARD PACKING DETAIL] Layer {layer.LayerNumber}: InnerBoundary={innerBoundaryRadius:F2}mm");
+        DebugLogger.Log($"[STANDARD PACKING DETAIL] Layer {layer.LayerNumber}: InnerBoundary={innerBoundaryRadius:F2}mm, RotationAngle={layer.RotationAngle:F1}°");
 
         for (int i = 0; i < elements.Count; i++)
         {
@@ -743,6 +747,26 @@ public class ConcentricityCalculator
     /// Calculate the optimal position for a cable in the valley between two adjacent cables
     /// Uses circle tangency geometry to find where the new cable touches both adjacent cables
     /// </summary>
+    /// <summary>
+    /// Public wrapper for calculating valley position between two cables
+    /// </summary>
+    public static (double x, double y)? CalculateValleyPosition(
+        double cable1X, double cable1Y, double cable1Diameter,
+        double cable2X, double cable2Y, double cable2Diameter,
+        double valleyDiameter)
+    {
+        // Calculate inner boundary as the max radius of the two cables
+        double innerBoundary = Math.Max(
+            Math.Sqrt(cable1X * cable1X + cable1Y * cable1Y) + cable1Diameter / 2,
+            Math.Sqrt(cable2X * cable2X + cable2Y * cable2Y) + cable2Diameter / 2);
+
+        return CalculateValleyPosition(
+            (cable1X, cable1Y, cable1Diameter, null!),
+            (cable2X, cable2Y, cable2Diameter, null!),
+            valleyDiameter,
+            innerBoundary);
+    }
+
     private static (double x, double y)? CalculateValleyPosition(
         (double X, double Y, double Diameter, Cable Cable) cable1,
         (double X, double Y, double Diameter, Cable Cable) cable2,

@@ -19,10 +19,4 @@
     <PackageReference Include="Spectre.Console" Version="0.49.1" />
   </ItemGroup>
 
-  <ItemGroup>
-    <None Update="Libraries\*.json">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </None>
-  </ItemGroup>
-
 </Project>

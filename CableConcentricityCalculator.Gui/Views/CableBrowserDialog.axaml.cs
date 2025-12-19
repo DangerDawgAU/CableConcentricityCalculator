@@ -13,7 +13,6 @@ public partial class CableBrowserDialog : Window
     private List<CableDisplayItem> _filteredCables = new();
 
     // Control references
-    private readonly ComboBox _categoryCombo;
     private readonly ComboBox _manufacturerCombo;
     private readonly ComboBox _coresCombo;
     private readonly ComboBox _awgCombo;
@@ -25,7 +24,6 @@ public partial class CableBrowserDialog : Window
     private readonly Button _useCableButton;
     private readonly Button _addMultipleButton;
     private readonly Button _cancelButton;
-    private readonly Button _customButton;
     // Info pane controls
     private readonly TextBlock _infoPartNumber;
     private readonly TextBlock _infoName;
@@ -42,7 +40,6 @@ public partial class CableBrowserDialog : Window
         InitializeComponent();
 
         // Find controls by name
-        _categoryCombo = this.FindControl<ComboBox>("CategoryCombo")!;
         _manufacturerCombo = this.FindControl<ComboBox>("ManufacturerCombo")!;
         _coresCombo = this.FindControl<ComboBox>("CoresCombo")!;
         _awgCombo = this.FindControl<ComboBox>("AwgCombo")!;
@@ -54,7 +51,6 @@ public partial class CableBrowserDialog : Window
         _useCableButton = this.FindControl<Button>("UseCableButton")!;
         _addMultipleButton = this.FindControl<Button>("AddMultipleButton")!;
         _cancelButton = this.FindControl<Button>("CancelButton")!;
-        _customButton = this.FindControl<Button>("CustomButton")!;
         // Info pane controls
         _infoPartNumber = this.FindControl<TextBlock>("InfoPartNumber")!;
         _infoName = this.FindControl<TextBlock>("InfoName")!;
@@ -70,7 +66,6 @@ public partial class CableBrowserDialog : Window
         _cancelButton.Click += (_, _) => Close();
         _useCableButton.Click += OnUseCableClick;
         _addMultipleButton.Click += OnAddMultipleClick;
-        _customButton.Click += OnCustomClick;
         _cablesGrid.SelectionChanged += OnSelectionChanged;
         _googleSearchButton.Click += (_, _) => OpenGoogleSearch();
     }
@@ -83,12 +78,6 @@ public partial class CableBrowserDialog : Window
 
     private void SetupFilters()
     {
-        // Categories
-        var categories = new List<string> { "All" };
-        categories.AddRange(ConfigurationService.GetCableCategories().Where(c => c != "All"));
-        _categoryCombo.ItemsSource = categories;
-        _categoryCombo.SelectedIndex = 0;
-
         // Manufacturers
         var manufacturers = new List<string> { "All" };
         manufacturers.AddRange(_allCables.Values.Select(c => c.Manufacturer).Distinct().OrderBy(x => x));
@@ -131,18 +120,13 @@ public partial class CableBrowserDialog : Window
 
     private void ApplyFilters()
     {
-        var category = _categoryCombo.SelectedItem as string ?? "All";
         var manufacturer = _manufacturerCombo.SelectedItem as string ?? "All";
         var coresFilter = _coresCombo.SelectedItem as string ?? "All";
         var awgFilter = _awgCombo.SelectedItem as string ?? "All";
         var typeFilter = _typeCombo.SelectedItem as string ?? "All";
         var search = _searchBox.Text?.ToLowerInvariant() ?? "";
 
-        var source = category == "All"
-            ? _allCables
-            : ConfigurationService.GetCablesByCategory(category);
-
-        var filtered = source.Values.AsEnumerable();
+        var filtered = _allCables.Values.AsEnumerable();
 
         // Apply manufacturer filter
         if (manufacturer != "All")
@@ -277,22 +261,6 @@ public partial class CableBrowserDialog : Window
         for (int i = 0; i < quantity; i++)
         {
             SelectedCables.Add(CloneCable(template));
-        }
-    }
-
-    private async void OnCustomClick(object? sender, RoutedEventArgs e)
-    {
-        var dialog = new CustomCableDialog();
-        var result = await dialog.ShowDialog<Cable?>(this);
-
-        if (result != null)
-        {
-            var quantity = (int)(_multipleQuantityUpDown.Value ?? 1);
-            for (int i = 0; i < quantity; i++)
-            {
-                SelectedCables.Add(CloneCable(result));
-            }
-            Close(SelectedCables);
         }
     }
 
